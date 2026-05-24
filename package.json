@@ -1,0 +1,33 @@
+{
+  "name": "community-food-bank-of-southern-az",
+  "version": "1.0.0",
+  "description": "Key Cafe Web Application for the Commutiny Food Bank of Southern Arizona",
+  "homepage": "https://github.com/Tanmay-Nalawade/Community-Food-Bank-of-Southern-AZ#readme",
+  "bugs": {
+    "url": "https://github.com/Tanmay-Nalawade/-Food-Bank-of-Southern-AZ/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Tanmay-Nalawade/Community-Food-Bank-of-Southern-AZ.git"
+  },
+  "license": "ISC",
+  "author": "Tanmay-Nalawade",
+  "type": "commonjs",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "connect-flash": "^0.1.1",
+    "dotenv": "^16.4.7",
+    "ejs": "^3.1.10",
+    "ejs-mate": "^4.0.0",
+    "express": "^4.21.2",
+    "method-override": "^3.0.0",
+    "mongoose": "^8.9.5",
+    "passport": "^0.7.0",
+    "passport-local": "^1.0.0",
+    "passport-local-mongoose": "^8.0.0"
+  }
+}
