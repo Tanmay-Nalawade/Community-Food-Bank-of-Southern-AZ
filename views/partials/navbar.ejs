@@ -1,0 +1,20 @@
+<header class="site-navbar" role="banner">
+  <div class="site-navbar__inner">
+    <a class="site-navbar__brand" href="/" aria-label="Community Food Bank of Southern Arizona — Home">
+      <img
+        class="site-navbar__logo"
+        src="/images/Logo.png"
+        alt="Community Food Bank of Southern Arizona — Celebrating 50 Years of Impact"
+      />
+    </a>
+
+    <nav class="site-navbar__nav" aria-label="Main navigation">
+      <a
+        class="site-navbar__link<%= locals.activeNav === 'vehicles' ? ' site-navbar__link--active' : '' %>"
+        href="/vehicles"
+      >
+        See All Vehicles
+      </a>
+    </nav>
+  </div>
+</header>

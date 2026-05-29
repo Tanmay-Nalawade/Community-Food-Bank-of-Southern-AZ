@@ -1,0 +1,35 @@
+<% layout('layouts/boilerplate') %>
+
+<section class="vehicles-page">
+  <h1>All Vehicles</h1>
+  <p class="vehicles-page__lead">Browse available motor pool vehicles.</p>
+
+  <% if (!vehicles.length) { %>
+    <p class="vehicles-page__empty">No vehicles found.</p>
+  <% } else { %>
+    <div class="vehicle-grid">
+      <% vehicles.forEach((vehicle) => { %>
+        <article class="vehicle-card">
+          <header class="vehicle-card__header">
+            <h2 class="vehicle-card__title">
+              <%= vehicle.year ? vehicle.year + " " : "" %><%= vehicle.make %> <%= vehicle.model %>
+            </h2>
+            <span class="vehicle-card__status vehicle-card__status--<%= vehicle.status.toLowerCase().replace(/\s+/g, '-') %>">
+              <%= vehicle.status %>
+            </span>
+          </header>
+          <dl class="vehicle-card__details">
+            <div>
+              <dt>License plate</dt>
+              <dd><%= vehicle.licensePlate %></dd>
+            </div>
+            <div>
+              <dt>Mileage</dt>
+              <dd><%= vehicle.currentMileage.toLocaleString() %> mi</dd>
+            </div>
+          </dl>
+        </article>
+      <% }) %>
+    </div>
+  <% } %>
+</section>
