@@ -4,6 +4,16 @@
   padding: 2rem 1.5rem;
 }
 
+body {
+  background: #fbf7f9;
+}
+
+.page-content {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
 .page-content h1 {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 1.75rem;
