@@ -74,6 +74,34 @@
   text-underline-offset: 3px;
 }
 
+.site-navbar__btn {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--cfb-white);
+  background: var(--cfb-maroon);
+  border: 2px solid var(--cfb-maroon);
+  border-radius: 6px;
+  padding: 0.5rem 1.25rem;
+  text-decoration: none;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.site-navbar__btn:hover,
+.site-navbar__btn:focus {
+  background: var(--cfb-maroon-hover);
+  border-color: var(--cfb-maroon-hover);
+  color: var(--cfb-white);
+  text-decoration: none;
+}
+
+.site-navbar__btn--active {
+  background: var(--cfb-maroon-hover);
+  border-color: var(--cfb-maroon-hover);
+}
+
 @media (max-width: 640px) {
   .site-navbar__inner {
     flex-direction: column;
