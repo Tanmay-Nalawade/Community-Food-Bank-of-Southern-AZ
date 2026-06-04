@@ -1,0 +1,78 @@
+<% layout('layouts/boilerplate') %>
+
+<section class="auth-page">
+  <div class="auth-card">
+    <h1 class="auth-card__title">Sign Up</h1>
+    <p class="auth-card__subtitle">Create an account to access the motor pool.</p>
+
+    <form class="auth-form" action="/register" method="POST">
+      <div class="auth-form__row">
+        <div class="auth-form__group">
+          <label class="auth-form__label" for="firstName">First name</label>
+          <input
+            class="auth-form__input"
+            type="text"
+            id="firstName"
+            name="firstName"
+            autocomplete="given-name"
+            required
+          />
+        </div>
+        <div class="auth-form__group">
+          <label class="auth-form__label" for="lastName">Last name</label>
+          <input
+            class="auth-form__input"
+            type="text"
+            id="lastName"
+            name="lastName"
+            autocomplete="family-name"
+            required
+          />
+        </div>
+      </div>
+
+      <div class="auth-form__group">
+        <label class="auth-form__label" for="email">Email</label>
+        <input
+          class="auth-form__input"
+          type="email"
+          id="email"
+          name="email"
+          autocomplete="email"
+          required
+        />
+      </div>
+
+      <div class="auth-form__group">
+        <label class="auth-form__label" for="password">Password</label>
+        <input
+          class="auth-form__input"
+          type="password"
+          id="password"
+          name="password"
+          autocomplete="new-password"
+          required
+        />
+      </div>
+
+      <div class="auth-form__group">
+        <label class="auth-form__label" for="confirmPassword">Confirm password</label>
+        <input
+          class="auth-form__input"
+          type="password"
+          id="confirmPassword"
+          name="confirmPassword"
+          autocomplete="new-password"
+          required
+        />
+      </div>
+
+      <button class="auth-form__submit" type="submit">Create Account</button>
+    </form>
+
+    <p class="auth-card__footer">
+      Already have an account?
+      <a href="/login">Log in</a>
+    </p>
+  </div>
+</section>
