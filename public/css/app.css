@@ -2,6 +2,16 @@ body {
   background: #fbf7f9;
 }
 
+.site-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-content {
+  flex: 1;
+}
+
 .page-content {
   max-width: 1280px;
   margin: 0 auto;
@@ -163,4 +173,58 @@ body {
 .account-page__btn--secondary:focus {
   background: #f5eef2;
   color: #4a213b;
+}
+
+.site-footer {
+  background: #ffffff;
+  border-top: 1px solid #e8e0e4;
+  margin-top: 2.5rem;
+}
+
+.site-footer__inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 1.5rem 1.5rem;
+}
+
+.site-footer__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.site-footer__brand {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 800;
+  color: #632c4f;
+  letter-spacing: 0.01em;
+}
+
+.site-footer__nav {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.site-footer__link {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 700;
+  color: #632c4f;
+  text-decoration: none;
+}
+
+.site-footer__link:hover,
+.site-footer__link:focus {
+  color: #4a213b;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.site-footer__bottom {
+  margin-top: 0.75rem;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: #6b6b6b;
+  font-size: 0.95rem;
 }
