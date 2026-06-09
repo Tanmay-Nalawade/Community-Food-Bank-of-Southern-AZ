@@ -187,39 +187,11 @@ body {
   padding: 1.5rem 1.5rem;
 }
 
-.site-footer__top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.25rem;
-  flex-wrap: wrap;
-}
-
 .site-footer__brand {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-weight: 800;
   color: #632c4f;
   letter-spacing: 0.01em;
-}
-
-.site-footer__nav {
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-}
-
-.site-footer__link {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-weight: 700;
-  color: #632c4f;
-  text-decoration: none;
-}
-
-.site-footer__link:hover,
-.site-footer__link:focus {
-  color: #4a213b;
-  text-decoration: underline;
-  text-underline-offset: 3px;
 }
 
 .site-footer__bottom {
