@@ -5,6 +5,7 @@ const engine = require("ejs-mate");
 
 const userRoutes = require("./routes/userRoutes");
 const vehicleRoutes = require("./routes/vehicleRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 
 const app = express();
 
@@ -31,6 +32,7 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use("/admin/vehicles", adminRoutes);
 app.use("/vehicles", vehicleRoutes);
 app.use("/", userRoutes);
 
