@@ -14,7 +14,7 @@
   <% } else { %>
     <div class="vehicle-grid">
       <% vehicles.forEach((vehicle) => { %>
-        <article class="vehicle-card">
+        <a class="vehicle-card vehicle-card--link" href="/vehicles/<%= vehicle._id %>">
           <header class="vehicle-card__header">
             <h2 class="vehicle-card__title">
               <%= vehicle.year ? vehicle.year + " " : "" %><%= vehicle.make %> <%= vehicle.model %>
@@ -33,7 +33,7 @@
               <dd><%= vehicle.currentMileage.toLocaleString() %> mi</dd>
             </div>
           </dl>
-        </article>
+        </a>
       <% }) %>
     </div>
   <% } %>

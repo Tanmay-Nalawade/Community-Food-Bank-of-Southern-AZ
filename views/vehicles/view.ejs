@@ -1,0 +1,64 @@
+<% layout('layouts/boilerplate') %>
+
+<section class="vehicle-detail">
+  <a class="vehicle-detail__back" href="/vehicles">&larr; Back to all vehicles</a>
+
+  <header class="vehicle-detail__header">
+    <div>
+      <h1>
+        <%= vehicle.year ? vehicle.year + " " : "" %><%= vehicle.make %> <%= vehicle.model %>
+      </h1>
+      <p class="vehicle-detail__plate"><%= vehicle.licensePlate %></p>
+    </div>
+    <span class="vehicle-card__status vehicle-card__status--<%= vehicle.status.toLowerCase().replace(/\s+/g, '-') %>">
+      <%= vehicle.status %>
+    </span>
+  </header>
+
+  <div class="vehicle-detail__grid">
+    <dl class="vehicle-detail__card">
+      <div>
+        <dt>Make</dt>
+        <dd><%= vehicle.make %></dd>
+      </div>
+      <div>
+        <dt>Model</dt>
+        <dd><%= vehicle.model %></dd>
+      </div>
+      <div>
+        <dt>Year</dt>
+        <dd><%= vehicle.year || "—" %></dd>
+      </div>
+      <div>
+        <dt>License plate</dt>
+        <dd><%= vehicle.licensePlate %></dd>
+      </div>
+      <div>
+        <dt>Current mileage</dt>
+        <dd><%= vehicle.currentMileage.toLocaleString() %> mi</dd>
+      </div>
+      <div>
+        <dt>KeyCafe key ID</dt>
+        <dd><%= vehicle.keyCafeKeyId %></dd>
+      </div>
+    </dl>
+
+    <div class="vehicle-detail__card">
+      <h2 class="vehicle-detail__section-title">Active issues</h2>
+      <% if (!vehicle.activeIssues.length) { %>
+        <p class="vehicle-detail__empty">No reported issues.</p>
+      <% } else { %>
+        <ul class="vehicle-detail__issues">
+          <% vehicle.activeIssues.forEach((issue) => { %>
+            <li>
+              <span class="vehicle-detail__issue-date">
+                <%= new Date(issue.reportedAt).toLocaleDateString() %>
+              </span>
+              <%= issue.description %>
+            </li>
+          <% }) %>
+        </ul>
+      <% } %>
+    </div>
+  </div>
+</section>

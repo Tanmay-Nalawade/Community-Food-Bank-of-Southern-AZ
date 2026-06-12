@@ -85,6 +85,20 @@ body {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
+.vehicle-card--link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.vehicle-card--link:hover,
+.vehicle-card--link:focus {
+  border-color: #632c4f;
+  box-shadow: 0 4px 12px rgba(99, 44, 79, 0.12);
+  transform: translateY(-2px);
+}
+
 .vehicle-card__header {
   display: flex;
   justify-content: space-between;
@@ -158,6 +172,110 @@ body {
   margin: 0;
   font-size: 0.95rem;
   color: #333;
+}
+
+.vehicle-detail__back {
+  display: inline-block;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 700;
+  color: #632c4f;
+  text-decoration: none;
+  margin-bottom: 1.25rem;
+}
+
+.vehicle-detail__back:hover,
+.vehicle-detail__back:focus {
+  color: #4a213b;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.vehicle-detail__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.vehicle-detail__plate {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: #6b6b6b;
+  margin: 0.35rem 0 0;
+}
+
+.vehicle-detail__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+.vehicle-detail__card {
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1.25rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.vehicle-detail__card div {
+  display: grid;
+  gap: 0.15rem;
+  margin-bottom: 0.85rem;
+}
+
+.vehicle-detail__card div:last-child {
+  margin-bottom: 0;
+}
+
+.vehicle-detail__card dt {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #888;
+  margin: 0;
+}
+
+.vehicle-detail__card dd {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.vehicle-detail__section-title {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #632c4f;
+  margin: 0 0 1rem;
+}
+
+.vehicle-detail__empty {
+  color: #666;
+  font-style: italic;
+  margin: 0;
+}
+
+.vehicle-detail__issues {
+  margin: 0;
+  padding-left: 1.25rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.vehicle-detail__issues li {
+  color: #333;
+  line-height: 1.4;
+}
+
+.vehicle-detail__issue-date {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #888;
+  margin-bottom: 0.15rem;
 }
 
 .account-page__lead {
