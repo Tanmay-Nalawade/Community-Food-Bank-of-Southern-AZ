@@ -3,24 +3,27 @@
 <section class="vehicles-page">
   <div class="vehicles-page__header">
     <div>
-      <h1>All Vehicles</h1>
-      <p class="vehicles-page__lead">Browse available motor pool vehicles.</p>
+      <h1>Available Vehicles</h1>
+      <p class="vehicles-page__lead">
+        Showing vehicles available for <strong><%= bookingLabel %></strong>.
+      </p>
+      <a class="vehicles-page__change-date" href="/">Change date or time</a>
     </div>
     <a class="vehicles-page__add-btn" href="/admin/vehicles/add">Add Vehicle</a>
   </div>
 
   <% if (!vehicles.length) { %>
-    <p class="vehicles-page__empty">No vehicles found.</p>
+    <p class="vehicles-page__empty">No vehicles are available for this time slot.</p>
   <% } else { %>
     <div class="vehicle-grid">
       <% vehicles.forEach((vehicle) => { %>
-        <a class="vehicle-card vehicle-card--link" href="/vehicles/<%= vehicle._id %>">
+        <a class="vehicle-card vehicle-card--link" href="/vehicles/<%= vehicle._id %>?<%= queryString %>">
           <header class="vehicle-card__header">
             <h2 class="vehicle-card__title">
               <%= vehicle.year ? vehicle.year + " " : "" %><%= vehicle.make %> <%= vehicle.model %>
             </h2>
-            <span class="vehicle-card__status vehicle-card__status--<%= vehicle.status.toLowerCase().replace(/\s+/g, '-') %>">
-              <%= vehicle.status %>
+            <span class="vehicle-card__status vehicle-card__status--available">
+              Available
             </span>
           </header>
           <dl class="vehicle-card__details">

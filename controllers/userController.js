@@ -1,5 +1,14 @@
 exports.home = (req, res) => {
-  res.render("home", { title: "Home" });
+  const today = new Date();
+  const minDate = today.toISOString().split("T")[0];
+
+  res.render("home", {
+    title: "Home",
+    minDate,
+    date: req.query.date || "",
+    startTime: req.query.startTime || "08:00",
+    endTime: req.query.endTime || "17:00",
+  });
 };
 
 exports.account = (req, res) => {

@@ -33,7 +33,24 @@ body {
 }
 
 .vehicles-page__lead {
-  margin-bottom: 0;
+  margin-bottom: 0.35rem;
+}
+
+.vehicles-page__change-date {
+  display: inline-block;
+  margin-top: 0.5rem;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #632c4f;
+  text-decoration: none;
+}
+
+.vehicles-page__change-date:hover,
+.vehicles-page__change-date:focus {
+  color: #4a213b;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .vehicles-page__header {
@@ -181,6 +198,12 @@ body {
   color: #632c4f;
   text-decoration: none;
   margin-bottom: 1.25rem;
+}
+
+.vehicle-detail__booking-window {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: #444;
+  margin: 0 0 1.25rem;
 }
 
 .vehicle-detail__back:hover,

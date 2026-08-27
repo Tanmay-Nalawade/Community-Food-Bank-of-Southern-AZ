@@ -1,47 +1,57 @@
 const Vehicle = require("../models/vehicle");
+const {
+  FLEET_UNAVAILABLE,
+  parseBookingWindow,
+  getBookedVehicleIds,
+  formatBookingLabel,
+  toQueryString,
+} = require("../utils/availability");
 
-// To display the list of all vehicles
 exports.index = async (req, res) => {
-  const vehicles = await Vehicle.find({}).sort({ make: 1, model: 1 });
+  const booking = parseBookingWindow(
+    req.query.date,
+    req.query.startTime,
+    req.query.endTime,
+  );
+
+  if (!booking) {
+    return res.redirect("/");
+  }
+
+  const bookedVehicleIds = await getBookedVehicleIds(booking.start, booking.end);
+
+  const vehicles = await Vehicle.find({
+    status: { $nin: FLEET_UNAVAILABLE },
+    _id: { $nin: bookedVehicleIds },
+  }).sort({ make: 1, model: 1 });
+
   res.render("vehicles/index", {
-    title: "Vehicles",
+    title: "Available Vehicles",
     vehicles,
+    booking,
+    bookingLabel: formatBookingLabel(booking),
+    queryString: toQueryString(booking),
   });
 };
 
-
-// To get the form for adding a new vehicle
-exports.getAddVehicle = (req, res) => {
-  res.render("vehicles/add", {
-    title: "Add Vehicle",
-  });
-}
-
-// To handle the submission of the new vehicle form
-exports.postAddVehicle = async (req, res) => {
-  const { make, model, year, licensePlate, keyCafeKeyId, currentMileage } = req.body;
-  const newVehicle = new Vehicle({
-    make,
-    model,
-    year,
-    licensePlate,
-    keyCafeKeyId,
-    currentMileage,
-  });
-  await newVehicle.save();
-  res.redirect("/vehicles");
-};
-
-
-// To view details of a specific vehicle
 exports.viewVehicle = async (req, res) => {
-  const vehicleId = req.params.id;
-  const vehicle = await Vehicle.findById(vehicleId);
+  const vehicle = await Vehicle.findById(req.params.id);
+
   if (!vehicle) {
     return res.status(404).send("Vehicle not found");
   }
+
+  const booking = parseBookingWindow(
+    req.query.date,
+    req.query.startTime,
+    req.query.endTime,
+  );
+
   res.render("vehicles/view", {
     title: `${vehicle.make} ${vehicle.model}`,
     vehicle,
+    booking,
+    bookingLabel: booking ? formatBookingLabel(booking) : null,
+    queryString: booking ? toQueryString(booking) : "",
   });
 };

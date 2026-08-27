@@ -18,6 +18,44 @@
   max-width: 560px;
 }
 
+.auth-card--booking {
+  max-width: 720px;
+  padding: 2.75rem 3rem 3rem;
+}
+
+.auth-card--booking .auth-card__title {
+  font-size: 2.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.auth-card--booking .auth-card__subtitle {
+  font-size: 1.1rem;
+  margin-bottom: 2.25rem;
+}
+
+.auth-card--booking .auth-form {
+  gap: 1.5rem;
+}
+
+.auth-card--booking .auth-form__label {
+  font-size: 0.9rem;
+}
+
+.auth-card--booking .auth-form__input {
+  font-size: 1.1rem;
+  padding: 0.85rem 1rem;
+}
+
+.auth-card--booking .auth-form__submit {
+  font-size: 1.1rem;
+  padding: 0.95rem 1.5rem;
+  margin-top: 0.75rem;
+}
+
+.auth-page--booking {
+  padding: 3rem 0 4rem;
+}
+
 .auth-card__title {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 1.75rem;
@@ -127,5 +165,13 @@
 
   .auth-card {
     padding: 1.5rem 1.25rem 1.75rem;
+  }
+
+  .auth-card--booking {
+    padding: 2rem 1.5rem 2.25rem;
+  }
+
+  .auth-card--booking .auth-card__title {
+    font-size: 1.85rem;
   }
 }

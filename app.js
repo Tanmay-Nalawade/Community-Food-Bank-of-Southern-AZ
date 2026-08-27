@@ -20,7 +20,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride("_method"));
 
 app.use((req, res, next) => {
-  if (req.path === "/vehicles" || req.path.startsWith("/vehicles/")) {
+  if (
+    req.path === "/" ||
+    req.path === "/vehicles" ||
+    req.path.startsWith("/vehicles/")
+  ) {
     res.locals.activeNav = "vehicles";
   } else if (
     req.path === "/account" ||
