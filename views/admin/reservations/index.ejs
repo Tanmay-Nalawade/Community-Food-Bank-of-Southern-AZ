@@ -1,0 +1,68 @@
+<% layout('layouts/boilerplate') %>
+
+<section class="admin-page">
+  <div class="vehicles-page__header">
+    <div>
+      <h1>Manage Reservations</h1>
+      <p class="vehicles-page__lead">Review, approve, edit, or delete staff booking requests.</p>
+    </div>
+    <a class="vehicles-page__add-btn" href="/admin/vehicles/add">Add Vehicle</a>
+  </div>
+
+  <% if (!reservations.length) { %>
+    <p class="vehicles-page__empty">No reservations to review.</p>
+  <% } else { %>
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Staff</th>
+            <th>Vehicle</th>
+            <th>When</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% reservations.forEach((reservation) => { %>
+            <tr>
+              <td>
+                <%= reservation.userId.firstName %> <%= reservation.userId.lastName %><br />
+                <span class="admin-table__subtext"><%= reservation.userId.email %></span>
+              </td>
+              <td>
+                <%= reservation.vehicleId.year ? reservation.vehicleId.year + " " : "" %>
+                <%= reservation.vehicleId.make %> <%= reservation.vehicleId.model %><br />
+                <span class="admin-table__subtext"><%= reservation.vehicleId.licensePlate %></span>
+              </td>
+              <td>
+                <%= new Date(reservation.requestedStartTime).toLocaleString() %>
+                &ndash;
+                <%= new Date(reservation.requestedEndTime).toLocaleString() %>
+              </td>
+              <td>
+                <span class="status-pill status-pill--<%= reservation.status.toLowerCase() %>">
+                  <%= reservation.status %>
+                </span>
+              </td>
+              <td class="admin-table__actions">
+                <% if (reservation.status === "Pending") { %>
+                  <form action="/admin/reservations/<%= reservation._id %>/approve" method="POST">
+                    <button class="admin-table__btn admin-table__btn--approve" type="submit">Approve</button>
+                  </form>
+                  <form action="/admin/reservations/<%= reservation._id %>/deny" method="POST">
+                    <button class="admin-table__btn admin-table__btn--deny" type="submit">Deny</button>
+                  </form>
+                <% } %>
+                <a class="admin-table__btn admin-table__btn--edit" href="/admin/reservations/<%= reservation._id %>/edit">Edit</a>
+                <form action="/admin/reservations/<%= reservation._id %>?_method=DELETE" method="POST">
+                  <button class="admin-table__btn admin-table__btn--delete" type="submit">Delete</button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</section>

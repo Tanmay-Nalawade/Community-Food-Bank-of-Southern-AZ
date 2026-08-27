@@ -67,4 +67,40 @@
       <% } %>
     </div>
   </div>
+
+  <% if (booking) { %>
+    <div class="vehicle-detail__card booking-request-card">
+      <h2 class="vehicle-detail__section-title">Request this vehicle</h2>
+
+      <% if (!currentUser) { %>
+        <p class="vehicle-detail__empty">
+          Please <a href="/login">log in</a> as a staff member to submit a booking request.
+        </p>
+      <% } else if (currentUser.role === "Admin") { %>
+        <p class="vehicle-detail__empty">
+          Admins manage reservations from the
+          <a href="/admin/reservations">admin dashboard</a>.
+        </p>
+      <% } else { %>
+        <form class="auth-form" action="/reservations/vehicles/<%= vehicle._id %>" method="POST">
+          <input type="hidden" name="date" value="<%= booking.date %>" />
+          <input type="hidden" name="startTime" value="<%= booking.startTime %>" />
+          <input type="hidden" name="endTime" value="<%= booking.endTime %>" />
+
+          <div class="auth-form__group">
+            <label class="auth-form__label" for="staffNotes">Notes for admin (optional)</label>
+            <textarea
+              class="auth-form__input booking-request-card__textarea"
+              id="staffNotes"
+              name="staffNotes"
+              rows="3"
+              placeholder="Purpose of trip, passengers, etc."
+            ></textarea>
+          </div>
+
+          <button class="auth-form__submit" type="submit">Submit booking request</button>
+        </form>
+      <% } %>
+    </div>
+  <% } %>
 </section>

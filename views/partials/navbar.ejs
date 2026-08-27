@@ -15,6 +15,25 @@
       >
         Book a Vehicle
       </a>
+
+      <% if (currentUser && currentUser.role === "Staff") { %>
+        <a
+          class="site-navbar__link<%= locals.activeNav === 'account' ? ' site-navbar__link--active' : '' %>"
+          href="/reservations/mine"
+        >
+          My Reservations
+        </a>
+      <% } %>
+
+      <% if (currentUser && currentUser.role === "Admin") { %>
+        <a
+          class="site-navbar__link<%= locals.activeNav === 'admin' ? ' site-navbar__link--active' : '' %>"
+          href="/admin/reservations"
+        >
+          Admin
+        </a>
+      <% } %>
+
       <a
         class="site-navbar__btn<%= locals.activeNav === 'account' ? ' site-navbar__btn--active' : '' %>"
         href="/account"

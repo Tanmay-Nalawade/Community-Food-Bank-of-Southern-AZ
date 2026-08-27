@@ -9,7 +9,9 @@
       </p>
       <a class="vehicles-page__change-date" href="/">Change date or time</a>
     </div>
-    <a class="vehicles-page__add-btn" href="/admin/vehicles/add">Add Vehicle</a>
+    <% if (currentUser && currentUser.role === "Admin") { %>
+      <a class="vehicles-page__add-btn" href="/admin/vehicles/add">Add Vehicle</a>
+    <% } %>
   </div>
 
   <% if (!vehicles.length) { %>

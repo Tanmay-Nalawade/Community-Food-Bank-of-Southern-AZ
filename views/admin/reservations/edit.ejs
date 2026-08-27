@@ -1,0 +1,93 @@
+<% layout('layouts/boilerplate') %>
+
+<section class="admin-page">
+  <a class="vehicle-detail__back" href="/admin/reservations">&larr; Back to reservations</a>
+
+  <h1>Edit Reservation</h1>
+  <p class="vehicles-page__lead">
+    <%= reservation.userId.firstName %> <%= reservation.userId.lastName %> &middot;
+    <%= reservation.vehicleId.make %> <%= reservation.vehicleId.model %>
+  </p>
+
+  <div class="auth-card auth-card--wide admin-edit-card">
+    <form class="auth-form" action="/admin/reservations/<%= reservation._id %>?_method=PUT" method="POST">
+      <div class="auth-form__group">
+        <label class="auth-form__label" for="vehicleId">Vehicle</label>
+        <select class="auth-form__input" id="vehicleId" name="vehicleId" required>
+          <% vehicles.forEach((vehicle) => { %>
+            <option
+              value="<%= vehicle._id %>"
+              <%= String(vehicle._id) === String(reservation.vehicleId._id) ? "selected" : "" %>
+            >
+              <%= vehicle.year ? vehicle.year + " " : "" %><%= vehicle.make %> <%= vehicle.model %> (<%= vehicle.licensePlate %>)
+            </option>
+          <% }) %>
+        </select>
+      </div>
+
+      <div class="auth-form__group">
+        <label class="auth-form__label" for="date">Date</label>
+        <input
+          class="auth-form__input"
+          type="date"
+          id="date"
+          name="date"
+          value="<%= new Date(reservation.requestedStartTime).toISOString().split('T')[0] %>"
+          required
+        />
+      </div>
+
+      <div class="auth-form__row">
+        <div class="auth-form__group">
+          <label class="auth-form__label" for="startTime">Start time</label>
+          <input
+            class="auth-form__input"
+            type="time"
+            id="startTime"
+            name="startTime"
+            value="<%= new Date(reservation.requestedStartTime).toTimeString().slice(0, 5) %>"
+            required
+          />
+        </div>
+        <div class="auth-form__group">
+          <label class="auth-form__label" for="endTime">End time</label>
+          <input
+            class="auth-form__input"
+            type="time"
+            id="endTime"
+            name="endTime"
+            value="<%= new Date(reservation.requestedEndTime).toTimeString().slice(0, 5) %>"
+            required
+          />
+        </div>
+      </div>
+
+      <div class="auth-form__group">
+        <label class="auth-form__label" for="status">Status</label>
+        <select class="auth-form__input" id="status" name="status" required>
+          <% ["Pending", "Reserved", "Active", "Completed", "Cancelled", "Denied"].forEach((status) => { %>
+            <option value="<%= status %>" <%= reservation.status === status ? "selected" : "" %>><%= status %></option>
+          <% }) %>
+        </select>
+      </div>
+
+      <div class="auth-form__group">
+        <label class="auth-form__label" for="adminNotes">Admin notes</label>
+        <textarea
+          class="auth-form__input booking-request-card__textarea"
+          id="adminNotes"
+          name="adminNotes"
+          rows="3"
+        ><%= reservation.adminNotes || "" %></textarea>
+      </div>
+
+      <% if (reservation.staffNotes) { %>
+        <p class="admin-edit-card__staff-notes">
+          <strong>Staff notes:</strong> <%= reservation.staffNotes %>
+        </p>
+      <% } %>
+
+      <button class="auth-form__submit" type="submit">Save changes</button>
+    </form>
+  </div>
+</section>

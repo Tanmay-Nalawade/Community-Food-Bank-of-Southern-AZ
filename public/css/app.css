@@ -371,3 +371,130 @@ body {
   color: #6b6b6b;
   font-size: 0.95rem;
 }
+
+.booking-request-card {
+  margin-top: 1.5rem;
+}
+
+.booking-request-card__textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.admin-table-wrap {
+  overflow-x: auto;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+  vertical-align: top;
+}
+
+.admin-table th {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #632c4f;
+  background: #fbf7f9;
+}
+
+.admin-table__subtext {
+  color: #6b6b6b;
+  font-size: 0.85rem;
+}
+
+.admin-table__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.admin-table__btn {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border-radius: 6px;
+  padding: 0.45rem 0.75rem;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+}
+
+.admin-table__btn--approve {
+  background: #2e7d32;
+  color: #fff;
+}
+
+.admin-table__btn--deny,
+.admin-table__btn--delete {
+  background: #c62828;
+  color: #fff;
+}
+
+.admin-table__btn--edit {
+  background: #632c4f;
+  color: #fff;
+  display: inline-block;
+}
+
+.status-pill {
+  display: inline-block;
+  padding: 0.25rem 0.55rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.status-pill--pending {
+  background: #fff8e1;
+  color: #f57f17;
+}
+
+.status-pill--reserved {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.status-pill--active {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status-pill--completed,
+.status-pill--cancelled,
+.status-pill--denied {
+  background: #f0f0f0;
+  color: #555;
+}
+
+.admin-edit-card {
+  margin-top: 1.5rem;
+}
+
+.admin-edit-card__staff-notes {
+  color: #444;
+  margin: 0;
+}
+
+.reservations-page__lead,
+.admin-page .vehicles-page__lead {
+  margin-bottom: 1.5rem;
+}
+
+.account-page__actions form {
+  margin: 0;
+}

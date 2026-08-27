@@ -11,9 +11,15 @@ const reservationSchema = new Schema(
 
     status: {
       type: String,
-      enum: ["Reserved", "Active", "Completed", "Cancelled"],
-      default: "Reserved",
+      enum: ["Pending", "Reserved", "Active", "Completed", "Cancelled", "Denied"],
+      default: "Pending",
     },
+
+    staffNotes: { type: String, default: "" },
+    adminNotes: { type: String, default: "" },
+
+    reviewedBy: { type: Schema.Types.ObjectId, ref: "User" },
+    reviewedAt: { type: Date },
 
     keyCafeAccess: {
       pinCode: { type: String },

@@ -2,10 +2,30 @@
 
 <section class="account-page">
   <h1>My Account</h1>
-  <p class="account-page__lead">Manage your profile and reservations.</p>
 
-  <div class="account-page__actions">
-    <a class="account-page__btn account-page__btn--primary" href="/login">Log In</a>
-    <a class="account-page__btn account-page__btn--secondary" href="/register">Sign Up</a>
-  </div>
+  <% if (!currentUser) { %>
+    <p class="account-page__lead">Log in to submit booking requests and track your reservations.</p>
+    <div class="account-page__actions">
+      <a class="account-page__btn account-page__btn--primary" href="/login">Log In</a>
+      <a class="account-page__btn account-page__btn--secondary" href="/register">Sign Up</a>
+    </div>
+  <% } else { %>
+    <p class="account-page__lead">
+      Signed in as <strong><%= currentUser.firstName %> <%= currentUser.lastName %></strong>
+      (<%= currentUser.role %>)
+    </p>
+
+    <div class="account-page__actions">
+      <% if (currentUser.role === "Staff") { %>
+        <a class="account-page__btn account-page__btn--primary" href="/reservations/mine">My Reservations</a>
+      <% } %>
+      <% if (currentUser.role === "Admin") { %>
+        <a class="account-page__btn account-page__btn--primary" href="/admin/reservations">Admin Dashboard</a>
+        <a class="account-page__btn account-page__btn--secondary" href="/admin/vehicles/add">Add Vehicle</a>
+      <% } %>
+      <form action="/logout" method="POST">
+        <button class="account-page__btn account-page__btn--secondary" type="submit">Log Out</button>
+      </form>
+    </div>
+  <% } %>
 </section>

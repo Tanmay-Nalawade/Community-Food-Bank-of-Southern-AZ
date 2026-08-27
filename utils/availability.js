@@ -23,7 +23,7 @@ function parseBookingWindow(date, startTime, endTime) {
 
 async function getBookedVehicleIds(start, end) {
   return Reservation.find({
-    status: { $in: ["Reserved", "Active"] },
+    status: { $in: ["Pending", "Reserved", "Active"] },
     requestedStartTime: { $lt: end },
     requestedEndTime: { $gt: start },
   }).distinct("vehicleId");
