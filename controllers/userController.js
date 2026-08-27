@@ -13,18 +13,6 @@ exports.home = (req, res) => {
   });
 };
 
-exports.account = (req, res) => {
-  if (!res.locals.currentUser) {
-    return res.render("account", { title: "My Account", activeNav: "account" });
-  }
-
-  res.render("account", {
-    title: "My Account",
-    activeNav: "account",
-    user: res.locals.currentUser,
-  });
-};
-
 exports.login = async (req, res) => {
   if (req.method === "GET") {
     return res.render("users/login", {

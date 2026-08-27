@@ -16,30 +16,37 @@
         Book a Vehicle
       </a>
 
-      <% if (currentUser && currentUser.role === "Staff") { %>
-        <a
-          class="site-navbar__link<%= locals.activeNav === 'account' ? ' site-navbar__link--active' : '' %>"
-          href="/reservations/mine"
-        >
-          My Reservations
-        </a>
-      <% } %>
+      <details class="site-navbar__account">
+        <summary class="site-navbar__btn site-navbar__account-toggle">
+          My Account
+        </summary>
+        <div class="site-navbar__dropdown">
+          <% if (!currentUser) { %>
+            <a class="site-navbar__dropdown-link" href="/login">Log In</a>
+            <a class="site-navbar__dropdown-link" href="/register">Sign Up</a>
+          <% } else { %>
+            <p class="site-navbar__dropdown-user">
+              <%= currentUser.firstName %> <%= currentUser.lastName %>
+              <span><%= currentUser.role %></span>
+            </p>
 
-      <% if (currentUser && currentUser.role === "Admin") { %>
-        <a
-          class="site-navbar__link<%= locals.activeNav === 'admin' ? ' site-navbar__link--active' : '' %>"
-          href="/admin/reservations"
-        >
-          Admin
-        </a>
-      <% } %>
+            <% if (currentUser.role === "Staff") { %>
+              <a class="site-navbar__dropdown-link" href="/reservations/mine">My Reservations</a>
+            <% } %>
 
-      <a
-        class="site-navbar__btn<%= locals.activeNav === 'account' ? ' site-navbar__btn--active' : '' %>"
-        href="/account"
-      >
-        My Account
-      </a>
+            <% if (currentUser.role === "Admin") { %>
+              <a class="site-navbar__dropdown-link" href="/admin/reservations">Admin Dashboard</a>
+              <a class="site-navbar__dropdown-link" href="/admin/vehicles/add">Add Vehicle</a>
+            <% } %>
+
+            <form class="site-navbar__logout-form" action="/logout" method="POST">
+              <button class="site-navbar__dropdown-link site-navbar__dropdown-link--button" type="submit">
+                Log Out
+              </button>
+            </form>
+          <% } %>
+        </div>
+      </details>
     </nav>
   </div>
 </header>

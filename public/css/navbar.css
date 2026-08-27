@@ -102,6 +102,87 @@
   border-color: var(--cfb-maroon-hover);
 }
 
+.site-navbar__account {
+  position: relative;
+}
+
+.site-navbar__account-toggle {
+  list-style: none;
+  cursor: pointer;
+}
+
+.site-navbar__account-toggle::-webkit-details-marker {
+  display: none;
+}
+
+.site-navbar__account[open] .site-navbar__account-toggle {
+  background: var(--cfb-maroon-hover);
+  border-color: var(--cfb-maroon-hover);
+}
+
+.site-navbar__dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.5rem);
+  min-width: 220px;
+  background: var(--cfb-white);
+  border: 1px solid #e8e0e4;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(99, 44, 79, 0.12);
+  padding: 0.5rem 0;
+  z-index: 100;
+}
+
+.site-navbar__dropdown-user {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--cfb-maroon);
+  margin: 0;
+  padding: 0.65rem 1rem 0.5rem;
+  border-bottom: 1px solid #eee5ea;
+}
+
+.site-navbar__dropdown-user span {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--cfb-grey);
+  margin-top: 0.15rem;
+}
+
+.site-navbar__dropdown-link {
+  display: block;
+  width: 100%;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--cfb-maroon);
+  text-decoration: none;
+  padding: 0.65rem 1rem;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.site-navbar__dropdown-link:hover,
+.site-navbar__dropdown-link:focus {
+  background: #fbf7f9;
+  color: var(--cfb-maroon-hover);
+  text-decoration: none;
+}
+
+.site-navbar__dropdown-link--button {
+  border-top: 1px solid #eee5ea;
+  margin-top: 0.25rem;
+  padding-top: 0.85rem;
+}
+
+.site-navbar__logout-form {
+  margin: 0;
+}
+
 @media (max-width: 640px) {
   .site-navbar__inner {
     flex-direction: column;
@@ -121,5 +202,17 @@
   .site-navbar__nav {
     width: 100%;
     justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .site-navbar__account {
+    width: 100%;
+  }
+
+  .site-navbar__dropdown {
+    position: static;
+    width: 100%;
+    margin-top: 0.5rem;
+    box-shadow: none;
   }
 }
