@@ -1,4 +1,16 @@
 const User = require("../models/user");
+const Reservation = require("../models/reservation");
+
+async function getLandingPath(userId) {
+  const now = new Date();
+  const hasBookings = await Reservation.exists({
+    userId,
+    status: { $in: ["Pending", "Reserved", "Active"] },
+    requestedEndTime: { $gt: now },
+  });
+
+  return hasBookings ? "/reservations/mine" : "/";
+}
 
 exports.home = (req, res) => {
   const today = new Date();
@@ -28,9 +40,14 @@ exports.login = async (req, res) => {
   }
 
   req.session.userId = user._id;
-  const redirectTo = req.session.returnTo || "/";
+  const redirectTo = req.session.returnTo;
   req.session.returnTo = null;
-  res.redirect(redirectTo);
+
+  if (redirectTo && redirectTo !== "/") {
+    return res.redirect(redirectTo);
+  }
+
+  res.redirect(await getLandingPath(user._id));
 };
 
 exports.register = async (req, res) => {
@@ -56,7 +73,7 @@ exports.register = async (req, res) => {
   });
 
   req.session.userId = user._id;
-  res.redirect("/");
+  res.redirect(await getLandingPath(user._id));
 };
 
 exports.logout = (req, res) => {
