@@ -22,8 +22,9 @@ const reservationSchema = new Schema(
     reviewedAt: { type: Date },
 
     keyCafeAccess: {
-      pinCode: { type: String },
+      bookingCode: { type: String },
       accessId: { type: String },
+      checkinLink: { type: String },
       keyPickedUpAt: { type: Date },
       keyReturnedAt: { type: Date },
     },

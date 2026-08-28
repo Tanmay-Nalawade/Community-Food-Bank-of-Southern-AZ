@@ -1,6 +1,10 @@
 const Reservation = require("../models/reservation");
 const Vehicle = require("../models/vehicle");
 const { parseBookingWindow, formatBookingLabel } = require("../utils/availability");
+const {
+  grantReservationAccess,
+  revokeReservationAccess,
+} = require("../services/reservationKeycafe");
 
 exports.listReservations = async (req, res) => {
   const reservations = await Reservation.find({})
@@ -35,7 +39,10 @@ exports.editReservation = async (req, res) => {
 };
 
 exports.updateReservation = async (req, res) => {
-  const reservation = await Reservation.findById(req.params.id);
+  const reservation = await Reservation.findById(req.params.id)
+    .populate("userId", "firstName lastName email")
+    .populate("vehicleId", "make model keyCafeKeyId");
+
   if (!reservation) {
     return res.status(404).send("Reservation not found.");
   }
@@ -50,32 +57,62 @@ exports.updateReservation = async (req, res) => {
     return res.status(400).send("Invalid booking time.");
   }
 
+  const previousStatus = reservation.status;
+  const nextStatus = req.body.status;
+
   reservation.vehicleId = req.body.vehicleId;
   reservation.requestedStartTime = booking.start;
   reservation.requestedEndTime = booking.end;
-  reservation.status = req.body.status;
+  reservation.status = nextStatus;
   reservation.adminNotes = req.body.adminNotes || "";
   reservation.reviewedBy = res.locals.currentUser._id;
   reservation.reviewedAt = new Date();
+
+  try {
+    if (nextStatus === "Reserved" && previousStatus !== "Reserved") {
+      await grantReservationAccess(reservation);
+    } else if (
+      ["Denied", "Cancelled"].includes(nextStatus) &&
+      reservation.keyCafeAccess?.accessId
+    ) {
+      await revokeReservationAccess(reservation);
+    }
+  } catch (error) {
+    console.error("KeyCafe access sync failed:", error);
+    return res
+      .status(502)
+      .send("Could not update KeyCafe access for this reservation.");
+  }
 
   await reservation.save();
   res.redirect("/admin/reservations");
 };
 
 exports.approveReservation = async (req, res) => {
-  const reservation = await Reservation.findById(req.params.id);
+  const reservation = await Reservation.findById(req.params.id)
+    .populate("userId", "firstName lastName email")
+    .populate("vehicleId", "make model keyCafeKeyId");
+
   if (!reservation) {
     return res.status(404).send("Reservation not found.");
   }
 
-  reservation.status = "Reserved";
-  reservation.reviewedBy = res.locals.currentUser._id;
-  reservation.reviewedAt = new Date();
-  await reservation.save();
+  try {
+    await grantReservationAccess(reservation);
+    reservation.status = "Reserved";
+    reservation.reviewedBy = res.locals.currentUser._id;
+    reservation.reviewedAt = new Date();
+    await reservation.save();
 
-  await Vehicle.findByIdAndUpdate(reservation.vehicleId, {
-    status: "Reserved",
-  });
+    await Vehicle.findByIdAndUpdate(reservation.vehicleId._id, {
+      status: "Reserved",
+    });
+  } catch (error) {
+    console.error("KeyCafe access creation failed:", error);
+    return res
+      .status(502)
+      .send("Could not create KeyCafe access for this reservation. Check your KeyCafe settings and try again.");
+  }
 
   res.redirect("/admin/reservations");
 };
@@ -84,6 +121,12 @@ exports.denyReservation = async (req, res) => {
   const reservation = await Reservation.findById(req.params.id);
   if (!reservation) {
     return res.status(404).send("Reservation not found.");
+  }
+
+  try {
+    await revokeReservationAccess(reservation);
+  } catch (error) {
+    console.error("KeyCafe access cancellation failed:", error);
   }
 
   reservation.status = "Denied";
@@ -96,6 +139,17 @@ exports.denyReservation = async (req, res) => {
 };
 
 exports.deleteReservation = async (req, res) => {
+  const reservation = await Reservation.findById(req.params.id);
+
+  if (reservation) {
+    try {
+      await revokeReservationAccess(reservation);
+      await reservation.save();
+    } catch (error) {
+      console.error("KeyCafe access cancellation failed:", error);
+    }
+  }
+
   await Reservation.findByIdAndDelete(req.params.id);
   res.redirect("/admin/reservations");
 };

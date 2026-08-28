@@ -5,6 +5,7 @@
         <th>Vehicle</th>
         <th>When</th>
         <th>Status</th>
+        <th>Key Access</th>
         <th>Notes</th>
       </tr>
     </thead>
@@ -24,6 +25,21 @@
             <span class="status-pill status-pill--<%= reservation.status.toLowerCase() %>">
               <%= reservation.status %>
             </span>
+          </td>
+          <td>
+            <% if (reservation.keyCafeAccess?.bookingCode && ["Reserved", "Active"].includes(reservation.status)) { %>
+              <strong class="booking-code"><%= reservation.keyCafeAccess.bookingCode %></strong>
+              <% if (reservation.keyCafeAccess.checkinLink) { %>
+                <br />
+                <a href="<%= reservation.keyCafeAccess.checkinLink %>" target="_blank" rel="noopener noreferrer">
+                  Open check-in link
+                </a>
+              <% } %>
+            <% } else if (reservation.status === "Pending") { %>
+              <span class="booking-code booking-code--pending">Pending approval</span>
+            <% } else { %>
+              —
+            <% } %>
           </td>
           <td><%= reservation.staffNotes || "—" %></td>
         </tr>

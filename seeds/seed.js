@@ -145,6 +145,10 @@ async function seed() {
       requestedStartTime: setTime(tomorrow, 9, 0),
       requestedEndTime: setTime(tomorrow, 17, 0),
       status: "Reserved",
+      keyCafeAccess: {
+        bookingCode: "73910482",
+        accessId: "mock-seed-silverado",
+      },
     },
     {
       userId: maria._id,
@@ -153,8 +157,8 @@ async function seed() {
       requestedEndTime: setTime(today, 18, 0),
       status: "Active",
       keyCafeAccess: {
-        pinCode: "482913",
-        accessId: "KC-ACCESS-ODY-01",
+        bookingCode: "48291356",
+        accessId: "mock-seed-odyssey",
         keyPickedUpAt: setTime(today, 8, 15),
       },
       tripLog: {
@@ -168,6 +172,10 @@ async function seed() {
       requestedStartTime: setTime(inThreeDays, 10, 0),
       requestedEndTime: setTime(inThreeDays, 15, 0),
       status: "Reserved",
+      keyCafeAccess: {
+        bookingCode: "91827364",
+        accessId: "mock-seed-escape",
+      },
     },
     {
       userId: maria._id,

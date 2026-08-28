@@ -505,6 +505,21 @@ body {
   margin: 0 0 1rem;
 }
 
+.booking-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+  color: #632c4f;
+}
+
+.booking-code--pending {
+  font-family: inherit;
+  font-size: 0.85rem;
+  letter-spacing: normal;
+  color: #666;
+  font-weight: 600;
+}
+
 .account-page__actions form {
   margin: 0;
 }
