@@ -1,0 +1,33 @@
+<div class="admin-table-wrap">
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>Vehicle</th>
+        <th>When</th>
+        <th>Status</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% reservations.forEach((reservation) => { %>
+        <tr>
+          <td>
+            <%= reservation.vehicleId.year ? reservation.vehicleId.year + " " : "" %>
+            <%= reservation.vehicleId.make %> <%= reservation.vehicleId.model %>
+          </td>
+          <td>
+            <%= new Date(reservation.requestedStartTime).toLocaleString() %>
+            &ndash;
+            <%= new Date(reservation.requestedEndTime).toLocaleString() %>
+          </td>
+          <td>
+            <span class="status-pill status-pill--<%= reservation.status.toLowerCase() %>">
+              <%= reservation.status %>
+            </span>
+          </td>
+          <td><%= reservation.staffNotes || "—" %></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>

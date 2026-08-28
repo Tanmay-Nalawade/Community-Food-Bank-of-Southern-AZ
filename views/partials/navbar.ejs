@@ -16,6 +16,15 @@
         Book a Vehicle
       </a>
 
+      <% if (currentUser) { %>
+        <a
+          class="site-navbar__link<%= locals.activeNav === 'dashboard' ? ' site-navbar__link--active' : '' %>"
+          href="/reservations/mine"
+        >
+          Dashboard
+        </a>
+      <% } %>
+
       <details class="site-navbar__account">
         <summary class="site-navbar__btn site-navbar__account-toggle">
           My Account
@@ -29,10 +38,6 @@
               <%= currentUser.firstName %> <%= currentUser.lastName %>
               <span><%= currentUser.role %></span>
             </p>
-
-            <% if (currentUser.role === "Staff") { %>
-              <a class="site-navbar__dropdown-link" href="/reservations/mine">My Reservations</a>
-            <% } %>
 
             <% if (currentUser.role === "Admin") { %>
               <a class="site-navbar__dropdown-link" href="/admin/reservations">Admin Dashboard</a>

@@ -31,15 +31,30 @@ exports.createRequest = async (req, res) => {
 };
 
 exports.mine = async (req, res) => {
+  const now = new Date();
   const reservations = await Reservation.find({
     userId: res.locals.currentUser._id,
   })
     .populate("vehicleId")
-    .sort({ requestedStartTime: -1 });
+    .sort({ requestedStartTime: 1 });
+
+  const currentBookings = reservations.filter(
+    (reservation) =>
+      ["Reserved", "Active"].includes(reservation.status) &&
+      reservation.requestedStartTime <= now &&
+      reservation.requestedEndTime > now,
+  );
+
+  const upcomingBookings = reservations.filter(
+    (reservation) =>
+      ["Pending", "Reserved", "Active"].includes(reservation.status) &&
+      reservation.requestedStartTime > now,
+  );
 
   res.render("reservations/mine", {
-    title: "My Reservations",
-    reservations,
-    activeNav: "account",
+    title: "My Dashboard",
+    currentBookings,
+    upcomingBookings,
+    activeNav: "dashboard",
   });
 };

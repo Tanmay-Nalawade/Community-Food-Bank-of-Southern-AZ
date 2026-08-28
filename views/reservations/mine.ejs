@@ -1,44 +1,28 @@
 <% layout('layouts/boilerplate') %>
 
 <section class="reservations-page">
-  <h1>My Reservations</h1>
-  <p class="reservations-page__lead">Track your submitted booking requests and their status.</p>
+  <h1>My Dashboard</h1>
+  <p class="reservations-page__lead">View your current and upcoming vehicle bookings.</p>
 
-  <% if (!reservations.length) { %>
-    <p class="vehicles-page__empty">You have not submitted any booking requests yet.</p>
-  <% } else { %>
-    <div class="admin-table-wrap">
-      <table class="admin-table">
-        <thead>
-          <tr>
-            <th>Vehicle</th>
-            <th>When</th>
-            <th>Status</th>
-            <th>Notes</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% reservations.forEach((reservation) => { %>
-            <tr>
-              <td>
-                <%= reservation.vehicleId.year ? reservation.vehicleId.year + " " : "" %>
-                <%= reservation.vehicleId.make %> <%= reservation.vehicleId.model %>
-              </td>
-              <td>
-                <%= new Date(reservation.requestedStartTime).toLocaleString() %>
-                &ndash;
-                <%= new Date(reservation.requestedEndTime).toLocaleString() %>
-              </td>
-              <td>
-                <span class="status-pill status-pill--<%= reservation.status.toLowerCase() %>">
-                  <%= reservation.status %>
-                </span>
-              </td>
-              <td><%= reservation.staffNotes || "—" %></td>
-            </tr>
-          <% }) %>
-        </tbody>
-      </table>
-    </div>
-  <% } %>
+  <section class="dashboard-section">
+    <h2 class="dashboard-section__title">Current Bookings</h2>
+
+    <% if (!currentBookings.length) { %>
+      <p class="vehicles-page__empty">You don't have any current bookings.</p>
+    <% } else { %>
+      <%- include('../partials/booking-table', { reservations: currentBookings }) %>
+    <% } %>
+  </section>
+
+  <section class="dashboard-section">
+    <h2 class="dashboard-section__title">Upcoming Bookings</h2>
+
+    <% if (!upcomingBookings.length) { %>
+      <p class="vehicles-page__empty">
+        You don't have any upcoming bookings. <a href="/">Make a booking</a> if you want.
+      </p>
+    <% } else { %>
+      <%- include('../partials/booking-table', { reservations: upcomingBookings }) %>
+    <% } %>
+  </section>
 </section>

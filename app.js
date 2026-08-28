@@ -38,12 +38,12 @@ app.use((req, res, next) => {
   ) {
     res.locals.activeNav = "vehicles";
   } else if (
-    req.path === "/account" ||
     req.path === "/login" ||
-    req.path === "/register" ||
-    req.path.startsWith("/reservations")
+    req.path === "/register"
   ) {
     res.locals.activeNav = "account";
+  } else if (req.path.startsWith("/reservations")) {
+    res.locals.activeNav = "dashboard";
   } else if (req.path.startsWith("/admin")) {
     res.locals.activeNav = "admin";
   }
