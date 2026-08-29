@@ -1,0 +1,65 @@
+<% layout('layouts/boilerplate') %>
+
+<section class="reservations-page">
+  <a class="vehicle-detail__back" href="/reservations/mine">&larr; Back to my dashboard</a>
+
+  <h1>Edit Booking Request</h1>
+  <p class="reservations-page__lead">
+    <%= reservation.vehicleId.year ? reservation.vehicleId.year + " " : "" %>
+    <%= reservation.vehicleId.make %> <%= reservation.vehicleId.model %>
+    (<%= reservation.vehicleId.licensePlate %>)
+  </p>
+
+  <div class="auth-card auth-card--wide admin-edit-card">
+    <form class="auth-form" action="/reservations/<%= reservation._id %>?_method=PUT" method="POST">
+      <div class="auth-form__group">
+        <label class="auth-form__label" for="date">Date</label>
+        <input
+          class="auth-form__input"
+          type="date"
+          id="date"
+          name="date"
+          value="<%= new Date(reservation.requestedStartTime).toISOString().split('T')[0] %>"
+          required
+        />
+      </div>
+
+      <div class="auth-form__row">
+        <div class="auth-form__group">
+          <label class="auth-form__label" for="startTime">Start time</label>
+          <input
+            class="auth-form__input"
+            type="time"
+            id="startTime"
+            name="startTime"
+            value="<%= new Date(reservation.requestedStartTime).toTimeString().slice(0, 5) %>"
+            required
+          />
+        </div>
+        <div class="auth-form__group">
+          <label class="auth-form__label" for="endTime">End time</label>
+          <input
+            class="auth-form__input"
+            type="time"
+            id="endTime"
+            name="endTime"
+            value="<%= new Date(reservation.requestedEndTime).toTimeString().slice(0, 5) %>"
+            required
+          />
+        </div>
+      </div>
+
+      <div class="auth-form__group">
+        <label class="auth-form__label" for="staffNotes">Notes for admin (optional)</label>
+        <textarea
+          class="auth-form__input booking-request-card__textarea"
+          id="staffNotes"
+          name="staffNotes"
+          rows="3"
+        ><%= reservation.staffNotes || "" %></textarea>
+      </div>
+
+      <button class="auth-form__submit" type="submit">Save changes</button>
+    </form>
+  </div>
+</section>

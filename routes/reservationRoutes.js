@@ -10,4 +10,8 @@ router.post(
   reservationController.createRequest,
 );
 
+router.get("/:id/edit", requireLogin, reservationController.editForm);
+router.put("/:id", requireLogin, reservationController.updateRequest);
+router.post("/:id/cancel", requireLogin, reservationController.cancelRequest);
+
 module.exports = router;

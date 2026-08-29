@@ -1,6 +1,9 @@
 const Reservation = require("../models/reservation");
 const Vehicle = require("../models/vehicle");
 const { parseBookingWindow } = require("../utils/availability");
+const { revokeReservationAccess } = require("../services/reservationKeycafe");
+
+const CANCELABLE_STATUSES = ["Pending", "Reserved"];
 
 exports.createRequest = async (req, res) => {
   const booking = parseBookingWindow(
@@ -54,10 +57,126 @@ exports.mine = async (req, res) => {
       reservation.requestedStartTime > now,
   );
 
+  const pastBookings = reservations
+    .filter(
+      (reservation) =>
+        !currentBookings.includes(reservation) && !upcomingBookings.includes(reservation),
+    )
+    .reverse();
+
   res.render("reservations/mine", {
     title: "My Dashboard",
     currentBookings,
     upcomingBookings,
+    pastBookings,
     activeNav: "dashboard",
   });
+};
+
+exports.editForm = async (req, res) => {
+  const reservation = await Reservation.findOne({
+    _id: req.params.id,
+    userId: res.locals.currentUser._id,
+  }).populate("vehicleId");
+
+  if (!reservation) {
+    return res.status(404).send("Reservation not found.");
+  }
+
+  if (reservation.status !== "Pending") {
+    req.flash("error", "Only pending requests can be edited. Contact an admin to change an approved booking.");
+    return res.redirect("/reservations/mine");
+  }
+
+  res.render("reservations/edit", {
+    title: "Edit Booking Request",
+    reservation,
+    activeNav: "dashboard",
+  });
+};
+
+exports.updateRequest = async (req, res) => {
+  const reservation = await Reservation.findOne({
+    _id: req.params.id,
+    userId: res.locals.currentUser._id,
+  });
+
+  if (!reservation) {
+    return res.status(404).send("Reservation not found.");
+  }
+
+  if (reservation.status !== "Pending") {
+    req.flash("error", "Only pending requests can be edited.");
+    return res.redirect("/reservations/mine");
+  }
+
+  const booking = parseBookingWindow(
+    req.body.date,
+    req.body.startTime,
+    req.body.endTime,
+  );
+
+  if (!booking) {
+    req.flash("error", "Please choose a valid date and time.");
+    return res.redirect(`/reservations/${reservation._id}/edit`);
+  }
+
+  const conflictExists = await Reservation.exists({
+    _id: { $ne: reservation._id },
+    vehicleId: reservation.vehicleId,
+    status: { $in: ["Pending", "Reserved", "Active"] },
+    requestedStartTime: { $lt: booking.end },
+    requestedEndTime: { $gt: booking.start },
+  });
+
+  if (conflictExists) {
+    req.flash("error", "That vehicle is already booked during that window.");
+    return res.redirect(`/reservations/${reservation._id}/edit`);
+  }
+
+  reservation.requestedStartTime = booking.start;
+  reservation.requestedEndTime = booking.end;
+  reservation.staffNotes = req.body.staffNotes || "";
+  await reservation.save();
+
+  req.flash("success", "Booking request updated.");
+  res.redirect("/reservations/mine");
+};
+
+exports.cancelRequest = async (req, res) => {
+  const reservation = await Reservation.findOne({
+    _id: req.params.id,
+    userId: res.locals.currentUser._id,
+  });
+
+  if (!reservation) {
+    return res.status(404).send("Reservation not found.");
+  }
+
+  if (!CANCELABLE_STATUSES.includes(reservation.status)) {
+    req.flash("error", "This booking can no longer be canceled here. Contact an admin.");
+    return res.redirect("/reservations/mine");
+  }
+
+  let revokeFailed = false;
+  try {
+    await revokeReservationAccess(reservation);
+  } catch (error) {
+    console.error("KeyCafe access cancellation failed:", error);
+    revokeFailed = true;
+  }
+
+  reservation.status = "Cancelled";
+  await reservation.save();
+
+  if (revokeFailed) {
+    req.flash(
+      "error",
+      "Booking canceled, but the KeyCafe access could not be revoked automatically. Contact an admin.",
+    );
+  } else {
+    req.flash("success", "Booking canceled.");
+  }
+
+  res.redirect("/reservations/mine");
 };

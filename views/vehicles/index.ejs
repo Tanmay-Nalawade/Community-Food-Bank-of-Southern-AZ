@@ -14,8 +14,31 @@
     <% } %>
   </div>
 
+  <form class="admin-filters" method="GET" action="/vehicles">
+    <input type="hidden" name="date" value="<%= booking.date %>" />
+    <input type="hidden" name="startTime" value="<%= booking.startTime %>" />
+    <input type="hidden" name="endTime" value="<%= booking.endTime %>" />
+
+    <div class="admin-filters__field">
+      <label class="auth-form__label" for="q">Search</label>
+      <input
+        class="auth-form__input"
+        type="text"
+        id="q"
+        name="q"
+        placeholder="Make, model, or plate"
+        value="<%= q %>"
+      />
+    </div>
+
+    <button class="admin-filters__submit" type="submit">Search</button>
+    <% if (q) { %>
+      <a class="admin-filters__clear" href="/vehicles?<%= baseQueryString %>">Clear</a>
+    <% } %>
+  </form>
+
   <% if (!vehicles.length) { %>
-    <p class="vehicles-page__empty">No vehicles are available for this time slot.</p>
+    <p class="vehicles-page__empty">No vehicles match your search for this time slot.</p>
   <% } else { %>
     <div class="vehicle-grid">
       <% vehicles.forEach((vehicle) => { %>

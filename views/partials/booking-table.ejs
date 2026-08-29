@@ -7,6 +7,7 @@
         <th>Status</th>
         <th>Key Access</th>
         <th>Notes</th>
+        <th>Actions</th>
       </tr>
     </thead>
     <tbody>
@@ -29,8 +30,13 @@
           <td>
             <% if (reservation.keyCafeAccess?.bookingCode && ["Reserved", "Active"].includes(reservation.status)) { %>
               <strong class="booking-code"><%= reservation.keyCafeAccess.bookingCode %></strong>
+              <div class="booking-code__window">
+                Valid <%= new Date(reservation.requestedStartTime).toLocaleString() %>
+                &ndash;
+                <%= new Date(reservation.requestedEndTime).toLocaleString() %>
+              </div>
+              <div class="booking-code__hint">Use this same code to pick up and return the key.</div>
               <% if (reservation.keyCafeAccess.checkinLink) { %>
-                <br />
                 <a href="<%= reservation.keyCafeAccess.checkinLink %>" target="_blank" rel="noopener noreferrer">
                   Open check-in link
                 </a>
@@ -42,6 +48,19 @@
             <% } %>
           </td>
           <td><%= reservation.staffNotes || "—" %></td>
+          <td class="admin-table__actions">
+            <% if (reservation.status === "Pending") { %>
+              <a class="admin-table__btn admin-table__btn--edit" href="/reservations/<%= reservation._id %>/edit">Edit</a>
+            <% } %>
+            <% if (["Pending", "Reserved"].includes(reservation.status)) { %>
+              <form action="/reservations/<%= reservation._id %>/cancel" method="POST">
+                <button class="admin-table__btn admin-table__btn--delete" type="submit">Cancel</button>
+              </form>
+            <% } %>
+            <% if (!["Pending", "Reserved"].includes(reservation.status)) { %>
+              —
+            <% } %>
+          </td>
         </tr>
       <% }) %>
     </tbody>

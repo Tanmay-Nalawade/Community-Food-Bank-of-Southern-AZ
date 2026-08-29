@@ -566,6 +566,21 @@ body {
   font-weight: 600;
 }
 
+.booking-code__window {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 0.8rem;
+  color: #555;
+  margin-top: 0.2rem;
+}
+
+.booking-code__hint {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 0.75rem;
+  font-style: italic;
+  color: #777;
+  margin-top: 0.15rem;
+}
+
 .account-page__actions form {
   margin: 0;
 }

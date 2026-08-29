@@ -27,4 +27,14 @@
       <%- include('../partials/booking-table', { reservations: upcomingBookings }) %>
     <% } %>
   </section>
+
+  <section class="dashboard-section">
+    <h2 class="dashboard-section__title">Past Bookings</h2>
+
+    <% if (!pastBookings.length) { %>
+      <p class="vehicles-page__empty">You don't have any past bookings yet.</p>
+    <% } else { %>
+      <%- include('../partials/booking-table', { reservations: pastBookings }) %>
+    <% } %>
+  </section>
 </section>
