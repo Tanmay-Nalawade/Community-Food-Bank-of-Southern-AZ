@@ -40,8 +40,10 @@
             </p>
 
             <% if (currentUser.role === "Admin") { %>
-              <a class="site-navbar__dropdown-link" href="/admin/reservations">Admin Dashboard</a>
-              <a class="site-navbar__dropdown-link" href="/admin/vehicles/add">Add Vehicle</a>
+              <a class="site-navbar__dropdown-link" href="/admin/reservations">Reservations</a>
+              <a class="site-navbar__dropdown-link" href="/admin/vehicles">Vehicles</a>
+              <a class="site-navbar__dropdown-link" href="/admin/drivers">Drivers</a>
+              <a class="site-navbar__dropdown-link" href="/admin/reports">Reports</a>
             <% } %>
 
             <form class="site-navbar__logout-form" action="/logout" method="POST">

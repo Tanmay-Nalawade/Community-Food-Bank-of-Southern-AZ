@@ -1,0 +1,56 @@
+<% layout('layouts/boilerplate') %>
+
+<section class="admin-page">
+  <a class="vehicle-detail__back" href="/admin/drivers">&larr; Back to drivers</a>
+
+  <h1><%= driver.firstName %> <%= driver.lastName %></h1>
+  <p class="vehicles-page__lead">
+    <%= driver.email %> &middot; <%= driver.role %> &middot; <%= driver.isActive ? "Active" : "Inactive" %>
+  </p>
+
+  <div class="vehicle-detail__card admin-history-card">
+    <h2 class="vehicle-detail__section-title">Reservation history</h2>
+    <% if (!reservations.length) { %>
+      <p class="vehicle-detail__empty">This driver has no reservations yet.</p>
+    <% } else { %>
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Vehicle</th>
+              <th>When</th>
+              <th>Status</th>
+              <th>Booking code</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% reservations.forEach((reservation) => { %>
+              <tr>
+                <td>
+                  <% if (reservation.vehicleId) { %>
+                    <a href="/admin/vehicles/<%= reservation.vehicleId._id %>">
+                      <%= reservation.vehicleId.year ? reservation.vehicleId.year + " " : "" %><%= reservation.vehicleId.make %> <%= reservation.vehicleId.model %>
+                    </a>
+                  <% } else { %>
+                    —
+                  <% } %>
+                </td>
+                <td>
+                  <%= new Date(reservation.requestedStartTime).toLocaleString() %>
+                  &ndash;
+                  <%= new Date(reservation.requestedEndTime).toLocaleString() %>
+                </td>
+                <td>
+                  <span class="status-pill status-pill--<%= reservation.status.toLowerCase() %>">
+                    <%= reservation.status %>
+                  </span>
+                </td>
+                <td><%= reservation.keyCafeAccess?.bookingCode || "—" %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+</section>

@@ -1,20 +1,65 @@
 const Reservation = require("../models/reservation");
 const Vehicle = require("../models/vehicle");
+const User = require("../models/user");
 const { parseBookingWindow, formatBookingLabel } = require("../utils/availability");
 const {
   grantReservationAccess,
   revokeReservationAccess,
 } = require("../services/reservationKeycafe");
 
+function escapeRegex(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 exports.listReservations = async (req, res) => {
-  const reservations = await Reservation.find({})
-    .populate("userId", "firstName lastName email role")
-    .populate("vehicleId", "make model year licensePlate")
-    .sort({ createdAt: -1 });
+  const { status, vehicleId, driver, startDate, endDate } = req.query;
+  const filter = {};
+
+  if (status) {
+    filter.status = status;
+  }
+
+  if (vehicleId) {
+    filter.vehicleId = vehicleId;
+  }
+
+  if (driver) {
+    const regex = new RegExp(escapeRegex(driver.trim()), "i");
+    const matchingUserIds = await User.find({
+      $or: [{ firstName: regex }, { lastName: regex }, { email: regex }],
+    }).distinct("_id");
+    filter.userId = { $in: matchingUserIds };
+  }
+
+  if (startDate || endDate) {
+    filter.requestedStartTime = {};
+    if (startDate) {
+      filter.requestedStartTime.$gte = new Date(`${startDate}T00:00`);
+    }
+    if (endDate) {
+      filter.requestedStartTime.$lte = new Date(`${endDate}T23:59:59`);
+    }
+  }
+
+  const [reservations, vehicles] = await Promise.all([
+    Reservation.find(filter)
+      .populate("userId", "firstName lastName email role")
+      .populate("vehicleId", "make model year licensePlate")
+      .sort({ createdAt: -1 }),
+    Vehicle.find({}).sort({ make: 1, model: 1 }),
+  ]);
 
   res.render("admin/reservations/index", {
     title: "Manage Reservations",
     reservations,
+    vehicles,
+    filters: {
+      status: status || "",
+      vehicleId: vehicleId || "",
+      driver: driver || "",
+      startDate: startDate || "",
+      endDate: endDate || "",
+    },
     activeNav: "admin",
   });
 };

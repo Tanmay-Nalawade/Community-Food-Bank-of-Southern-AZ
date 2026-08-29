@@ -1,0 +1,79 @@
+<% layout('layouts/boilerplate') %>
+
+<section class="admin-page">
+  <div class="vehicles-page__header">
+    <div>
+      <h1>Manage Vehicles</h1>
+      <p class="vehicles-page__lead">Search the fleet, review a vehicle's history, or update its details.</p>
+    </div>
+    <a class="vehicles-page__add-btn" href="/admin/vehicles/add">Add Vehicle</a>
+  </div>
+
+  <form class="admin-filters" method="GET" action="/admin/vehicles">
+    <div class="admin-filters__field">
+      <label class="auth-form__label" for="q">Search</label>
+      <input
+        class="auth-form__input"
+        type="text"
+        id="q"
+        name="q"
+        placeholder="Make, model, plate, or key ID"
+        value="<%= q %>"
+      />
+    </div>
+
+    <div class="admin-filters__field">
+      <label class="auth-form__label" for="status">Status</label>
+      <select class="auth-form__input" id="status" name="status">
+        <option value="">All statuses</option>
+        <% ["Available", "Reserved", "In Use", "Maintenance", "Out of Service"].forEach((option) => { %>
+          <option value="<%= option %>" <%= status === option ? "selected" : "" %>><%= option %></option>
+        <% }) %>
+      </select>
+    </div>
+
+    <button class="admin-filters__submit" type="submit">Search</button>
+    <% if (q || status) { %>
+      <a class="admin-filters__clear" href="/admin/vehicles">Clear</a>
+    <% } %>
+  </form>
+
+  <% if (!vehicles.length) { %>
+    <p class="vehicles-page__empty">No vehicles match your search.</p>
+  <% } else { %>
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Vehicle</th>
+            <th>Plate</th>
+            <th>KeyCafe key ID</th>
+            <th>Mileage</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% vehicles.forEach((vehicle) => { %>
+            <tr>
+              <td>
+                <%= vehicle.year ? vehicle.year + " " : "" %><%= vehicle.make %> <%= vehicle.model %>
+              </td>
+              <td><%= vehicle.licensePlate %></td>
+              <td><%= vehicle.keyCafeKeyId %></td>
+              <td><%= vehicle.currentMileage.toLocaleString() %> mi</td>
+              <td>
+                <span class="status-pill status-pill--<%= vehicle.status.toLowerCase().replace(/\s+/g, '-') %>">
+                  <%= vehicle.status %>
+                </span>
+              </td>
+              <td class="admin-table__actions">
+                <a class="admin-table__btn admin-table__btn--edit" href="/admin/vehicles/<%= vehicle._id %>">Manage</a>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</section>

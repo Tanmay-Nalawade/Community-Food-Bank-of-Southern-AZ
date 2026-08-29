@@ -9,6 +9,57 @@
     <a class="vehicles-page__add-btn" href="/admin/vehicles/add">Add Vehicle</a>
   </div>
 
+  <form class="admin-filters" method="GET" action="/admin/reservations">
+    <div class="admin-filters__field">
+      <label class="auth-form__label" for="driver">Driver</label>
+      <input
+        class="auth-form__input"
+        type="text"
+        id="driver"
+        name="driver"
+        placeholder="Name or email"
+        value="<%= filters.driver %>"
+      />
+    </div>
+
+    <div class="admin-filters__field">
+      <label class="auth-form__label" for="vehicleId">Vehicle</label>
+      <select class="auth-form__input" id="vehicleId" name="vehicleId">
+        <option value="">All vehicles</option>
+        <% vehicles.forEach((vehicle) => { %>
+          <option value="<%= vehicle._id %>" <%= filters.vehicleId === String(vehicle._id) ? "selected" : "" %>>
+            <%= vehicle.year ? vehicle.year + " " : "" %><%= vehicle.make %> <%= vehicle.model %> (<%= vehicle.licensePlate %>)
+          </option>
+        <% }) %>
+      </select>
+    </div>
+
+    <div class="admin-filters__field">
+      <label class="auth-form__label" for="status">Status</label>
+      <select class="auth-form__input" id="status" name="status">
+        <option value="">All statuses</option>
+        <% ["Pending", "Reserved", "Active", "Completed", "Cancelled", "Denied"].forEach((option) => { %>
+          <option value="<%= option %>" <%= filters.status === option ? "selected" : "" %>><%= option %></option>
+        <% }) %>
+      </select>
+    </div>
+
+    <div class="admin-filters__field">
+      <label class="auth-form__label" for="startDate">From</label>
+      <input class="auth-form__input" type="date" id="startDate" name="startDate" value="<%= filters.startDate %>" />
+    </div>
+
+    <div class="admin-filters__field">
+      <label class="auth-form__label" for="endDate">To</label>
+      <input class="auth-form__input" type="date" id="endDate" name="endDate" value="<%= filters.endDate %>" />
+    </div>
+
+    <button class="admin-filters__submit" type="submit">Filter</button>
+    <% if (filters.driver || filters.vehicleId || filters.status || filters.startDate || filters.endDate) { %>
+      <a class="admin-filters__clear" href="/admin/reservations">Clear</a>
+    <% } %>
+  </form>
+
   <% if (!reservations.length) { %>
     <p class="vehicles-page__empty">No reservations to review.</p>
   <% } else { %>

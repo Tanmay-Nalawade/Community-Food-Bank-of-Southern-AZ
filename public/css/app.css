@@ -527,6 +527,96 @@ body {
   color: #555;
 }
 
+.status-pill--available {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status-pill--in-use {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.status-pill--maintenance,
+.status-pill--out-of-service {
+  background: #fce4ec;
+  color: #c62828;
+}
+
+.admin-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 1rem;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.admin-filters__field {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 160px;
+}
+
+.admin-filters__submit {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #ffffff;
+  background: #632c4f;
+  border: 2px solid #632c4f;
+  border-radius: 6px;
+  padding: 0.65rem 1.25rem;
+  cursor: pointer;
+  height: fit-content;
+}
+
+.admin-filters__submit:hover,
+.admin-filters__submit:focus {
+  background: #4a213b;
+  border-color: #4a213b;
+}
+
+.admin-filters__clear {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #632c4f;
+  text-decoration: none;
+  align-self: center;
+}
+
+.admin-filters__clear:hover,
+.admin-filters__clear:focus {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.admin-history-card {
+  margin-top: 1.5rem;
+}
+
+.admin-hint {
+  font-size: 0.85rem;
+  margin-top: 0.75rem;
+}
+
+.admin-issue {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.admin-issue-form {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #eee;
+}
+
 .admin-edit-card {
   margin-top: 1.5rem;
 }
