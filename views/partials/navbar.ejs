@@ -55,3 +55,13 @@
     </nav>
   </div>
 </header>
+
+<script>
+  document.addEventListener("click", (event) => {
+    document.querySelectorAll(".site-navbar__account[open]").forEach((menu) => {
+      if (!menu.contains(event.target)) {
+        menu.removeAttribute("open");
+      }
+    });
+  });
+</script>
