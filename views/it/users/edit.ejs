@@ -1,0 +1,36 @@
+<% layout('layouts/boilerplate') %>
+
+<section class="admin-page">
+  <a class="vehicle-detail__back" href="/it/users">&larr; Back to users</a>
+
+  <h1><%= editUser.firstName %> <%= editUser.lastName %></h1>
+  <p class="vehicles-page__lead"><%= editUser.email %></p>
+
+  <div class="auth-card auth-card--wide admin-edit-card">
+    <% if (isSelf) { %>
+      <p class="vehicle-detail__empty">
+        You can't change your own role or active status here. Ask another IT Admin to make this change.
+      </p>
+    <% } else { %>
+      <form class="auth-form" action="/it/users/<%= editUser._id %>?_method=PUT" method="POST">
+        <div class="auth-form__group">
+          <label class="auth-form__label" for="role">Role</label>
+          <select class="auth-form__input" id="role" name="role" required>
+            <% ["Staff", "Admin", "IT Admin"].forEach((option) => { %>
+              <option value="<%= option %>" <%= editUser.role === option ? "selected" : "" %>><%= option %></option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="auth-form__group">
+          <label class="auth-form__label">
+            <input type="checkbox" name="isActive" <%= editUser.isActive ? "checked" : "" %> />
+            Account is active
+          </label>
+        </div>
+
+        <button class="auth-form__submit" type="submit">Save changes</button>
+      </form>
+    <% } %>
+  </div>
+</section>

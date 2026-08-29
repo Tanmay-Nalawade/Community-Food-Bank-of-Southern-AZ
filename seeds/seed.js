@@ -50,6 +50,12 @@ async function seed() {
       email: "alex.rivera@cfb.example",
       role: "Admin",
     },
+    {
+      firstName: "Sam",
+      lastName: "Okafor",
+      email: "sam.okafor@cfb.example",
+      role: "IT Admin",
+    },
   ]);
 
   const [jordan, maria] = users;

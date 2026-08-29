@@ -1,3 +1,17 @@
+<% if (typeof viewAsRole !== 'undefined' && viewAsRole) { %>
+  <div class="flash flash--view-as" role="status">
+    <div class="flash__messages">
+      <p>
+        You're viewing the app as <strong><%= viewAsRole %></strong> instead of your real role
+        (<%= currentUser.role %>).
+      </p>
+    </div>
+    <form action="/account/view-as" method="POST">
+      <button class="flash__view-as-return" type="submit">Return to <%= currentUser.role %> view</button>
+    </form>
+  </div>
+<% } %>
+
 <% if (typeof successMessages !== 'undefined' && successMessages.length) { %>
   <div class="flash flash--success" role="status">
     <div class="flash__messages">

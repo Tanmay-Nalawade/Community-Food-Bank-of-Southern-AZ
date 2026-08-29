@@ -1,5 +1,6 @@
 const User = require("../models/user");
 const Reservation = require("../models/reservation");
+const ActivityLog = require("../models/activityLog");
 
 async function getLandingPath(userId) {
   const now = new Date();
@@ -44,6 +45,13 @@ exports.login = async (req, res) => {
   const redirectTo = req.session.returnTo;
   req.session.returnTo = null;
 
+  await ActivityLog.create({
+    userId: user._id,
+    action: "Login",
+    detail: `Logged in as ${user.role}`,
+    ip: req.ip,
+  });
+
   req.flash("success", `Welcome back, ${user.firstName}!`);
 
   if (redirectTo && redirectTo !== "/") {
@@ -81,7 +89,17 @@ exports.register = async (req, res) => {
   res.redirect(await getLandingPath(user._id));
 };
 
-exports.logout = (req, res) => {
+exports.logout = async (req, res) => {
+  const currentUser = res.locals.currentUser;
+
+  if (currentUser) {
+    await ActivityLog.create({
+      userId: currentUser._id,
+      action: "Logout",
+      ip: req.ip,
+    });
+  }
+
   req.session.regenerate(() => {
     req.flash("success", "You have been logged out.");
     res.redirect("/");
