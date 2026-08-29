@@ -18,6 +18,31 @@ body {
   padding: 2rem 1.5rem;
 }
 
+.flash {
+  margin: 0 0 1.5rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+.flash p {
+  margin: 0;
+}
+
+.flash p + p {
+  margin-top: 0.35rem;
+}
+
+.flash--success {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.flash--error {
+  background: #fdecea;
+  color: #c62828;
+}
+
 .page-content h1 {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 1.75rem;

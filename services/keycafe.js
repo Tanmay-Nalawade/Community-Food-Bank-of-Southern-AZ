@@ -29,11 +29,12 @@ async function request(method, path, body) {
     );
   }
 
-  if (response.status === 204) {
+  const text = await response.text();
+  if (!text) {
     return null;
   }
 
-  return response.json();
+  return JSON.parse(text);
 }
 
 function formatDateTime(date, timeZone) {

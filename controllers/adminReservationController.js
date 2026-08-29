@@ -79,12 +79,21 @@ exports.updateReservation = async (req, res) => {
     }
   } catch (error) {
     console.error("KeyCafe access sync failed:", error);
-    return res
-      .status(502)
-      .send("Could not update KeyCafe access for this reservation.");
+    req.flash(
+      "error",
+      "Could not update KeyCafe access for this reservation. No changes were saved.",
+    );
+    return res.redirect(`/admin/reservations/${reservation._id}/edit`);
   }
 
   await reservation.save();
+
+  if (["Denied", "Cancelled"].includes(nextStatus)) {
+    req.flash("success", "Booking canceled.");
+  } else {
+    req.flash("success", "Reservation updated.");
+  }
+
   res.redirect("/admin/reservations");
 };
 
@@ -107,11 +116,14 @@ exports.approveReservation = async (req, res) => {
     await Vehicle.findByIdAndUpdate(reservation.vehicleId._id, {
       status: "Reserved",
     });
+
+    req.flash("success", "Reservation approved and KeyCafe access granted.");
   } catch (error) {
     console.error("KeyCafe access creation failed:", error);
-    return res
-      .status(502)
-      .send("Could not create KeyCafe access for this reservation. Check your KeyCafe settings and try again.");
+    req.flash(
+      "error",
+      "Could not create KeyCafe access for this reservation. Check your KeyCafe settings and try again.",
+    );
   }
 
   res.redirect("/admin/reservations");
@@ -123,10 +135,12 @@ exports.denyReservation = async (req, res) => {
     return res.status(404).send("Reservation not found.");
   }
 
+  let revokeFailed = false;
   try {
     await revokeReservationAccess(reservation);
   } catch (error) {
     console.error("KeyCafe access cancellation failed:", error);
+    revokeFailed = true;
   }
 
   reservation.status = "Denied";
@@ -135,21 +149,42 @@ exports.denyReservation = async (req, res) => {
   reservation.reviewedAt = new Date();
   await reservation.save();
 
+  if (revokeFailed) {
+    req.flash(
+      "error",
+      "Booking canceled, but the KeyCafe access could not be revoked automatically. Cancel it manually in KeyCafe.",
+    );
+  } else {
+    req.flash("success", "Booking canceled.");
+  }
+
   res.redirect("/admin/reservations");
 };
 
 exports.deleteReservation = async (req, res) => {
   const reservation = await Reservation.findById(req.params.id);
 
+  let revokeFailed = false;
   if (reservation) {
     try {
       await revokeReservationAccess(reservation);
       await reservation.save();
     } catch (error) {
       console.error("KeyCafe access cancellation failed:", error);
+      revokeFailed = true;
     }
   }
 
   await Reservation.findByIdAndDelete(req.params.id);
+
+  if (revokeFailed) {
+    req.flash(
+      "error",
+      "Booking canceled and removed, but the KeyCafe access could not be revoked automatically. Cancel it manually in KeyCafe.",
+    );
+  } else {
+    req.flash("success", "Booking canceled and removed.");
+  }
+
   res.redirect("/admin/reservations");
 };

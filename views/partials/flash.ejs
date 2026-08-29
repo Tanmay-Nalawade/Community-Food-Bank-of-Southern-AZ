@@ -1,0 +1,15 @@
+<% if (typeof successMessages !== 'undefined' && successMessages.length) { %>
+  <div class="flash flash--success" role="status">
+    <% successMessages.forEach((message) => { %>
+      <p><%= message %></p>
+    <% }) %>
+  </div>
+<% } %>
+
+<% if (typeof errorMessages !== 'undefined' && errorMessages.length) { %>
+  <div class="flash flash--error" role="alert">
+    <% errorMessages.forEach((message) => { %>
+      <p><%= message %></p>
+    <% }) %>
+  </div>
+<% } %>

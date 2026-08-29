@@ -2,12 +2,14 @@ const path = require("path");
 const express = require("express");
 const methodOverride = require("method-override");
 const session = require("express-session");
+const flash = require("connect-flash");
 const engine = require("ejs-mate");
 
 const userRoutes = require("./routes/userRoutes");
 const vehicleRoutes = require("./routes/vehicleRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const reservationRoutes = require("./routes/reservationRoutes");
+const webhookRoutes = require("./routes/webhookRoutes");
 const { loadCurrentUser } = require("./middleware/auth");
 
 const app = express();
@@ -28,7 +30,14 @@ app.use(
     saveUninitialized: false,
   }),
 );
+app.use(flash());
 app.use(loadCurrentUser);
+
+app.use((req, res, next) => {
+  res.locals.successMessages = req.flash("success");
+  res.locals.errorMessages = req.flash("error");
+  next();
+});
 
 app.use((req, res, next) => {
   if (
@@ -53,6 +62,7 @@ app.use((req, res, next) => {
 app.use("/admin", adminRoutes);
 app.use("/reservations", reservationRoutes);
 app.use("/vehicles", vehicleRoutes);
+app.use("/webhooks", webhookRoutes);
 app.use("/", userRoutes);
 
 const port = process.env.PORT || 8080;
