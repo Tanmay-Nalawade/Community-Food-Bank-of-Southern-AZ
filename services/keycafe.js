@@ -105,8 +105,17 @@ async function cancelAccess(accessId) {
   return request("DELETE", `/access/${accessId}`);
 }
 
+async function createWebhook(url, username, password) {
+  if (!isConfigured()) {
+    throw new Error("KEYCAFE_EMAIL and KEYCAFE_TOKEN must be set to register a webhook.");
+  }
+
+  return request("POST", "/webhook", { url, username, password });
+}
+
 module.exports = {
   isConfigured,
   createAccess,
   cancelAccess,
+  createWebhook,
 };

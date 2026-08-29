@@ -20,5 +20,6 @@ exports.postAddVehicle = async (req, res) => {
     currentMileage: Number(currentMileage) || 0,
   });
   await newVehicle.save();
+  req.flash("success", `${newVehicle.make} ${newVehicle.model} added to the fleet.`);
   res.redirect("/vehicles");
 };

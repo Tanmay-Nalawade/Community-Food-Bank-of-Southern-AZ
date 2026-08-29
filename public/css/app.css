@@ -19,18 +19,39 @@ body {
 }
 
 .flash {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
   margin: 0 0 1.5rem;
   padding: 0.75rem 1rem;
   border-radius: 8px;
   font-size: 0.95rem;
 }
 
-.flash p {
+.flash__messages p {
   margin: 0;
 }
 
-.flash p + p {
+.flash__messages p + p {
   margin-top: 0.35rem;
+}
+
+.flash__close {
+  flex-shrink: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 1.25rem;
+  line-height: 1;
+  padding: 0;
+  color: inherit;
+  opacity: 0.6;
+}
+
+.flash__close:hover,
+.flash__close:focus {
+  opacity: 1;
 }
 
 .flash--success {

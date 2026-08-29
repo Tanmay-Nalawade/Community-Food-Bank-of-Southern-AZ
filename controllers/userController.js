@@ -36,12 +36,15 @@ exports.login = async (req, res) => {
   const user = await User.findOne({ email: req.body.email });
 
   if (!user) {
-    return res.status(401).send("Invalid email. Use a seeded staff or admin account.");
+    req.flash("error", "We couldn't find an account with that email. Use a seeded staff or admin account.");
+    return res.redirect("/login");
   }
 
   req.session.userId = user._id;
   const redirectTo = req.session.returnTo;
   req.session.returnTo = null;
+
+  req.flash("success", `Welcome back, ${user.firstName}!`);
 
   if (redirectTo && redirectTo !== "/") {
     return res.redirect(redirectTo);
@@ -62,7 +65,8 @@ exports.register = async (req, res) => {
 
   const existingUser = await User.findOne({ email });
   if (existingUser) {
-    return res.status(400).send("An account with that email already exists.");
+    req.flash("error", "An account with that email already exists.");
+    return res.redirect("/register");
   }
 
   const user = await User.create({
@@ -73,11 +77,13 @@ exports.register = async (req, res) => {
   });
 
   req.session.userId = user._id;
+  req.flash("success", `Welcome, ${user.firstName}! Your account has been created.`);
   res.redirect(await getLandingPath(user._id));
 };
 
 exports.logout = (req, res) => {
-  req.session.destroy(() => {
+  req.session.regenerate(() => {
+    req.flash("success", "You have been logged out.");
     res.redirect("/");
   });
 };

@@ -10,12 +10,14 @@ exports.createRequest = async (req, res) => {
   );
 
   if (!booking) {
-    return res.status(400).send("Invalid booking time.");
+    req.flash("error", "Please choose a valid date and time for your booking.");
+    return res.redirect(`/vehicles/${req.params.vehicleId}`);
   }
 
   const vehicle = await Vehicle.findById(req.params.vehicleId);
   if (!vehicle) {
-    return res.status(404).send("Vehicle not found.");
+    req.flash("error", "That vehicle could not be found.");
+    return res.redirect("/vehicles");
   }
 
   await Reservation.create({
@@ -27,6 +29,7 @@ exports.createRequest = async (req, res) => {
     status: "Pending",
   });
 
+  req.flash("success", "Booking request submitted. An admin will review it shortly.");
   res.redirect("/reservations/mine");
 };
 

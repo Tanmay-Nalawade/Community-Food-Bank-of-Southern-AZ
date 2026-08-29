@@ -1,15 +1,31 @@
 <% if (typeof successMessages !== 'undefined' && successMessages.length) { %>
   <div class="flash flash--success" role="status">
-    <% successMessages.forEach((message) => { %>
-      <p><%= message %></p>
-    <% }) %>
+    <div class="flash__messages">
+      <% successMessages.forEach((message) => { %>
+        <p><%= message %></p>
+      <% }) %>
+    </div>
+    <button
+      type="button"
+      class="flash__close"
+      aria-label="Dismiss message"
+      onclick="this.closest('.flash').remove()"
+    >&times;</button>
   </div>
 <% } %>
 
 <% if (typeof errorMessages !== 'undefined' && errorMessages.length) { %>
   <div class="flash flash--error" role="alert">
-    <% errorMessages.forEach((message) => { %>
-      <p><%= message %></p>
-    <% }) %>
+    <div class="flash__messages">
+      <% errorMessages.forEach((message) => { %>
+        <p><%= message %></p>
+      <% }) %>
+    </div>
+    <button
+      type="button"
+      class="flash__close"
+      aria-label="Dismiss message"
+      onclick="this.closest('.flash').remove()"
+    >&times;</button>
   </div>
 <% } %>

@@ -15,6 +15,7 @@ exports.index = async (req, res) => {
   );
 
   if (!booking) {
+    req.flash("error", "Please select a valid date and time to see available vehicles.");
     return res.redirect("/");
   }
 
