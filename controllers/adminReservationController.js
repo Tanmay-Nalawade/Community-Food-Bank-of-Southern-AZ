@@ -174,6 +174,14 @@ exports.approveReservation = async (req, res) => {
   res.redirect("/admin/reservations");
 };
 
+async function freeVehicleIfHeldBy(vehicleId) {
+  const vehicle = await Vehicle.findById(vehicleId);
+  if (vehicle && ["Reserved", "In Use"].includes(vehicle.status)) {
+    vehicle.status = "Available";
+    await vehicle.save();
+  }
+}
+
 exports.denyReservation = async (req, res) => {
   const reservation = await Reservation.findById(req.params.id);
   if (!reservation) {
@@ -193,6 +201,7 @@ exports.denyReservation = async (req, res) => {
   reservation.reviewedBy = res.locals.currentUser._id;
   reservation.reviewedAt = new Date();
   await reservation.save();
+  await freeVehicleIfHeldBy(reservation.vehicleId);
 
   if (revokeFailed) {
     req.flash(
@@ -201,6 +210,43 @@ exports.denyReservation = async (req, res) => {
     );
   } else {
     req.flash("success", "Booking canceled.");
+  }
+
+  res.redirect("/admin/reservations");
+};
+
+exports.cancelReservation = async (req, res) => {
+  const reservation = await Reservation.findById(req.params.id);
+  if (!reservation) {
+    return res.status(404).send("Reservation not found.");
+  }
+
+  if (!["Reserved", "Active"].includes(reservation.status)) {
+    req.flash("error", "Only confirmed bookings can be canceled this way.");
+    return res.redirect("/admin/reservations");
+  }
+
+  let revokeFailed = false;
+  try {
+    await revokeReservationAccess(reservation);
+  } catch (error) {
+    console.error("KeyCafe access cancellation failed:", error);
+    revokeFailed = true;
+  }
+
+  reservation.status = "Cancelled";
+  reservation.reviewedBy = res.locals.currentUser._id;
+  reservation.reviewedAt = new Date();
+  await reservation.save();
+  await freeVehicleIfHeldBy(reservation.vehicleId);
+
+  if (revokeFailed) {
+    req.flash(
+      "error",
+      "Booking canceled, but the KeyCafe access could not be revoked automatically. Cancel it manually in KeyCafe.",
+    );
+  } else {
+    req.flash("success", "Booking canceled by Transportation.");
   }
 
   res.redirect("/admin/reservations");
@@ -218,6 +264,7 @@ exports.deleteReservation = async (req, res) => {
       console.error("KeyCafe access cancellation failed:", error);
       revokeFailed = true;
     }
+    await freeVehicleIfHeldBy(reservation.vehicleId);
   }
 
   await Reservation.findByIdAndDelete(req.params.id);

@@ -53,6 +53,11 @@ router.post(
   requireAdmin,
   adminReservationController.denyReservation,
 );
+router.post(
+  "/reservations/:id/cancel",
+  requireAdmin,
+  adminReservationController.cancelReservation,
+);
 router.delete(
   "/reservations/:id",
   requireAdmin,

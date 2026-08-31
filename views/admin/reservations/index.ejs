@@ -4,7 +4,11 @@
   <div class="vehicles-page__header">
     <div>
       <h1>Manage Reservations</h1>
-      <p class="vehicles-page__lead">Review, approve, edit, or delete staff booking requests.</p>
+      <p class="vehicles-page__lead">
+        Standard bookings confirm automatically when the vehicle is available. Items marked
+        Pending are exceptions (a scheduling conflict or a KeyCafe issue) that need your review.
+        You can edit, override, or cancel any booking below.
+      </p>
     </div>
     <a class="vehicles-page__add-btn" href="/admin/vehicles/add">Add Vehicle</a>
   </div>
@@ -103,6 +107,11 @@
                   </form>
                   <form action="/admin/reservations/<%= reservation._id %>/deny" method="POST">
                     <button class="admin-table__btn admin-table__btn--deny" type="submit">Deny</button>
+                  </form>
+                <% } %>
+                <% if (["Reserved", "Active"].includes(reservation.status)) { %>
+                  <form action="/admin/reservations/<%= reservation._id %>/cancel" method="POST">
+                    <button class="admin-table__btn admin-table__btn--deny" type="submit">Cancel</button>
                   </form>
                 <% } %>
                 <a class="admin-table__btn admin-table__btn--edit" href="/admin/reservations/<%= reservation._id %>/edit">Edit</a>
