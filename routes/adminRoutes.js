@@ -3,9 +3,22 @@ const router = express.Router();
 const { requireAdmin } = require("../middleware/auth");
 const adminController = require("../controllers/adminController");
 const adminReservationController = require("../controllers/adminReservationController");
+const adminIssueController = require("../controllers/adminIssueController");
 
 router.get("/vehicles/add", requireAdmin, adminController.getAddVehicle);
 router.post("/vehicles/add", requireAdmin, adminController.postAddVehicle);
+
+router.get("/issues", requireAdmin, adminIssueController.index);
+router.post(
+  "/issues/:vehicleId/:issueId/review",
+  requireAdmin,
+  adminIssueController.markReviewed,
+);
+router.post(
+  "/issues/:vehicleId/:issueId/dismiss",
+  requireAdmin,
+  adminIssueController.dismiss,
+);
 
 router.get(
   "/reservations",

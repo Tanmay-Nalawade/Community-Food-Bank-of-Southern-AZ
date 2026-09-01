@@ -14,4 +14,10 @@ router.get("/:id/edit", requireLogin, reservationController.editForm);
 router.put("/:id", requireLogin, reservationController.updateRequest);
 router.post("/:id/cancel", requireLogin, reservationController.cancelRequest);
 
+router.get("/:id/mileage", requireLogin, reservationController.mileageForm);
+router.post("/:id/mileage", requireLogin, reservationController.submitMileage);
+
+router.get("/:id/issue", requireLogin, reservationController.issueForm);
+router.post("/:id/issue", requireLogin, reservationController.submitIssue);
+
 module.exports = router;

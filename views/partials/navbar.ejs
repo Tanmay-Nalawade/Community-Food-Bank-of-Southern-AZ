@@ -42,6 +42,7 @@
             <% if (currentUser.role === "Admin") { %>
               <a class="site-navbar__dropdown-link" href="/admin/reservations">Admin Dashboard</a>
               <a class="site-navbar__dropdown-link" href="/admin/vehicles/add">Add Vehicle</a>
+              <a class="site-navbar__dropdown-link" href="/admin/issues">Vehicle Issues</a>
             <% } %>
 
             <form class="site-navbar__logout-form" action="/logout" method="POST">

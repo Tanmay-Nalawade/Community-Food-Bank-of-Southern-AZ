@@ -1,0 +1,61 @@
+<% layout('layouts/boilerplate') %>
+
+<section class="admin-page">
+  <h1>Vehicle Issues</h1>
+  <p class="vehicles-page__lead">Issues reported by drivers, newest unreviewed first.</p>
+
+  <% if (!issues.length) { %>
+    <p class="vehicles-page__empty">No issues reported.</p>
+  <% } else { %>
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Status</th>
+            <th>Vehicle</th>
+            <th>Issue</th>
+            <th>Reported by</th>
+            <th>Reported</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% issues.forEach(({ vehicle, issue }) => { %>
+            <tr>
+              <td>
+                <% if (issue.reviewed) { %>
+                  <span class="status-pill status-pill--completed">Reviewed</span>
+                <% } else { %>
+                  <span class="status-pill status-pill--pending">New</span>
+                <% } %>
+              </td>
+              <td>
+                <%= vehicle.year ? vehicle.year + " " : "" %><%= vehicle.make %> <%= vehicle.model %><br />
+                <span class="admin-table__subtext"><%= vehicle.licensePlate %></span>
+              </td>
+              <td><%= issue.description %></td>
+              <td>
+                <% if (issue.reportedBy) { %>
+                  <%= issue.reportedBy.firstName %> <%= issue.reportedBy.lastName %>
+                <% } else { %>
+                  —
+                <% } %>
+              </td>
+              <td><%= new Date(issue.reportedAt).toLocaleString() %></td>
+              <td class="admin-table__actions">
+                <% if (!issue.reviewed) { %>
+                  <form action="/admin/issues/<%= vehicle._id %>/<%= issue._id %>/review" method="POST">
+                    <button class="admin-table__btn admin-table__btn--approve" type="submit">Mark Reviewed</button>
+                  </form>
+                <% } %>
+                <form action="/admin/issues/<%= vehicle._id %>/<%= issue._id %>/dismiss" method="POST">
+                  <button class="admin-table__btn admin-table__btn--delete" type="submit">Dismiss</button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</section>

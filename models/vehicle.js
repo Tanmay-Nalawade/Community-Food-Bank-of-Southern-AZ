@@ -28,6 +28,11 @@ const vehicleSchema = new Schema(
       {
         reportedAt: { type: Date, default: Date.now },
         description: { type: String },
+        reportedBy: { type: Schema.Types.ObjectId, ref: "User" },
+        reservationId: { type: Schema.Types.ObjectId, ref: "Reservation" },
+        reviewed: { type: Boolean, default: false },
+        reviewedBy: { type: Schema.Types.ObjectId, ref: "User" },
+        reviewedAt: { type: Date },
       },
     ],
   },

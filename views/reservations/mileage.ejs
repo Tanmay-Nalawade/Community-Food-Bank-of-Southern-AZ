@@ -1,0 +1,47 @@
+<% layout('layouts/boilerplate') %>
+
+<section class="reservations-page">
+  <a class="vehicle-detail__back" href="/reservations/mine">&larr; Back to my dashboard</a>
+
+  <h1>Report Mileage</h1>
+  <p class="reservations-page__lead">
+    <%= reservation.vehicleId.year ? reservation.vehicleId.year + " " : "" %>
+    <%= reservation.vehicleId.make %> <%= reservation.vehicleId.model %>
+    (<%= reservation.vehicleId.licensePlate %>)
+  </p>
+
+  <div class="auth-card auth-card--wide admin-edit-card">
+    <form class="auth-form" action="/reservations/<%= reservation._id %>/mileage" method="POST">
+      <div class="auth-form__row">
+        <div class="auth-form__group">
+          <label class="auth-form__label" for="startMileage">Start mileage</label>
+          <input
+            class="auth-form__input"
+            type="number"
+            id="startMileage"
+            name="startMileage"
+            min="0"
+            value="<%= reservation.tripLog?.startMileage ?? '' %>"
+          />
+        </div>
+        <div class="auth-form__group">
+          <label class="auth-form__label" for="endMileage">End mileage</label>
+          <input
+            class="auth-form__input"
+            type="number"
+            id="endMileage"
+            name="endMileage"
+            min="0"
+            value="<%= reservation.tripLog?.endMileage ?? '' %>"
+          />
+        </div>
+      </div>
+
+      <p class="vehicle-detail__empty">
+        Enter whichever you know right now — you can come back and fill in the other later.
+      </p>
+
+      <button class="auth-form__submit" type="submit">Save Mileage</button>
+    </form>
+  </div>
+</section>

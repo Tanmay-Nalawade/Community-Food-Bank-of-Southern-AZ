@@ -34,7 +34,6 @@ const reservationSchema = new Schema(
       tripEndedAt: { type: Date },
       startMileage: { type: Number },
       endMileage: { type: Number },
-      issuesReported: { type: String, default: null },
     },
   },
   { timestamps: true },

@@ -4,6 +4,7 @@ const { parseBookingWindow } = require("../utils/availability");
 const { revokeReservationAccess } = require("../services/reservationKeycafe");
 
 const CANCELABLE_STATUSES = ["Pending", "Reserved"];
+const REPORTABLE_STATUSES = ["Active", "Completed"];
 
 exports.createRequest = async (req, res) => {
   const booking = parseBookingWindow(
@@ -178,5 +179,116 @@ exports.cancelRequest = async (req, res) => {
     req.flash("success", "Booking canceled.");
   }
 
+  res.redirect("/reservations/mine");
+};
+
+exports.mileageForm = async (req, res) => {
+  const reservation = await Reservation.findOne({
+    _id: req.params.id,
+    userId: res.locals.currentUser._id,
+  }).populate("vehicleId", "make model year licensePlate");
+
+  if (!reservation) {
+    return res.status(404).send("Reservation not found.");
+  }
+
+  if (!REPORTABLE_STATUSES.includes(reservation.status)) {
+    req.flash("error", "Mileage can only be reported for a trip that has started.");
+    return res.redirect("/reservations/mine");
+  }
+
+  res.render("reservations/mileage", {
+    title: "Report Mileage",
+    reservation,
+    activeNav: "dashboard",
+  });
+};
+
+exports.submitMileage = async (req, res) => {
+  const reservation = await Reservation.findOne({
+    _id: req.params.id,
+    userId: res.locals.currentUser._id,
+  });
+
+  if (!reservation) {
+    return res.status(404).send("Reservation not found.");
+  }
+
+  if (!REPORTABLE_STATUSES.includes(reservation.status)) {
+    req.flash("error", "Mileage can only be reported for a trip that has started.");
+    return res.redirect("/reservations/mine");
+  }
+
+  const { startMileage, endMileage } = req.body;
+
+  if (startMileage !== "" && startMileage !== undefined) {
+    reservation.tripLog.startMileage = Number(startMileage);
+  }
+  if (endMileage !== "" && endMileage !== undefined) {
+    reservation.tripLog.endMileage = Number(endMileage);
+  }
+
+  await reservation.save();
+
+  req.flash("success", "Mileage reported. Thanks!");
+  res.redirect("/reservations/mine");
+};
+
+exports.issueForm = async (req, res) => {
+  const reservation = await Reservation.findOne({
+    _id: req.params.id,
+    userId: res.locals.currentUser._id,
+  }).populate("vehicleId", "make model year licensePlate");
+
+  if (!reservation) {
+    return res.status(404).send("Reservation not found.");
+  }
+
+  if (!REPORTABLE_STATUSES.includes(reservation.status)) {
+    req.flash("error", "Issues can only be reported for a trip that has started.");
+    return res.redirect("/reservations/mine");
+  }
+
+  res.render("reservations/issue", {
+    title: "Report an Issue",
+    reservation,
+    activeNav: "dashboard",
+  });
+};
+
+exports.submitIssue = async (req, res) => {
+  const reservation = await Reservation.findOne({
+    _id: req.params.id,
+    userId: res.locals.currentUser._id,
+  });
+
+  if (!reservation) {
+    return res.status(404).send("Reservation not found.");
+  }
+
+  if (!REPORTABLE_STATUSES.includes(reservation.status)) {
+    req.flash("error", "Issues can only be reported for a trip that has started.");
+    return res.redirect("/reservations/mine");
+  }
+
+  const description = (req.body.description || "").trim();
+
+  if (!description) {
+    req.flash("error", "Please describe the issue.");
+    return res.redirect(`/reservations/${reservation._id}/issue`);
+  }
+
+  await Vehicle.findByIdAndUpdate(reservation.vehicleId, {
+    $push: {
+      activeIssues: {
+        description,
+        reportedBy: res.locals.currentUser._id,
+        reservationId: reservation._id,
+        reviewed: false,
+      },
+    },
+  });
+
+  req.flash("success", "Issue reported to Transportation for review.");
   res.redirect("/reservations/mine");
 };

@@ -1,0 +1,34 @@
+<% layout('layouts/boilerplate') %>
+
+<section class="reservations-page">
+  <a class="vehicle-detail__back" href="/reservations/mine">&larr; Back to my dashboard</a>
+
+  <h1>Report an Issue</h1>
+  <p class="reservations-page__lead">
+    <%= reservation.vehicleId.year ? reservation.vehicleId.year + " " : "" %>
+    <%= reservation.vehicleId.make %> <%= reservation.vehicleId.model %>
+    (<%= reservation.vehicleId.licensePlate %>)
+  </p>
+
+  <div class="auth-card auth-card--wide admin-edit-card">
+    <form class="auth-form" action="/reservations/<%= reservation._id %>/issue" method="POST">
+      <div class="auth-form__group">
+        <label class="auth-form__label" for="description">What's wrong?</label>
+        <textarea
+          class="auth-form__input booking-request-card__textarea"
+          id="description"
+          name="description"
+          rows="4"
+          placeholder="e.g. Check engine light on, low tire pressure, damage noticed..."
+          required
+        ></textarea>
+      </div>
+
+      <p class="vehicle-detail__empty">
+        This will be flagged for Transportation to review — it does not affect your reservation.
+      </p>
+
+      <button class="auth-form__submit" type="submit">Report Issue</button>
+    </form>
+  </div>
+</section>
