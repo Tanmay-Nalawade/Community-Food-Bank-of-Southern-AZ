@@ -9,7 +9,7 @@ exports.getAddVehicle = (req, res) => {
 
 // To handle the submission of the new vehicle form
 exports.postAddVehicle = async (req, res) => {
-  const { make, model, year, licensePlate, keyCafeKeyId, currentMileage } =
+  const { make, model, year, licensePlate, keyCafeKeyId, photoUrl, currentMileage } =
     req.body;
   const newVehicle = new Vehicle({
     make,
@@ -17,6 +17,7 @@ exports.postAddVehicle = async (req, res) => {
     year: year ? Number(year) : undefined,
     licensePlate,
     keyCafeKeyId,
+    photoUrl: (photoUrl || "").trim(),
     currentMileage: Number(currentMileage) || 0,
   });
   await newVehicle.save();

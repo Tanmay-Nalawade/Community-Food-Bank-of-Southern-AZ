@@ -21,6 +21,12 @@
     </span>
   </header>
 
+  <% if (vehicle.photoUrl) { %>
+    <img class="vehicle-detail__photo" src="<%= vehicle.photoUrl %>" alt="Photo of <%= vehicle.make %> <%= vehicle.model %>" />
+  <% } else { %>
+    <div class="vehicle-detail__photo vehicle-detail__photo--empty">No photo yet</div>
+  <% } %>
+
   <div class="vehicle-detail__grid">
     <dl class="vehicle-detail__card">
       <div>

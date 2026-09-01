@@ -162,6 +162,25 @@ body {
   transform: translateY(-2px);
 }
 
+.vehicle-card__photo {
+  display: block;
+  width: calc(100% + 2.5rem);
+  height: 160px;
+  margin: -1.25rem -1.25rem 1rem;
+  object-fit: cover;
+  border-radius: 8px 8px 0 0;
+  background: #f0f0f0;
+}
+
+.vehicle-card__photo--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
 .vehicle-card__header {
   display: flex;
   justify-content: space-between;
@@ -266,6 +285,26 @@ body {
   gap: 1rem;
   flex-wrap: wrap;
   margin-bottom: 1.5rem;
+}
+
+.vehicle-detail__photo {
+  display: block;
+  width: 100%;
+  max-height: 360px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  background: #f0f0f0;
+}
+
+.vehicle-detail__photo--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: #999;
+  font-style: italic;
+  border: 1px dashed #ccc;
 }
 
 .vehicle-detail__plate {

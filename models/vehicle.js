@@ -10,6 +10,8 @@ const vehicleSchema = new Schema(
 
     keyCafeKeyId: { type: String, required: true },
 
+    photoUrl: { type: String, default: "" },
+
     currentMileage: { type: Number, required: true, default: 0 },
 
     status: {

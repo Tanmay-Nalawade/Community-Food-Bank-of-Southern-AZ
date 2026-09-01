@@ -43,6 +43,11 @@
     <div class="vehicle-grid">
       <% vehicles.forEach((vehicle) => { %>
         <a class="vehicle-card vehicle-card--link" href="/vehicles/<%= vehicle._id %>?<%= queryString %>">
+          <% if (vehicle.photoUrl) { %>
+            <img class="vehicle-card__photo" src="<%= vehicle.photoUrl %>" alt="" />
+          <% } else { %>
+            <div class="vehicle-card__photo vehicle-card__photo--empty">No photo</div>
+          <% } %>
           <header class="vehicle-card__header">
             <h2 class="vehicle-card__title">
               <%= vehicle.year ? vehicle.year + " " : "" %><%= vehicle.make %> <%= vehicle.model %>
