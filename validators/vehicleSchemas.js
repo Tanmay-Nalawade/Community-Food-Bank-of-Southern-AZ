@@ -22,9 +22,16 @@ const addVehicleSchema = Joi.object({
     "string.empty": "KeyCafe key ID is required.",
     "any.required": "KeyCafe key ID is required.",
   }),
-  photoUrl: Joi.string().trim().uri().max(2000).empty("").optional().messages({
-    "string.uri": "Photo URL must be a valid URL.",
-  }),
+  photoUrl: Joi.string()
+    .trim()
+    .uri({ scheme: ["https"] })
+    .max(2000)
+    .empty("")
+    .optional()
+    .messages({
+      "string.uri": "Photo URL must be a valid https:// URL.",
+      "string.uriCustomScheme": "Photo URL must be a valid https:// URL.",
+    }),
   currentMileage: Joi.number().integer().min(0).empty("").default(0).messages({
     "number.base": "Current mileage must be a number.",
     "number.min": "Current mileage can't be negative.",

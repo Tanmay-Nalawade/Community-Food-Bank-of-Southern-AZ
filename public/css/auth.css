@@ -145,6 +145,12 @@
   border-top: 1px solid #eee5ea;
 }
 
+.auth-card__footer--demo {
+  border-top: none;
+  padding-top: 0;
+  margin-bottom: 1rem;
+}
+
 .auth-card__footer a {
   color: #632c4f;
   font-weight: 700;

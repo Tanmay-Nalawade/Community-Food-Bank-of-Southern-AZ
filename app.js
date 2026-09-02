@@ -3,6 +3,8 @@ const express = require("express");
 const methodOverride = require("method-override");
 const session = require("express-session");
 const flash = require("connect-flash");
+const helmet = require("helmet");
+const mongoSanitize = require("express-mongo-sanitize");
 const engine = require("ejs-mate");
 
 const userRoutes = require("./routes/userRoutes");
@@ -17,18 +19,51 @@ const app = express();
 
 require("./db");
 
+if (process.env.NODE_ENV === "production" && !process.env.SESSION_SECRET) {
+  console.warn(
+    "WARNING: SESSION_SECRET is not set. Using an insecure default secret in production lets " +
+      "anyone forge session cookies. Set SESSION_SECRET in the environment before going live.",
+  );
+}
+
+app.set("trust proxy", 1);
+
 app.engine("ejs", engine);
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'"],
+        imgSrc: ["'self'", "https:"],
+        fontSrc: ["'self'"],
+        objectSrc: ["'none'"],
+        baseUri: ["'self'"],
+        formAction: ["'self'"],
+        frameAncestors: ["'self'"],
+      },
+    },
+  }),
+);
+
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.urlencoded({ extended: true }));
+app.use(mongoSanitize());
 app.use(methodOverride("_method"));
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "cfb-motor-pool-dev-secret",
     resave: false,
     saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+    },
   }),
 );
 app.use(flash());
