@@ -1,9 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const { requireAdmin } = require("../middleware/auth");
-const adminController = require("../controllers/adminController");
-const adminReservationController = require("../controllers/adminReservationController");
-const adminIssueController = require("../controllers/adminIssueController");
+const { wrapControllerAsync } = require("../utils/asyncHandler");
+const adminController = wrapControllerAsync(require("../controllers/adminController"));
+const adminReservationController = wrapControllerAsync(require("../controllers/adminReservationController"));
+const adminIssueController = wrapControllerAsync(require("../controllers/adminIssueController"));
 
 router.get("/vehicles/add", requireAdmin, adminController.getAddVehicle);
 router.post("/vehicles/add", requireAdmin, adminController.postAddVehicle);

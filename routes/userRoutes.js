@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const users = require("../controllers/userController");
+const { wrapControllerAsync } = require("../utils/asyncHandler");
+const users = wrapControllerAsync(require("../controllers/userController"));
 
 router.get("/", users.home);
 router.get("/login", users.login);

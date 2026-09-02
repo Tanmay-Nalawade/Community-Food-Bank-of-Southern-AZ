@@ -1,7 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const { verifyKeyCafeWebhook } = require("../middleware/keycafeWebhookAuth");
-const webhookController = require("../controllers/webhookController");
+const { wrapControllerAsync } = require("../utils/asyncHandler");
+const webhookController = wrapControllerAsync(require("../controllers/webhookController"));
 
 router.post(
   "/keycafe",

@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const vehiclesController = require("../controllers/vehicleController");
+const { wrapControllerAsync } = require("../utils/asyncHandler");
+const vehiclesController = wrapControllerAsync(require("../controllers/vehicleController"));
 
 router.get("/", vehiclesController.index);
 
