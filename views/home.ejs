@@ -3,50 +3,64 @@
 <section class="auth-page auth-page--booking">
   <div class="auth-card auth-card--booking">
     <h1 class="auth-card__title">Motor Pool Reservations</h1>
-    <p class="auth-card__subtitle">
-      Are you looking to book a vehicle?
-    </p>
 
-    <form class="auth-form" action="/vehicles" method="GET">
-      <div class="auth-form__group">
-        <label class="auth-form__label" for="date">Date</label>
-        <input
-          class="auth-form__input"
-          type="date"
-          id="date"
-          name="date"
-          min="<%= minDate %>"
-          value="<%= typeof date !== 'undefined' ? date : '' %>"
-          required
-        />
-      </div>
+    <% if (!currentUser) { %>
+      <p class="auth-card__subtitle">
+        Log in to search vehicle availability and book a vehicle.
+      </p>
 
-      <div class="auth-form__row">
+      <a class="auth-form__submit" href="/login">Log In</a>
+
+      <p class="auth-card__footer">
+        Don&rsquo;t have an account?
+        <a href="/register">Sign up</a>
+      </p>
+    <% } else { %>
+      <p class="auth-card__subtitle">
+        Are you looking to book a vehicle?
+      </p>
+
+      <form class="auth-form" action="/vehicles" method="GET">
         <div class="auth-form__group">
-          <label class="auth-form__label" for="startTime">Start time</label>
+          <label class="auth-form__label" for="date">Date</label>
           <input
             class="auth-form__input"
-            type="time"
-            id="startTime"
-            name="startTime"
-            value="<%= typeof startTime !== 'undefined' ? startTime : '08:00' %>"
+            type="date"
+            id="date"
+            name="date"
+            min="<%= minDate %>"
+            value="<%= typeof date !== 'undefined' ? date : '' %>"
             required
           />
         </div>
-        <div class="auth-form__group">
-          <label class="auth-form__label" for="endTime">End time</label>
-          <input
-            class="auth-form__input"
-            type="time"
-            id="endTime"
-            name="endTime"
-            value="<%= typeof endTime !== 'undefined' ? endTime : '17:00' %>"
-            required
-          />
-        </div>
-      </div>
 
-      <button class="auth-form__submit" type="submit">View available vehicles</button>
-    </form>
+        <div class="auth-form__row">
+          <div class="auth-form__group">
+            <label class="auth-form__label" for="startTime">Start time</label>
+            <input
+              class="auth-form__input"
+              type="time"
+              id="startTime"
+              name="startTime"
+              value="<%= typeof startTime !== 'undefined' ? startTime : '08:00' %>"
+              required
+            />
+          </div>
+          <div class="auth-form__group">
+            <label class="auth-form__label" for="endTime">End time</label>
+            <input
+              class="auth-form__input"
+              type="time"
+              id="endTime"
+              name="endTime"
+              value="<%= typeof endTime !== 'undefined' ? endTime : '17:00' %>"
+              required
+            />
+          </div>
+        </div>
+
+        <button class="auth-form__submit" type="submit">View available vehicles</button>
+      </form>
+    <% } %>
   </div>
 </section>

@@ -135,6 +135,12 @@
   border-color: #4a213b;
 }
 
+a.auth-form__submit {
+  display: inline-block;
+  text-decoration: none;
+  text-align: center;
+}
+
 .auth-card__footer {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 0.95rem;
