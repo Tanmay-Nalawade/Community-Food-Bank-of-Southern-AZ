@@ -43,6 +43,7 @@ function computeEffectiveRole(req, res, next) {
 function requireLogin(req, res, next) {
   if (!res.locals.currentUser) {
     req.session.returnTo = req.originalUrl;
+    req.flash("error", "Please log in first.");
     return res.redirect("/login");
   }
   next();

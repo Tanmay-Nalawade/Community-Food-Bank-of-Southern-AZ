@@ -1,10 +1,11 @@
 const express = require("express");
 const router = express.Router();
+const { requireLogin } = require("../middleware/auth");
 const { wrapControllerAsync } = require("../utils/asyncHandler");
 const vehiclesController = wrapControllerAsync(require("../controllers/vehicleController"));
 
-router.get("/", vehiclesController.index);
+router.get("/", requireLogin, vehiclesController.index);
 
-router.get("/:id", vehiclesController.viewVehicle);
+router.get("/:id", requireLogin, vehiclesController.viewVehicle);
 
 module.exports = router;

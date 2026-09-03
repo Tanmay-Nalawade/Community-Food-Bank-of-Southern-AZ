@@ -78,11 +78,7 @@
     <div class="vehicle-detail__card booking-request-card">
       <h2 class="vehicle-detail__section-title">Book this vehicle</h2>
 
-      <% if (!currentUser) { %>
-        <p class="vehicle-detail__empty">
-          Please <a href="/login">log in</a> as a staff member to book this vehicle.
-        </p>
-      <% } else if (effectiveRole === "Admin") { %>
+      <% if (effectiveRole === "Admin") { %>
         <p class="vehicle-detail__empty">
           Admins manage reservations from the
           <a href="/admin/reservations">admin dashboard</a>.

@@ -30,8 +30,18 @@
 
 .auth-card--booking .auth-card__subtitle {
   font-size: 1.1rem;
-  margin-bottom: 2.25rem;
+  margin-bottom: 1.25rem;
 }
+
+.auth-card__description {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #555;
+  text-align: center;
+  margin: 0 0 1.75rem;
+}
+
 
 .auth-card--booking .auth-form {
   gap: 1.5rem;
