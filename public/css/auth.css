@@ -30,16 +30,7 @@
 
 .auth-card--booking .auth-card__subtitle {
   font-size: 1.1rem;
-  margin-bottom: 1.25rem;
-}
-
-.auth-card__description {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 0.95rem;
-  line-height: 1.5;
-  color: #555;
-  text-align: center;
-  margin: 0 0 1.75rem;
+  margin-bottom: 2.25rem;
 }
 
 
@@ -81,6 +72,15 @@
   color: #6b6b6b;
   text-align: center;
   margin: 0 0 1.75rem;
+}
+
+.auth-card__description {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: #666;
+  text-align: center;
+  margin: 0 0 1.5rem;
 }
 
 .auth-form {
@@ -143,19 +143,6 @@
 .auth-form__submit:focus {
   background: #4a213b;
   border-color: #4a213b;
-}
-
-a.auth-form__submit {
-  display: inline-block;
-  text-decoration: none;
-  text-align: center;
-}
-
-a.auth-form__submit--centered {
-  display: block;
-  width: fit-content;
-  margin-left: auto;
-  margin-right: auto;
 }
 
 .auth-card__footer {
