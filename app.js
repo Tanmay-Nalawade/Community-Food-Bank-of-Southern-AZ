@@ -2,6 +2,7 @@ const path = require("path");
 const express = require("express");
 const methodOverride = require("method-override");
 const session = require("express-session");
+const { MongoStore } = require("connect-mongo");
 const flash = require("connect-flash");
 const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
@@ -60,6 +61,11 @@ app.use(
     secret: process.env.SESSION_SECRET || "cfb-motor-pool-dev-secret",
     resave: false,
     saveUninitialized: false,
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGO_DB_URL,
+      collectionName: "sessions",
+      ttl: 14 * 24 * 60 * 60,
+    }),
     cookie: {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
