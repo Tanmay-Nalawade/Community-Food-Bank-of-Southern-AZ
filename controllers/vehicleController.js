@@ -7,6 +7,10 @@ const {
   toQueryString,
 } = require("../utils/availability");
 
+function escapeRegex(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 exports.index = async (req, res) => {
   const booking = parseBookingWindow(
     req.query.date,
@@ -19,19 +23,32 @@ exports.index = async (req, res) => {
     return res.redirect("/");
   }
 
+  const q = (req.query.q || "").trim();
   const bookedVehicleIds = await getBookedVehicleIds(booking.start, booking.end);
 
-  const vehicles = await Vehicle.find({
+  const filter = {
     status: { $nin: FLEET_UNAVAILABLE },
     _id: { $nin: bookedVehicleIds },
-  }).sort({ make: 1, model: 1 });
+  };
+
+  if (q) {
+    const regex = new RegExp(escapeRegex(q), "i");
+    filter.$or = [{ make: regex }, { model: regex }, { licensePlate: regex }];
+  }
+
+  const vehicles = await Vehicle.find(filter).sort({ make: 1, model: 1 });
+
+  const baseQueryString = toQueryString(booking);
+  const queryString = q ? `${baseQueryString}&q=${encodeURIComponent(q)}` : baseQueryString;
 
   res.render("vehicles/index", {
     title: "Available Vehicles",
     vehicles,
     booking,
     bookingLabel: formatBookingLabel(booking),
-    queryString: toQueryString(booking),
+    queryString,
+    baseQueryString,
+    q,
   });
 };
 
@@ -48,11 +65,15 @@ exports.viewVehicle = async (req, res) => {
     req.query.endTime,
   );
 
+  const q = req.query.q || "";
+  const baseQueryString = booking ? toQueryString(booking) : "";
+  const queryString = q ? `${baseQueryString}&q=${encodeURIComponent(q)}` : baseQueryString;
+
   res.render("vehicles/view", {
     title: `${vehicle.make} ${vehicle.model}`,
     vehicle,
     booking,
     bookingLabel: booking ? formatBookingLabel(booking) : null,
-    queryString: booking ? toQueryString(booking) : "",
+    queryString,
   });
 };

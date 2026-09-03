@@ -76,10 +76,15 @@
         <p class="vehicle-detail__empty">
           Please <a href="/login">log in</a> as a staff member to book this vehicle.
         </p>
-      <% } else if (currentUser.role === "Admin") { %>
+      <% } else if (effectiveRole === "Admin") { %>
         <p class="vehicle-detail__empty">
           Admins manage reservations from the
           <a href="/admin/reservations">admin dashboard</a>.
+        </p>
+      <% } else if (effectiveRole === "IT Admin") { %>
+        <p class="vehicle-detail__empty">
+          IT Admins manage system access and configuration from the
+          <a href="/it/users">IT dashboard</a>. Switch to Staff view from the account menu to book a vehicle.
         </p>
       <% } else { %>
         <form class="auth-form" action="/reservations/vehicles/<%= vehicle._id %>" method="POST">

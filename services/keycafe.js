@@ -113,9 +113,24 @@ async function createWebhook(url, username, password) {
   return request("POST", "/webhook", { url, username, password });
 }
 
+async function testConnection() {
+  if (!isConfigured()) {
+    return { ok: false, detail: "KEYCAFE_EMAIL and KEYCAFE_TOKEN are not set." };
+  }
+
+  try {
+    const keys = await request("GET", "/key");
+    const count = Array.isArray(keys) ? keys.length : 0;
+    return { ok: true, detail: `Authenticated successfully, found ${count} key(s).` };
+  } catch (error) {
+    return { ok: false, detail: error.message };
+  }
+}
+
 module.exports = {
   isConfigured,
   createAccess,
   cancelAccess,
   createWebhook,
+  testConnection,
 };

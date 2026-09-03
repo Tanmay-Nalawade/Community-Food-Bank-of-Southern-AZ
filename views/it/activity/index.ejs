@@ -1,0 +1,41 @@
+<% layout('layouts/boilerplate') %>
+
+<section class="admin-page">
+  <h1>Activity Log</h1>
+  <p class="vehicles-page__lead">Most recent 200 login, logout, and role-switch events.</p>
+
+  <% if (!logs.length) { %>
+    <p class="vehicles-page__empty">No activity recorded yet.</p>
+  <% } else { %>
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>When</th>
+            <th>User</th>
+            <th>Action</th>
+            <th>Detail</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% logs.forEach((log) => { %>
+            <tr>
+              <td><%= new Date(log.createdAt).toLocaleString() %></td>
+              <td>
+                <% if (log.userId) { %>
+                  <%= log.userId.firstName %> <%= log.userId.lastName %>
+                  <br />
+                  <span class="admin-table__subtext"><%= log.userId.email %></span>
+                <% } else { %>
+                  —
+                <% } %>
+              </td>
+              <td><%= log.action %></td>
+              <td><%= log.detail || "—" %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</section>
