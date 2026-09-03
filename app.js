@@ -14,6 +14,7 @@ const reservationRoutes = require("./routes/reservationRoutes");
 const webhookRoutes = require("./routes/webhookRoutes");
 const { loadCurrentUser } = require("./middleware/auth");
 const { asyncHandler } = require("./utils/asyncHandler");
+const reminderScheduler = require("./jobs/reminderScheduler");
 
 const app = express();
 
@@ -148,6 +149,8 @@ const port = process.env.PORT || 8080;
 app.listen(port, "0.0.0.0", () => {
   console.log(`Serving on port ${port}`);
 });
+
+reminderScheduler.start();
 
 process.on("unhandledRejection", (reason) => {
   console.error("Unhandled promise rejection:", reason);

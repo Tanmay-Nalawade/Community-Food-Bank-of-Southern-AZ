@@ -2,6 +2,7 @@ const Reservation = require("../models/reservation");
 const Vehicle = require("../models/vehicle");
 const { parseBookingWindow } = require("../utils/availability");
 const { revokeReservationAccess } = require("../services/reservationKeycafe");
+const { sendBookingConfirmation } = require("../services/reservationNotifications");
 
 const CANCELABLE_STATUSES = ["Pending", "Reserved"];
 const REPORTABLE_STATUSES = ["Active", "Completed"];
@@ -24,7 +25,7 @@ exports.createRequest = async (req, res) => {
     return res.redirect("/vehicles");
   }
 
-  await Reservation.create({
+  const reservation = await Reservation.create({
     userId: res.locals.currentUser._id,
     vehicleId: vehicle._id,
     requestedStartTime: booking.start,
@@ -32,6 +33,8 @@ exports.createRequest = async (req, res) => {
     staffNotes: req.body.staffNotes || "",
     status: "Pending",
   });
+
+  await sendBookingConfirmation(reservation, res.locals.currentUser, vehicle);
 
   req.flash("success", "Booking request submitted. An admin will review it shortly.");
   res.redirect("/reservations/mine");

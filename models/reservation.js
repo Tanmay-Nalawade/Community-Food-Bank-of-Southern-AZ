@@ -35,6 +35,12 @@ const reservationSchema = new Schema(
       startMileage: { type: Number },
       endMileage: { type: Number },
     },
+
+    notifications: {
+      confirmationSentAt: { type: Date },
+      reminder3DaySentAt: { type: Date },
+      reminderFinalSentAt: { type: Date },
+    },
   },
   { timestamps: true },
 );
