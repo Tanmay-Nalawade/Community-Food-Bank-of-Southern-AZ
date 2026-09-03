@@ -5,7 +5,8 @@
     <h1 class="auth-card__title">Log In</h1>
     <p class="auth-card__subtitle">Sign in to reserve vehicles and manage your trips.</p>
     <p class="auth-card__footer auth-card__footer--demo">
-      Demo: <code>jordan.lee@cfb.example</code> (staff) or <code>alex.rivera@cfb.example</code> (admin)
+      Demo: <code>jordan.lee@cfb.example</code> (staff) or <code>alex.rivera@cfb.example</code> (admin),
+      password <code>password123</code>
     </p>
 
     <form class="auth-form" action="/login" method="POST">
@@ -29,7 +30,7 @@
           id="password"
           name="password"
           autocomplete="current-password"
-          placeholder="Any value for demo"
+          required
         />
       </div>
 

@@ -1,22 +1,3 @@
-const User = require("../models/user");
-
-async function loadCurrentUser(req, res, next) {
-  res.locals.currentUser = null;
-
-  if (!req.session.userId) {
-    return next();
-  }
-
-  const user = await User.findById(req.session.userId);
-  if (!user || !user.isActive) {
-    req.session.userId = null;
-    return next();
-  }
-
-  res.locals.currentUser = user;
-  next();
-}
-
 function requireLogin(req, res, next) {
   if (!res.locals.currentUser) {
     req.session.returnTo = req.originalUrl;
@@ -33,7 +14,6 @@ function requireAdmin(req, res, next) {
 }
 
 module.exports = {
-  loadCurrentUser,
   requireLogin,
   requireAdmin,
 };

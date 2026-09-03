@@ -1,9 +1,13 @@
 require("dotenv").config();
+const { promisify } = require("util");
 const mongoose = require("mongoose");
 
 const User = require("../models/user");
 const Vehicle = require("../models/vehicle");
 const Reservation = require("../models/reservation");
+
+const SEED_PASSWORD = "password123";
+const registerUser = promisify(User.register.bind(User));
 
 function setTime(date, hours, minutes = 0) {
   const result = new Date(date);
@@ -31,25 +35,19 @@ async function seed() {
     User.deleteMany({}),
   ]);
 
-  const users = await User.insertMany([
-    {
-      firstName: "Jordan",
-      lastName: "Lee",
-      email: "jordan.lee@cfb.example",
-      role: "Staff",
-    },
-    {
-      firstName: "Maria",
-      lastName: "Garcia",
-      email: "maria.garcia@cfb.example",
-      role: "Staff",
-    },
-    {
-      firstName: "Alex",
-      lastName: "Rivera",
-      email: "alex.rivera@cfb.example",
-      role: "Admin",
-    },
+  const users = await Promise.all([
+    registerUser(
+      new User({ firstName: "Jordan", lastName: "Lee", email: "jordan.lee@cfb.example", role: "Staff" }),
+      SEED_PASSWORD,
+    ),
+    registerUser(
+      new User({ firstName: "Maria", lastName: "Garcia", email: "maria.garcia@cfb.example", role: "Staff" }),
+      SEED_PASSWORD,
+    ),
+    registerUser(
+      new User({ firstName: "Alex", lastName: "Rivera", email: "alex.rivera@cfb.example", role: "Admin" }),
+      SEED_PASSWORD,
+    ),
   ]);
 
   const [jordan, maria] = users;
@@ -211,7 +209,7 @@ async function seed() {
   ]);
 
   console.log("Seed complete.");
-  console.log(`Users: ${users.length}`);
+  console.log(`Users: ${users.length} (password for all seeded accounts: ${SEED_PASSWORD})`);
   console.log(`Vehicles: ${vehicles.length}`);
   console.log("Reservations: 6");
   console.log("");

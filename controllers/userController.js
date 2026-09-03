@@ -1,3 +1,4 @@
+const passport = require("passport");
 const User = require("../models/user");
 const Reservation = require("../models/reservation");
 
@@ -25,7 +26,7 @@ exports.home = (req, res) => {
   });
 };
 
-exports.login = async (req, res) => {
+exports.login = (req, res, next) => {
   if (req.method === "GET") {
     return res.render("users/login", {
       title: "Log In",
@@ -33,27 +34,43 @@ exports.login = async (req, res) => {
     });
   }
 
-  const user = await User.findOne({ email: req.body.email });
+  passport.authenticate("local", (err, user, info) => {
+    if (err) {
+      return next(err);
+    }
 
-  if (!user) {
-    req.flash("error", "We couldn't find an account with that email. Use a seeded staff or admin account.");
-    return res.redirect("/login");
-  }
+    if (!user) {
+      req.flash("error", info?.message || "Incorrect email or password.");
+      return res.redirect("/login");
+    }
 
-  req.session.userId = user._id;
-  const redirectTo = req.session.returnTo;
-  req.session.returnTo = null;
+    const returnTo = req.session.returnTo;
 
-  req.flash("success", `Welcome back, ${user.firstName}!`);
+    // Regenerate the session on login (not just logout) so a session ID
+    // that existed before authentication can never be reused afterward.
+    req.session.regenerate((regenerateErr) => {
+      if (regenerateErr) {
+        return next(regenerateErr);
+      }
 
-  if (redirectTo && redirectTo !== "/") {
-    return res.redirect(redirectTo);
-  }
+      req.login(user, async (loginErr) => {
+        if (loginErr) {
+          return next(loginErr);
+        }
 
-  res.redirect(await getLandingPath(user._id));
+        req.flash("success", `Welcome back, ${user.firstName}!`);
+
+        if (returnTo && returnTo !== "/") {
+          return res.redirect(returnTo);
+        }
+
+        res.redirect(await getLandingPath(user._id));
+      });
+    });
+  })(req, res, next);
 };
 
-exports.register = async (req, res) => {
+exports.register = (req, res, next) => {
   if (req.method === "GET") {
     return res.render("users/register", {
       title: "Sign Up",
@@ -61,29 +78,40 @@ exports.register = async (req, res) => {
     });
   }
 
-  const { firstName, lastName, email } = req.body;
+  const { firstName, lastName, email, password } = req.body;
 
-  const existingUser = await User.findOne({ email });
-  if (existingUser) {
-    req.flash("error", "An account with that email already exists.");
-    return res.redirect("/register");
-  }
+  User.register(new User({ firstName, lastName, email, role: "Staff" }), password, (err, user) => {
+    if (err) {
+      req.flash("error", err.message || "Could not create your account.");
+      return res.redirect("/register");
+    }
 
-  const user = await User.create({
-    firstName,
-    lastName,
-    email,
-    role: "Staff",
+    req.session.regenerate((regenerateErr) => {
+      if (regenerateErr) {
+        return next(regenerateErr);
+      }
+
+      req.login(user, async (loginErr) => {
+        if (loginErr) {
+          return next(loginErr);
+        }
+
+        req.flash("success", `Welcome, ${user.firstName}! Your account has been created.`);
+        res.redirect(await getLandingPath(user._id));
+      });
+    });
   });
-
-  req.session.userId = user._id;
-  req.flash("success", `Welcome, ${user.firstName}! Your account has been created.`);
-  res.redirect(await getLandingPath(user._id));
 };
 
-exports.logout = (req, res) => {
-  req.session.regenerate(() => {
-    req.flash("success", "You have been logged out.");
-    res.redirect("/");
+exports.logout = (req, res, next) => {
+  req.logout((err) => {
+    if (err) {
+      return next(err);
+    }
+
+    req.session.regenerate(() => {
+      req.flash("success", "You have been logged out.");
+      res.redirect("/");
+    });
   });
 };

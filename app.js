@@ -13,19 +13,19 @@ const vehicleRoutes = require("./routes/vehicleRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const reservationRoutes = require("./routes/reservationRoutes");
 const webhookRoutes = require("./routes/webhookRoutes");
-const { loadCurrentUser } = require("./middleware/auth");
-const { asyncHandler } = require("./utils/asyncHandler");
 const reminderScheduler = require("./jobs/reminderScheduler");
+const passport = require("./config/passport");
 
 const app = express();
 
 require("./db");
 
 if (process.env.NODE_ENV === "production" && !process.env.SESSION_SECRET) {
-  console.warn(
-    "WARNING: SESSION_SECRET is not set. Using an insecure default secret in production lets " +
-      "anyone forge session cookies. Set SESSION_SECRET in the environment before going live.",
+  console.error(
+    "FATAL: SESSION_SECRET is not set. Refusing to start in production with the default " +
+      "secret, since that would let anyone forge session cookies. Set SESSION_SECRET in the environment.",
   );
+  process.exit(1);
 }
 
 app.set("trust proxy", 1);
@@ -73,8 +73,14 @@ app.use(
     },
   }),
 );
+app.use(passport.initialize());
+app.use(passport.session());
 app.use(flash());
-app.use(asyncHandler(loadCurrentUser));
+
+app.use((req, res, next) => {
+  res.locals.currentUser = req.user || null;
+  next();
+});
 
 app.use((req, res, next) => {
   res.locals.successMessages = req.flash("success");

@@ -6,7 +6,10 @@ const loginSchema = Joi.object({
     "any.required": "Email is required.",
     "string.email": "Please enter a valid email address.",
   }),
-  password: Joi.string().allow("").optional(),
+  password: Joi.string().min(1).required().messages({
+    "string.empty": "Password is required.",
+    "any.required": "Password is required.",
+  }),
 });
 
 const registerSchema = Joi.object({
@@ -23,8 +26,15 @@ const registerSchema = Joi.object({
     "any.required": "Email is required.",
     "string.email": "Please enter a valid email address.",
   }),
-  password: Joi.string().allow("").optional(),
-  confirmPassword: Joi.string().allow("").optional(),
+  password: Joi.string().min(8).max(200).required().messages({
+    "string.empty": "Password is required.",
+    "any.required": "Password is required.",
+    "string.min": "Password must be at least 8 characters.",
+  }),
+  confirmPassword: Joi.string().valid(Joi.ref("password")).required().messages({
+    "any.only": "Passwords do not match.",
+    "any.required": "Please confirm your password.",
+  }),
 });
 
 module.exports = { loginSchema, registerSchema };
