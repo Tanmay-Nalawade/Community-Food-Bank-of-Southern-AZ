@@ -1,0 +1,149 @@
+<% layout('layouts/boilerplate') %>
+
+<section class="admin-page">
+  <a class="vehicle-detail__back" href="/admin/vehicles">&larr; Back to vehicles</a>
+
+  <h1><%= vehicle.year ? vehicle.year + " " : "" %><%= vehicle.make %> <%= vehicle.model %></h1>
+  <p class="vehicles-page__lead"><%= vehicle.licensePlate %></p>
+
+  <div class="vehicle-detail__grid">
+    <div class="vehicle-detail__card">
+      <h2 class="vehicle-detail__section-title">Vehicle details</h2>
+      <form class="auth-form" action="/admin/vehicles/<%= vehicle._id %>?_method=PUT" method="POST">
+        <div class="auth-form__row">
+          <div class="auth-form__group">
+            <label class="auth-form__label" for="make">Make</label>
+            <input class="auth-form__input" type="text" id="make" name="make" value="<%= vehicle.make %>" required />
+          </div>
+          <div class="auth-form__group">
+            <label class="auth-form__label" for="model">Model</label>
+            <input class="auth-form__input" type="text" id="model" name="model" value="<%= vehicle.model %>" required />
+          </div>
+        </div>
+
+        <div class="auth-form__row">
+          <div class="auth-form__group">
+            <label class="auth-form__label" for="year">Year</label>
+            <input class="auth-form__input" type="number" id="year" name="year" min="1900" max="2100" value="<%= vehicle.year || '' %>" />
+          </div>
+          <div class="auth-form__group">
+            <label class="auth-form__label" for="licensePlate">License plate</label>
+            <input class="auth-form__input" type="text" id="licensePlate" name="licensePlate" value="<%= vehicle.licensePlate %>" required />
+          </div>
+        </div>
+
+        <div class="auth-form__group">
+          <label class="auth-form__label" for="keyCafeKeyId">KeyCafe key ID</label>
+          <input class="auth-form__input" type="text" id="keyCafeKeyId" name="keyCafeKeyId" value="<%= vehicle.keyCafeKeyId %>" required />
+        </div>
+
+        <div class="auth-form__row">
+          <div class="auth-form__group">
+            <label class="auth-form__label" for="currentMileage">Current mileage</label>
+            <input class="auth-form__input" type="number" id="currentMileage" name="currentMileage" min="0" value="<%= vehicle.currentMileage %>" required />
+          </div>
+          <div class="auth-form__group">
+            <label class="auth-form__label" for="status">Status</label>
+            <select class="auth-form__input" id="status" name="status" required>
+              <% ["Available", "Reserved", "In Use", "Maintenance", "Out of Service"].forEach((option) => { %>
+                <option value="<%= option %>" <%= vehicle.status === option ? "selected" : "" %>><%= option %></option>
+              <% }) %>
+            </select>
+          </div>
+        </div>
+
+        <button class="auth-form__submit" type="submit">Save changes</button>
+      </form>
+      <p class="vehicle-detail__empty admin-hint">
+        To retire a vehicle permanently, set its status to "Out of Service" — deleting vehicles isn't supported because it would break the reservation history below.
+      </p>
+    </div>
+
+    <div class="vehicle-detail__card">
+      <h2 class="vehicle-detail__section-title">Reported issues</h2>
+      <% if (!vehicle.activeIssues.length) { %>
+        <p class="vehicle-detail__empty">No reported issues.</p>
+      <% } else { %>
+        <ul class="vehicle-detail__issues">
+          <% vehicle.activeIssues.forEach((issue) => { %>
+            <li class="admin-issue">
+              <div>
+                <span class="vehicle-detail__issue-date">
+                  <%= new Date(issue.reportedAt).toLocaleDateString() %>
+                </span>
+                <%= issue.description %>
+              </div>
+              <form action="/admin/vehicles/<%= vehicle._id %>/issues/<%= issue._id %>/resolve" method="POST">
+                <button class="admin-table__btn admin-table__btn--approve" type="submit">Resolve</button>
+              </form>
+            </li>
+          <% }) %>
+        </ul>
+      <% } %>
+
+      <form class="auth-form admin-issue-form" action="/admin/vehicles/<%= vehicle._id %>/issues" method="POST">
+        <div class="auth-form__group">
+          <label class="auth-form__label" for="description">Report a new issue</label>
+          <textarea class="auth-form__input booking-request-card__textarea" id="description" name="description" rows="2" placeholder="Describe the issue" required></textarea>
+        </div>
+        <button class="auth-form__submit" type="submit">Report issue</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="vehicle-detail__card admin-history-card">
+    <h2 class="vehicle-detail__section-title">Reservation history</h2>
+    <% if (!reservations.length) { %>
+      <p class="vehicle-detail__empty">This vehicle has no reservations yet.</p>
+    <% } else { %>
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Driver</th>
+              <th>When</th>
+              <th>Status</th>
+              <th>Start mi</th>
+              <th>End mi</th>
+              <th>Distance</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% reservations.forEach((reservation) => { %>
+              <tr>
+                <td>
+                  <a href="/admin/drivers/<%= reservation.userId._id %>">
+                    <%= reservation.userId.firstName %> <%= reservation.userId.lastName %>
+                  </a>
+                </td>
+                <td>
+                  <%= new Date(reservation.requestedStartTime).toLocaleString() %>
+                  &ndash;
+                  <%= new Date(reservation.requestedEndTime).toLocaleString() %>
+                </td>
+                <td>
+                  <span class="status-pill status-pill--<%= reservation.status.toLowerCase() %>">
+                    <%= reservation.status %>
+                  </span>
+                </td>
+                <td><%= reservation.tripLog?.startMileage != null ? reservation.tripLog.startMileage.toLocaleString() : "—" %></td>
+                <td><%= reservation.tripLog?.endMileage != null ? reservation.tripLog.endMileage.toLocaleString() : "—" %></td>
+                <td>
+                  <% if (reservation.tripLog?.startMileage != null && reservation.tripLog?.endMileage != null) { %>
+                    <%= (reservation.tripLog.endMileage - reservation.tripLog.startMileage).toLocaleString() %> mi
+                  <% } else { %>
+                    —
+                  <% } %>
+                </td>
+                <td class="admin-table__actions">
+                  <a class="admin-table__btn admin-table__btn--edit" href="/admin/reservations/<%= reservation._id %>">View</a>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+</section>

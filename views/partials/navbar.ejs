@@ -39,10 +39,47 @@
               <span><%= currentUser.role %></span>
             </p>
 
-            <% if (currentUser.role === "Admin") { %>
-              <a class="site-navbar__dropdown-link" href="/admin/reservations">Admin Dashboard</a>
-              <a class="site-navbar__dropdown-link" href="/admin/vehicles/add">Add Vehicle</a>
+            <% if (viewAsRole) { %>
+              <p class="site-navbar__viewing-as">Currently viewing as <%= viewAsRole %></p>
+            <% } %>
+
+            <% if (effectiveRole === "IT Admin") { %>
+              <a class="site-navbar__dropdown-link" href="/it/users">Manage Users</a>
+              <a class="site-navbar__dropdown-link" href="/it/activity">Activity Log</a>
+              <a class="site-navbar__dropdown-link" href="/it/api-status">API Status</a>
+            <% } %>
+
+            <% if (effectiveRole === "Admin") { %>
+              <a class="site-navbar__dropdown-link" href="/admin/reservations">Reservations</a>
+              <a class="site-navbar__dropdown-link" href="/admin/vehicles">Vehicles</a>
+              <a class="site-navbar__dropdown-link" href="/admin/drivers">Drivers</a>
+              <a class="site-navbar__dropdown-link" href="/admin/reports">Reports</a>
               <a class="site-navbar__dropdown-link" href="/admin/issues">Vehicle Issues</a>
+            <% } %>
+
+            <% if (viewAsRole) { %>
+              <form class="site-navbar__logout-form site-navbar__view-switch" action="/account/view-as" method="POST">
+                <button class="site-navbar__dropdown-link" type="submit">
+                  Return to <%= currentUser.role %> view
+                </button>
+              </form>
+            <% } else { %>
+              <% if (currentUser.role === "IT Admin") { %>
+                <form class="site-navbar__logout-form site-navbar__view-switch" action="/account/view-as" method="POST">
+                  <input type="hidden" name="role" value="Admin" />
+                  <button class="site-navbar__dropdown-link" type="submit">
+                    View as Admin
+                  </button>
+                </form>
+              <% } %>
+              <% if (currentUser.role === "IT Admin" || currentUser.role === "Admin") { %>
+                <form class="site-navbar__logout-form site-navbar__view-switch" action="/account/view-as" method="POST">
+                  <input type="hidden" name="role" value="Staff" />
+                  <button class="site-navbar__dropdown-link" type="submit">
+                    View as Staff
+                  </button>
+                </form>
+              <% } %>
             <% } %>
 
             <form class="site-navbar__logout-form" action="/logout" method="POST">

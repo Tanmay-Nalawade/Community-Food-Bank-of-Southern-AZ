@@ -1,0 +1,55 @@
+<% layout('layouts/boilerplate') %>
+
+<section class="admin-page">
+  <h1>Drivers</h1>
+  <p class="vehicles-page__lead">Search staff and admins to review their booking history.</p>
+
+  <form class="admin-filters" method="GET" action="/admin/drivers">
+    <div class="admin-filters__field">
+      <label class="auth-form__label" for="q">Search</label>
+      <input
+        class="auth-form__input"
+        type="text"
+        id="q"
+        name="q"
+        placeholder="Name or email"
+        value="<%= q %>"
+      />
+    </div>
+    <button class="admin-filters__submit" type="submit">Search</button>
+    <% if (q) { %>
+      <a class="admin-filters__clear" href="/admin/drivers">Clear</a>
+    <% } %>
+  </form>
+
+  <% if (!drivers.length) { %>
+    <p class="vehicles-page__empty">No drivers match your search.</p>
+  <% } else { %>
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% drivers.forEach((driver) => { %>
+            <tr>
+              <td><%= driver.firstName %> <%= driver.lastName %></td>
+              <td><%= driver.email %></td>
+              <td><%= driver.role %></td>
+              <td><%= driver.isActive ? "Active" : "Inactive" %></td>
+              <td class="admin-table__actions">
+                <a class="admin-table__btn admin-table__btn--edit" href="/admin/drivers/<%= driver._id %>">View</a>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</section>

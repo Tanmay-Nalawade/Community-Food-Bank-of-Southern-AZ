@@ -1,0 +1,60 @@
+<% layout('layouts/boilerplate') %>
+
+<section class="admin-page">
+  <div class="vehicles-page__header">
+    <div>
+      <h1>Booking History</h1>
+      <p class="vehicles-page__lead">
+        Every booking whose window has already ended, newest first. Click a row's View link for
+        full details, including trip mileage.
+      </p>
+    </div>
+    <a class="vehicles-page__add-btn" href="/admin/reservations">All Reservations</a>
+  </div>
+
+  <% if (!reservations.length) { %>
+    <p class="vehicles-page__empty">No past bookings yet.</p>
+  <% } else { %>
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Staff</th>
+            <th>Vehicle</th>
+            <th>When</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% reservations.forEach((reservation) => { %>
+            <tr>
+              <td>
+                <%= reservation.userId.firstName %> <%= reservation.userId.lastName %><br />
+                <span class="admin-table__subtext"><%= reservation.userId.email %></span>
+              </td>
+              <td>
+                <%= reservation.vehicleId.year ? reservation.vehicleId.year + " " : "" %>
+                <%= reservation.vehicleId.make %> <%= reservation.vehicleId.model %><br />
+                <span class="admin-table__subtext"><%= reservation.vehicleId.licensePlate %></span>
+              </td>
+              <td>
+                <%= new Date(reservation.requestedStartTime).toLocaleString() %>
+                &ndash;
+                <%= new Date(reservation.requestedEndTime).toLocaleString() %>
+              </td>
+              <td>
+                <span class="status-pill status-pill--<%= reservation.status.toLowerCase() %>">
+                  <%= reservation.status %>
+                </span>
+              </td>
+              <td class="admin-table__actions">
+                <a class="admin-table__btn admin-table__btn--edit" href="/admin/reservations/<%= reservation._id %>">View</a>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</section>

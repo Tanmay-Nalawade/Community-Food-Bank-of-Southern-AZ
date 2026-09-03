@@ -1,0 +1,74 @@
+<% layout('layouts/boilerplate') %>
+
+<section class="admin-page">
+  <h1>Manage Users</h1>
+  <p class="vehicles-page__lead">Search accounts, change roles, and activate or deactivate access.</p>
+
+  <form class="admin-filters" method="GET" action="/it/users">
+    <div class="admin-filters__field">
+      <label class="auth-form__label" for="q">Search</label>
+      <input
+        class="auth-form__input"
+        type="text"
+        id="q"
+        name="q"
+        placeholder="Name or email"
+        value="<%= q %>"
+      />
+    </div>
+
+    <div class="admin-filters__field">
+      <label class="auth-form__label" for="role">Role</label>
+      <select class="auth-form__input" id="role" name="role">
+        <option value="">All roles</option>
+        <% ["Staff", "Admin", "IT Admin"].forEach((option) => { %>
+          <option value="<%= option %>" <%= role === option ? "selected" : "" %>><%= option %></option>
+        <% }) %>
+      </select>
+    </div>
+
+    <button class="admin-filters__submit" type="submit">Search</button>
+    <% if (q || role) { %>
+      <a class="admin-filters__clear" href="/it/users">Clear</a>
+    <% } %>
+  </form>
+
+  <% if (!users.length) { %>
+    <p class="vehicles-page__empty">No users match your search.</p>
+  <% } else { %>
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% users.forEach((user) => { %>
+            <tr>
+              <td><%= user.firstName %> <%= user.lastName %></td>
+              <td><%= user.email %></td>
+              <td>
+                <span class="status-pill status-pill--<%= user.role.toLowerCase().replace(/\s+/g, '-') %>">
+                  <%= user.role %>
+                </span>
+              </td>
+              <td>
+                <span class="status-pill status-pill--<%= user.isActive ? 'active-account' : 'inactive-account' %>">
+                  <%= user.isActive ? "Active" : "Inactive" %>
+                </span>
+              </td>
+              <td class="admin-table__actions">
+                <a class="admin-table__btn admin-table__btn--edit" href="/it/users/<%= user._id %>/edit">Edit</a>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</section>

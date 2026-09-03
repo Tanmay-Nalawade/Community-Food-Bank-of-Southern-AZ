@@ -1,0 +1,31 @@
+<% layout('layouts/boilerplate') %>
+
+<section class="admin-page">
+  <h1>API Status</h1>
+  <p class="vehicles-page__lead">KeyCafe integration configuration and connectivity.</p>
+
+  <div class="vehicle-detail__card">
+    <h2 class="vehicle-detail__section-title">Configuration</h2>
+
+    <p>
+      KeyCafe API credentials:
+      <span class="status-pill status-pill--<%= keycafeConfigured ? 'active-account' : 'inactive-account' %>">
+        <%= keycafeConfigured ? "Configured" : "Not configured (using mock access codes)" %>
+      </span>
+    </p>
+    <p>
+      Webhook credentials:
+      <span class="status-pill status-pill--<%= webhookConfigured ? 'active-account' : 'inactive-account' %>">
+        <%= webhookConfigured ? "Configured" : "Not configured" %>
+      </span>
+    </p>
+    <p>Timezone: <strong><%= keycafeTimezone %></strong></p>
+
+    <form action="/it/api-status/test" method="POST">
+      <button class="auth-form__submit" type="submit">Test KeyCafe Connection</button>
+    </form>
+    <p class="vehicle-detail__empty">
+      Runs a live, read-only request to KeyCafe to confirm the configured credentials work. No data is changed.
+    </p>
+  </div>
+</section>

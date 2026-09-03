@@ -1,4 +1,9 @@
 const keycafe = require("./keycafe");
+const AccessLog = require("../models/accessLog");
+
+function refId(value) {
+  return value?._id || value;
+}
 
 async function grantReservationAccess(reservation) {
   const user = reservation.userId;
@@ -33,6 +38,15 @@ async function grantReservationAccess(reservation) {
     keyReturnedAt: reservation.keyCafeAccess?.keyReturnedAt,
   };
 
+  await AccessLog.create({
+    reservationId: reservation._id,
+    vehicleId: refId(vehicle),
+    userId: refId(user),
+    action: "Granted",
+    accessId: reservation.keyCafeAccess.accessId,
+    bookingCode: reservation.keyCafeAccess.bookingCode,
+  });
+
   return reservation;
 }
 
@@ -44,6 +58,15 @@ async function revokeReservationAccess(reservation) {
   }
 
   await keycafe.cancelAccess(accessId);
+
+  await AccessLog.create({
+    reservationId: reservation._id,
+    vehicleId: refId(reservation.vehicleId),
+    userId: refId(reservation.userId),
+    action: "Revoked",
+    accessId,
+    bookingCode: reservation.keyCafeAccess.bookingCode,
+  });
 
   reservation.keyCafeAccess.bookingCode = undefined;
   reservation.keyCafeAccess.accessId = undefined;

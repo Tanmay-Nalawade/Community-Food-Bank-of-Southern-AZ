@@ -9,7 +9,7 @@ const userSchema = new Schema(
     email: { type: String, required: true, unique: true },
     role: {
       type: String,
-      enum: ["Staff", "Admin"],
+      enum: ["Staff", "Admin", "IT Admin"],
       default: "Staff",
     },
     isActive: { type: Boolean, default: true },

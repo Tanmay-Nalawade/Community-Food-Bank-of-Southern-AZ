@@ -48,6 +48,10 @@ async function seed() {
       new User({ firstName: "Alex", lastName: "Rivera", email: "alex.rivera@cfb.example", role: "Admin" }),
       SEED_PASSWORD,
     ),
+    registerUser(
+      new User({ firstName: "Sam", lastName: "Okafor", email: "sam.okafor@cfb.example", role: "IT Admin" }),
+      SEED_PASSWORD,
+    ),
   ]);
 
   const [jordan, maria] = users;

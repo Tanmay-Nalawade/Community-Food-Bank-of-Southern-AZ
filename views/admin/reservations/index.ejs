@@ -4,10 +4,68 @@
   <div class="vehicles-page__header">
     <div>
       <h1>Manage Reservations</h1>
-      <p class="vehicles-page__lead">Review, approve, edit, or delete staff booking requests.</p>
+      <p class="vehicles-page__lead">
+        Standard bookings confirm automatically when the vehicle is available. Items marked
+        Pending are exceptions (a scheduling conflict or a KeyCafe issue) that need your review.
+        You can edit, override, or cancel any booking below.
+      </p>
     </div>
-    <a class="vehicles-page__add-btn" href="/admin/vehicles/add">Add Vehicle</a>
+    <div class="admin-page__header-actions">
+      <a class="vehicles-page__add-btn" href="/admin/reservations/history">Booking History</a>
+      <a class="vehicles-page__add-btn" href="/admin/vehicles/add">Add Vehicle</a>
+    </div>
   </div>
+
+  <form class="admin-filters" method="GET" action="/admin/reservations">
+    <div class="admin-filters__field">
+      <label class="auth-form__label" for="driver">Driver</label>
+      <input
+        class="auth-form__input"
+        type="text"
+        id="driver"
+        name="driver"
+        placeholder="Name or email"
+        value="<%= filters.driver %>"
+      />
+    </div>
+
+    <div class="admin-filters__field">
+      <label class="auth-form__label" for="vehicleId">Vehicle</label>
+      <select class="auth-form__input" id="vehicleId" name="vehicleId">
+        <option value="">All vehicles</option>
+        <% vehicles.forEach((vehicle) => { %>
+          <option value="<%= vehicle._id %>" <%= filters.vehicleId === String(vehicle._id) ? "selected" : "" %>>
+            <%= vehicle.year ? vehicle.year + " " : "" %><%= vehicle.make %> <%= vehicle.model %> (<%= vehicle.licensePlate %>)
+          </option>
+        <% }) %>
+      </select>
+    </div>
+
+    <div class="admin-filters__field">
+      <label class="auth-form__label" for="status">Status</label>
+      <select class="auth-form__input" id="status" name="status">
+        <option value="">All statuses</option>
+        <% ["Pending", "Reserved", "Active", "Completed", "Cancelled", "Denied"].forEach((option) => { %>
+          <option value="<%= option %>" <%= filters.status === option ? "selected" : "" %>><%= option %></option>
+        <% }) %>
+      </select>
+    </div>
+
+    <div class="admin-filters__field">
+      <label class="auth-form__label" for="startDate">From</label>
+      <input class="auth-form__input" type="date" id="startDate" name="startDate" value="<%= filters.startDate %>" />
+    </div>
+
+    <div class="admin-filters__field">
+      <label class="auth-form__label" for="endDate">To</label>
+      <input class="auth-form__input" type="date" id="endDate" name="endDate" value="<%= filters.endDate %>" />
+    </div>
+
+    <button class="admin-filters__submit" type="submit">Filter</button>
+    <% if (filters.driver || filters.vehicleId || filters.status || filters.startDate || filters.endDate) { %>
+      <a class="admin-filters__clear" href="/admin/reservations">Clear</a>
+    <% } %>
+  </form>
 
   <% if (!reservations.length) { %>
     <p class="vehicles-page__empty">No reservations to review.</p>
@@ -54,6 +112,12 @@
                     <button class="admin-table__btn admin-table__btn--deny" type="submit">Deny</button>
                   </form>
                 <% } %>
+                <% if (["Reserved", "Active"].includes(reservation.status)) { %>
+                  <form action="/admin/reservations/<%= reservation._id %>/cancel" method="POST">
+                    <button class="admin-table__btn admin-table__btn--deny" type="submit">Cancel</button>
+                  </form>
+                <% } %>
+                <a class="admin-table__btn admin-table__btn--edit" href="/admin/reservations/<%= reservation._id %>">View</a>
                 <a class="admin-table__btn admin-table__btn--edit" href="/admin/reservations/<%= reservation._id %>/edit">Edit</a>
                 <form action="/admin/reservations/<%= reservation._id %>?_method=DELETE" method="POST">
                   <button class="admin-table__btn admin-table__btn--delete" type="submit">Delete</button>

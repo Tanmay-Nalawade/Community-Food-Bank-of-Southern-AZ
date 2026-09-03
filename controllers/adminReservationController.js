@@ -1,20 +1,98 @@
 const Reservation = require("../models/reservation");
 const Vehicle = require("../models/vehicle");
+const User = require("../models/user");
 const { parseBookingWindow, formatBookingLabel } = require("../utils/availability");
 const {
   grantReservationAccess,
   revokeReservationAccess,
 } = require("../services/reservationKeycafe");
 
+function escapeRegex(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 exports.listReservations = async (req, res) => {
-  const reservations = await Reservation.find({})
-    .populate("userId", "firstName lastName email role")
-    .populate("vehicleId", "make model year licensePlate")
-    .sort({ createdAt: -1 });
+  const { status, vehicleId, driver, startDate, endDate } = req.query;
+  const filter = {};
+
+  if (status) {
+    filter.status = status;
+  }
+
+  if (vehicleId) {
+    filter.vehicleId = vehicleId;
+  }
+
+  if (driver) {
+    const regex = new RegExp(escapeRegex(driver.trim()), "i");
+    const matchingUserIds = await User.find({
+      $or: [{ firstName: regex }, { lastName: regex }, { email: regex }],
+    }).distinct("_id");
+    filter.userId = { $in: matchingUserIds };
+  }
+
+  if (startDate || endDate) {
+    filter.requestedStartTime = {};
+    if (startDate) {
+      filter.requestedStartTime.$gte = new Date(`${startDate}T00:00`);
+    }
+    if (endDate) {
+      filter.requestedStartTime.$lte = new Date(`${endDate}T23:59:59`);
+    }
+  }
+
+  const [reservations, vehicles] = await Promise.all([
+    Reservation.find(filter)
+      .populate("userId", "firstName lastName email role")
+      .populate("vehicleId", "make model year licensePlate")
+      .sort({ createdAt: -1 }),
+    Vehicle.find({}).sort({ make: 1, model: 1 }),
+  ]);
 
   res.render("admin/reservations/index", {
     title: "Manage Reservations",
     reservations,
+    vehicles,
+    filters: {
+      status: status || "",
+      vehicleId: vehicleId || "",
+      driver: driver || "",
+      startDate: startDate || "",
+      endDate: endDate || "",
+    },
+    activeNav: "admin",
+  });
+};
+
+exports.pastReservations = async (req, res) => {
+  const now = new Date();
+
+  const reservations = await Reservation.find({ requestedEndTime: { $lt: now } })
+    .populate("userId", "firstName lastName email role")
+    .populate("vehicleId", "make model year licensePlate")
+    .sort({ requestedEndTime: -1 })
+    .limit(200);
+
+  res.render("admin/reservations/history", {
+    title: "Booking History",
+    reservations,
+    activeNav: "admin",
+  });
+};
+
+exports.showReservation = async (req, res) => {
+  const reservation = await Reservation.findById(req.params.id)
+    .populate("userId", "firstName lastName email role")
+    .populate("vehicleId")
+    .populate("reviewedBy", "firstName lastName");
+
+  if (!reservation) {
+    return res.status(404).send("Reservation not found.");
+  }
+
+  res.render("admin/reservations/show", {
+    title: "Booking Details",
+    reservation,
     activeNav: "admin",
   });
 };
@@ -129,6 +207,14 @@ exports.approveReservation = async (req, res) => {
   res.redirect("/admin/reservations");
 };
 
+async function freeVehicleIfHeldBy(vehicleId) {
+  const vehicle = await Vehicle.findById(vehicleId);
+  if (vehicle && ["Reserved", "In Use"].includes(vehicle.status)) {
+    vehicle.status = "Available";
+    await vehicle.save();
+  }
+}
+
 exports.denyReservation = async (req, res) => {
   const reservation = await Reservation.findById(req.params.id);
   if (!reservation) {
@@ -148,6 +234,7 @@ exports.denyReservation = async (req, res) => {
   reservation.reviewedBy = res.locals.currentUser._id;
   reservation.reviewedAt = new Date();
   await reservation.save();
+  await freeVehicleIfHeldBy(reservation.vehicleId);
 
   if (revokeFailed) {
     req.flash(
@@ -156,6 +243,43 @@ exports.denyReservation = async (req, res) => {
     );
   } else {
     req.flash("success", "Booking canceled.");
+  }
+
+  res.redirect("/admin/reservations");
+};
+
+exports.cancelReservation = async (req, res) => {
+  const reservation = await Reservation.findById(req.params.id);
+  if (!reservation) {
+    return res.status(404).send("Reservation not found.");
+  }
+
+  if (!["Reserved", "Active"].includes(reservation.status)) {
+    req.flash("error", "Only confirmed bookings can be canceled this way.");
+    return res.redirect("/admin/reservations");
+  }
+
+  let revokeFailed = false;
+  try {
+    await revokeReservationAccess(reservation);
+  } catch (error) {
+    console.error("KeyCafe access cancellation failed:", error);
+    revokeFailed = true;
+  }
+
+  reservation.status = "Cancelled";
+  reservation.reviewedBy = res.locals.currentUser._id;
+  reservation.reviewedAt = new Date();
+  await reservation.save();
+  await freeVehicleIfHeldBy(reservation.vehicleId);
+
+  if (revokeFailed) {
+    req.flash(
+      "error",
+      "Booking canceled, but the KeyCafe access could not be revoked automatically. Cancel it manually in KeyCafe.",
+    );
+  } else {
+    req.flash("success", "Booking canceled by Transportation.");
   }
 
   res.redirect("/admin/reservations");
@@ -173,6 +297,7 @@ exports.deleteReservation = async (req, res) => {
       console.error("KeyCafe access cancellation failed:", error);
       revokeFailed = true;
     }
+    await freeVehicleIfHeldBy(reservation.vehicleId);
   }
 
   await Reservation.findByIdAndDelete(req.params.id);

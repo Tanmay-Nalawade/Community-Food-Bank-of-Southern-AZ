@@ -1,6 +1,7 @@
 const passport = require("passport");
 const User = require("../models/user");
 const Reservation = require("../models/reservation");
+const ActivityLog = require("../models/activityLog");
 
 async function getLandingPath(userId) {
   const now = new Date();
@@ -58,6 +59,13 @@ exports.login = (req, res, next) => {
           return next(loginErr);
         }
 
+        await ActivityLog.create({
+          userId: user._id,
+          action: "Login",
+          detail: `Logged in as ${user.role}`,
+          ip: req.ip,
+        });
+
         req.flash("success", `Welcome back, ${user.firstName}!`);
 
         if (returnTo && returnTo !== "/") {
@@ -104,9 +112,19 @@ exports.register = (req, res, next) => {
 };
 
 exports.logout = (req, res, next) => {
-  req.logout((err) => {
+  const currentUser = res.locals.currentUser;
+
+  req.logout(async (err) => {
     if (err) {
       return next(err);
+    }
+
+    if (currentUser) {
+      await ActivityLog.create({
+        userId: currentUser._id,
+        action: "Logout",
+        ip: req.ip,
+      });
     }
 
     req.session.regenerate(() => {

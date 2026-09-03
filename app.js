@@ -13,8 +13,11 @@ const vehicleRoutes = require("./routes/vehicleRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const reservationRoutes = require("./routes/reservationRoutes");
 const webhookRoutes = require("./routes/webhookRoutes");
+const accountRoutes = require("./routes/accountRoutes");
+const itRoutes = require("./routes/itRoutes");
 const reminderScheduler = require("./jobs/reminderScheduler");
 const passport = require("./config/passport");
+const { computeEffectiveRole } = require("./middleware/auth");
 
 const app = express();
 
@@ -81,6 +84,7 @@ app.use((req, res, next) => {
   res.locals.currentUser = req.user || null;
   next();
 });
+app.use(computeEffectiveRole);
 
 app.use((req, res, next) => {
   res.locals.successMessages = req.flash("success");
@@ -104,6 +108,8 @@ app.use((req, res, next) => {
     res.locals.activeNav = "dashboard";
   } else if (req.path.startsWith("/admin")) {
     res.locals.activeNav = "admin";
+  } else if (req.path.startsWith("/it")) {
+    res.locals.activeNav = "it";
   }
   next();
 });
@@ -112,6 +118,8 @@ app.use("/admin", adminRoutes);
 app.use("/reservations", reservationRoutes);
 app.use("/vehicles", vehicleRoutes);
 app.use("/webhooks", webhookRoutes);
+app.use("/account", accountRoutes);
+app.use("/it", itRoutes);
 app.use("/", userRoutes);
 
 app.use((req, res) => {

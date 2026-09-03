@@ -201,6 +201,26 @@
   margin: 0;
 }
 
+.site-navbar__viewing-as {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #a05a1e;
+  background: #fff3e0;
+  margin: 0;
+  padding: 0.3rem 1rem;
+}
+
+.site-navbar__view-switch:first-of-type {
+  border-top: 1px solid #eee5ea;
+  margin-top: 0.25rem;
+  padding-top: 0;
+}
+
+.site-navbar__view-switch .site-navbar__dropdown-link {
+  font-style: italic;
+}
+
 @media (max-width: 640px) {
   .site-navbar__inner {
     flex-direction: column;

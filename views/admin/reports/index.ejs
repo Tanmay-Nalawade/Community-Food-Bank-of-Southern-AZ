@@ -1,0 +1,93 @@
+<% layout('layouts/boilerplate') %>
+
+<section class="admin-page">
+  <h1>Reports</h1>
+  <p class="vehicles-page__lead">Fleet utilization and KeyCafe access history.</p>
+
+  <div class="vehicle-detail__card admin-history-card">
+    <h2 class="vehicle-detail__section-title">Vehicle utilization</h2>
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Vehicle</th>
+            <th>Current mileage</th>
+            <th>Bookings</th>
+            <th>Total hours booked</th>
+            <th>Last booked</th>
+            <th>Idle 30+ days</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% vehicleReport.forEach((row) => { %>
+            <tr>
+              <td>
+                <a href="/admin/vehicles/<%= row.vehicle._id %>">
+                  <%= row.vehicle.year ? row.vehicle.year + " " : "" %><%= row.vehicle.make %> <%= row.vehicle.model %>
+                </a>
+                <br />
+                <span class="admin-table__subtext"><%= row.vehicle.licensePlate %></span>
+              </td>
+              <td><%= row.vehicle.currentMileage.toLocaleString() %> mi</td>
+              <td><%= row.bookingCount %></td>
+              <td><%= row.totalHours %></td>
+              <td><%= row.lastBookedAt ? new Date(row.lastBookedAt).toLocaleDateString() : "Never" %></td>
+              <td>
+                <% if (row.idle) { %>
+                  <span class="status-pill status-pill--maintenance">Idle</span>
+                <% } else { %>
+                  —
+                <% } %>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="vehicle-detail__card admin-history-card">
+    <h2 class="vehicle-detail__section-title">KeyCafe access log</h2>
+    <p class="vehicle-detail__empty admin-hint">Most recent 100 access events — grants, revokes, pickups, and drop-offs.</p>
+    <% if (!accessLogs.length) { %>
+      <p class="vehicle-detail__empty">No access events recorded yet.</p>
+    <% } else { %>
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>When</th>
+              <th>Action</th>
+              <th>Driver</th>
+              <th>Vehicle</th>
+              <th>Booking code</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% accessLogs.forEach((log) => { %>
+              <tr>
+                <td><%= new Date(log.createdAt).toLocaleString() %></td>
+                <td><%= log.action %></td>
+                <td>
+                  <% if (log.userId) { %>
+                    <%= log.userId.firstName %> <%= log.userId.lastName %>
+                  <% } else { %>
+                    —
+                  <% } %>
+                </td>
+                <td>
+                  <% if (log.vehicleId) { %>
+                    <%= log.vehicleId.make %> <%= log.vehicleId.model %>
+                  <% } else { %>
+                    —
+                  <% } %>
+                </td>
+                <td><%= log.bookingCode || "—" %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+</section>
