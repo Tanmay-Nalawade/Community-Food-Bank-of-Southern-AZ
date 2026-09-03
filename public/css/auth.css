@@ -141,6 +141,13 @@ a.auth-form__submit {
   text-align: center;
 }
 
+a.auth-form__submit--centered {
+  display: block;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .auth-card__footer {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 0.95rem;
