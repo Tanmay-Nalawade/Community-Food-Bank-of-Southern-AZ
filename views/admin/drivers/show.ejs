@@ -20,7 +20,8 @@
               <th>Vehicle</th>
               <th>When</th>
               <th>Status</th>
-              <th>Booking code</th>
+              <th>Distance</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -45,7 +46,16 @@
                     <%= reservation.status %>
                   </span>
                 </td>
-                <td><%= reservation.keyCafeAccess?.bookingCode || "—" %></td>
+                <td>
+                  <% if (reservation.tripLog?.startMileage != null && reservation.tripLog?.endMileage != null) { %>
+                    <%= (reservation.tripLog.endMileage - reservation.tripLog.startMileage).toLocaleString() %> mi
+                  <% } else { %>
+                    —
+                  <% } %>
+                </td>
+                <td class="admin-table__actions">
+                  <a class="admin-table__btn admin-table__btn--edit" href="/admin/reservations/<%= reservation._id %>">View</a>
+                </td>
               </tr>
             <% }) %>
           </tbody>

@@ -11,6 +11,7 @@
         <thead>
           <tr>
             <th>Vehicle</th>
+            <th>Current mileage</th>
             <th>Bookings</th>
             <th>Total hours booked</th>
             <th>Last booked</th>
@@ -27,6 +28,7 @@
                 <br />
                 <span class="admin-table__subtext"><%= row.vehicle.licensePlate %></span>
               </td>
+              <td><%= row.vehicle.currentMileage.toLocaleString() %> mi</td>
               <td><%= row.bookingCount %></td>
               <td><%= row.totalHours %></td>
               <td><%= row.lastBookedAt ? new Date(row.lastBookedAt).toLocaleDateString() : "Never" %></td>

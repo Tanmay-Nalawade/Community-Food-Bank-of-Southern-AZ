@@ -10,7 +10,10 @@
         You can edit, override, or cancel any booking below.
       </p>
     </div>
-    <a class="vehicles-page__add-btn" href="/admin/vehicles/add">Add Vehicle</a>
+    <div class="admin-page__header-actions">
+      <a class="vehicles-page__add-btn" href="/admin/reservations/history">Booking History</a>
+      <a class="vehicles-page__add-btn" href="/admin/vehicles/add">Add Vehicle</a>
+    </div>
   </div>
 
   <form class="admin-filters" method="GET" action="/admin/reservations">
@@ -114,6 +117,7 @@
                     <button class="admin-table__btn admin-table__btn--deny" type="submit">Cancel</button>
                   </form>
                 <% } %>
+                <a class="admin-table__btn admin-table__btn--edit" href="/admin/reservations/<%= reservation._id %>">View</a>
                 <a class="admin-table__btn admin-table__btn--edit" href="/admin/reservations/<%= reservation._id %>/edit">Edit</a>
                 <form action="/admin/reservations/<%= reservation._id %>?_method=DELETE" method="POST">
                   <button class="admin-table__btn admin-table__btn--delete" type="submit">Delete</button>

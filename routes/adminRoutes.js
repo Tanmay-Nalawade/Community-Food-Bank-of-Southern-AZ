@@ -34,9 +34,19 @@ router.get(
   adminReservationController.listReservations,
 );
 router.get(
+  "/reservations/history",
+  requireAdmin,
+  adminReservationController.pastReservations,
+);
+router.get(
   "/reservations/:id/edit",
   requireAdmin,
   adminReservationController.editReservation,
+);
+router.get(
+  "/reservations/:id",
+  requireAdmin,
+  adminReservationController.showReservation,
 );
 router.put(
   "/reservations/:id",

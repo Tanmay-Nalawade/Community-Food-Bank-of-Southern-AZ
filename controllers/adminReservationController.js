@@ -64,6 +64,39 @@ exports.listReservations = async (req, res) => {
   });
 };
 
+exports.pastReservations = async (req, res) => {
+  const now = new Date();
+
+  const reservations = await Reservation.find({ requestedEndTime: { $lt: now } })
+    .populate("userId", "firstName lastName email role")
+    .populate("vehicleId", "make model year licensePlate")
+    .sort({ requestedEndTime: -1 })
+    .limit(200);
+
+  res.render("admin/reservations/history", {
+    title: "Booking History",
+    reservations,
+    activeNav: "admin",
+  });
+};
+
+exports.showReservation = async (req, res) => {
+  const reservation = await Reservation.findById(req.params.id)
+    .populate("userId", "firstName lastName email role")
+    .populate("vehicleId")
+    .populate("reviewedBy", "firstName lastName");
+
+  if (!reservation) {
+    return res.status(404).send("Reservation not found.");
+  }
+
+  res.render("admin/reservations/show", {
+    title: "Booking Details",
+    reservation,
+    activeNav: "admin",
+  });
+};
+
 exports.editReservation = async (req, res) => {
   const reservation = await Reservation.findById(req.params.id)
     .populate("userId", "firstName lastName email")

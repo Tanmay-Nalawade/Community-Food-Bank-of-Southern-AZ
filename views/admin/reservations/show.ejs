@@ -1,0 +1,140 @@
+<% layout('layouts/boilerplate') %>
+
+<section class="admin-page">
+  <a class="vehicle-detail__back" href="/admin/reservations">&larr; Back to reservations</a>
+
+  <div class="vehicles-page__header">
+    <div>
+      <h1>Booking Details</h1>
+      <p class="vehicles-page__lead">
+        <span class="status-pill status-pill--<%= reservation.status.toLowerCase() %>">
+          <%= reservation.status %>
+        </span>
+      </p>
+    </div>
+    <a class="vehicles-page__add-btn" href="/admin/reservations/<%= reservation._id %>/edit">Edit</a>
+  </div>
+
+  <div class="vehicle-detail__grid">
+    <div class="vehicle-detail__card">
+      <h2 class="vehicle-detail__section-title">Driver</h2>
+      <dl>
+        <div>
+          <dt>Name</dt>
+          <dd>
+            <a href="/admin/drivers/<%= reservation.userId._id %>">
+              <%= reservation.userId.firstName %> <%= reservation.userId.lastName %>
+            </a>
+          </dd>
+        </div>
+        <div>
+          <dt>Email</dt>
+          <dd><%= reservation.userId.email %></dd>
+        </div>
+      </dl>
+    </div>
+
+    <div class="vehicle-detail__card">
+      <h2 class="vehicle-detail__section-title">Vehicle</h2>
+      <dl>
+        <div>
+          <dt>Vehicle</dt>
+          <dd>
+            <a href="/admin/vehicles/<%= reservation.vehicleId._id %>">
+              <%= reservation.vehicleId.year ? reservation.vehicleId.year + " " : "" %><%= reservation.vehicleId.make %> <%= reservation.vehicleId.model %>
+            </a>
+          </dd>
+        </div>
+        <div>
+          <dt>License plate</dt>
+          <dd><%= reservation.vehicleId.licensePlate %></dd>
+        </div>
+      </dl>
+    </div>
+
+    <div class="vehicle-detail__card">
+      <h2 class="vehicle-detail__section-title">Booking window</h2>
+      <dl>
+        <div>
+          <dt>Requested</dt>
+          <dd>
+            <%= new Date(reservation.requestedStartTime).toLocaleString() %>
+            &ndash;
+            <%= new Date(reservation.requestedEndTime).toLocaleString() %>
+          </dd>
+        </div>
+        <div>
+          <dt>Reviewed by</dt>
+          <dd>
+            <% if (reservation.reviewedBy) { %>
+              <%= reservation.reviewedBy.firstName %> <%= reservation.reviewedBy.lastName %>
+              on <%= new Date(reservation.reviewedAt).toLocaleString() %>
+            <% } else { %>
+              &mdash;
+            <% } %>
+          </dd>
+        </div>
+      </dl>
+    </div>
+
+    <div class="vehicle-detail__card">
+      <h2 class="vehicle-detail__section-title">KeyCafe access</h2>
+      <% if (reservation.keyCafeAccess?.accessId || reservation.keyCafeAccess?.bookingCode) { %>
+        <dl>
+          <div>
+            <dt>Booking code</dt>
+            <dd><%= reservation.keyCafeAccess.bookingCode || "—" %></dd>
+          </div>
+          <div>
+            <dt>Key picked up</dt>
+            <dd><%= reservation.keyCafeAccess.keyPickedUpAt ? new Date(reservation.keyCafeAccess.keyPickedUpAt).toLocaleString() : "Not yet" %></dd>
+          </div>
+          <div>
+            <dt>Key returned</dt>
+            <dd><%= reservation.keyCafeAccess.keyReturnedAt ? new Date(reservation.keyCafeAccess.keyReturnedAt).toLocaleString() : "Not yet" %></dd>
+          </div>
+        </dl>
+      <% } else { %>
+        <p class="vehicle-detail__empty">No KeyCafe access was ever granted for this booking.</p>
+      <% } %>
+    </div>
+
+    <div class="vehicle-detail__card">
+      <h2 class="vehicle-detail__section-title">Trip &amp; mileage</h2>
+      <% if (reservation.tripLog?.startMileage != null || reservation.tripLog?.endMileage != null) { %>
+        <dl>
+          <div>
+            <dt>Start mileage</dt>
+            <dd><%= reservation.tripLog.startMileage != null ? reservation.tripLog.startMileage.toLocaleString() + " mi" : "—" %></dd>
+          </div>
+          <div>
+            <dt>End mileage</dt>
+            <dd><%= reservation.tripLog.endMileage != null ? reservation.tripLog.endMileage.toLocaleString() + " mi" : "—" %></dd>
+          </div>
+          <% if (reservation.tripLog.startMileage != null && reservation.tripLog.endMileage != null) { %>
+            <div>
+              <dt>Distance driven</dt>
+              <dd><%= (reservation.tripLog.endMileage - reservation.tripLog.startMileage).toLocaleString() %> mi</dd>
+            </div>
+          <% } %>
+        </dl>
+      <% } else { %>
+        <p class="vehicle-detail__empty">No mileage has been reported for this trip yet.</p>
+      <% } %>
+    </div>
+
+    <div class="vehicle-detail__card">
+      <h2 class="vehicle-detail__section-title">Notes</h2>
+      <dl>
+        <div>
+          <dt>Staff notes</dt>
+          <dd><%= reservation.staffNotes || "—" %></dd>
+        </div>
+        <div>
+          <dt>Admin notes</dt>
+          <dd><%= reservation.adminNotes || "—" %></dd>
+        </div>
+      </dl>
+    </div>
+  </div>
+</section>
