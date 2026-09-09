@@ -7,34 +7,49 @@
   </p>
 
   <section class="dashboard-section">
-    <h2 class="dashboard-section__title">Current Bookings</h2>
+    <div class="dashboard-section__header">
+      <h2 class="dashboard-section__title">Current Bookings</h2>
+      <% if (currentBookings.length) { %>
+        <span class="dashboard-section__count"><%= currentBookings.length %></span>
+      <% } %>
+    </div>
 
     <% if (!currentBookings.length) { %>
       <p class="vehicles-page__empty">You don't have any current bookings.</p>
     <% } else { %>
-      <%- include('../partials/booking-table', { reservations: currentBookings }) %>
+      <%- include('../partials/booking-list', { reservations: currentBookings }) %>
     <% } %>
   </section>
 
   <section class="dashboard-section">
-    <h2 class="dashboard-section__title">Upcoming Bookings</h2>
+    <div class="dashboard-section__header">
+      <h2 class="dashboard-section__title">Upcoming Bookings</h2>
+      <% if (upcomingBookings.length) { %>
+        <span class="dashboard-section__count"><%= upcomingBookings.length %></span>
+      <% } %>
+    </div>
 
     <% if (!upcomingBookings.length) { %>
       <p class="vehicles-page__empty">
         You don't have any upcoming bookings. <a href="/">Make a booking</a> if you want.
       </p>
     <% } else { %>
-      <%- include('../partials/booking-table', { reservations: upcomingBookings }) %>
+      <%- include('../partials/booking-list', { reservations: upcomingBookings }) %>
     <% } %>
   </section>
 
   <section class="dashboard-section">
-    <h2 class="dashboard-section__title">Past Bookings</h2>
+    <div class="dashboard-section__header">
+      <h2 class="dashboard-section__title">Past Bookings</h2>
+      <% if (pastBookings.length) { %>
+        <span class="dashboard-section__count"><%= pastBookings.length %></span>
+      <% } %>
+    </div>
 
     <% if (!pastBookings.length) { %>
       <p class="vehicles-page__empty">You don't have any past bookings yet.</p>
     <% } else { %>
-      <%- include('../partials/booking-table', { reservations: pastBookings }) %>
+      <%- include('../partials/booking-list', { reservations: pastBookings, muted: true }) %>
     <% } %>
   </section>
 </section>

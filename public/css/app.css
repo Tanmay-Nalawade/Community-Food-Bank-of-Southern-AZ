@@ -762,40 +762,159 @@ body {
   margin-bottom: 2.5rem;
 }
 
+.dashboard-section__header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin-bottom: 1.1rem;
+}
+
 .dashboard-section__title {
-  font-size: 1.15rem;
+  font-size: 1.2rem;
   color: #632c4f;
-  margin: 0 0 1rem;
+  margin: 0;
+}
+
+.dashboard-section__count {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #a3849a;
+  background: #f5eef2;
+  border-radius: 999px;
+  padding: 0.1rem 0.6rem;
+}
+
+.booking-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.booking-card {
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.booking-card--muted {
+  background: #fbfafa;
+  box-shadow: none;
+}
+
+.booking-card--muted .booking-card__vehicle {
+  color: #555;
+}
+
+.booking-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.booking-card__vehicle {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #632c4f;
+  margin: 0;
+}
+
+.booking-card__window {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 0.9rem;
+  color: #666;
+  margin: 0.3rem 0 0;
+}
+
+.booking-card__access {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1.1rem;
+  padding: 0.85rem 1rem;
+  background: #fbf7f9;
+  border: 1px dashed #d4c8ce;
+  border-radius: 8px;
+}
+
+.booking-card__access-label {
+  display: block;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #a3849a;
+  margin-bottom: 0.2rem;
 }
 
 .booking-code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 1rem;
-  letter-spacing: 0.05em;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   color: #632c4f;
 }
 
-.booking-code--pending {
-  font-family: inherit;
-  font-size: 0.85rem;
-  letter-spacing: normal;
-  color: #666;
-  font-weight: 600;
-}
-
-.booking-code__window {
+.booking-card__access-hint {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 0.8rem;
-  color: #555;
-  margin-top: 0.2rem;
+  color: #777;
+  margin: 0.3rem 0 0;
 }
 
-.booking-code__hint {
+.booking-card__access-link {
+  flex-shrink: 0;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #632c4f;
+  text-decoration: none;
+}
+
+.booking-card__access-link:hover,
+.booking-card__access-link:focus {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.booking-card__pending {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #a3702a;
+  background: #fff8e1;
+  border-radius: 6px;
+  display: inline-block;
+  margin: 1.1rem 0 0;
+  padding: 0.4rem 0.75rem;
+}
+
+.booking-card__notes {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 0.9rem;
   font-style: italic;
-  color: #777;
-  margin-top: 0.15rem;
+  color: #666;
+  margin: 1rem 0 0;
+}
+
+.booking-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 1.1rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid #f0eaee;
+}
+
+.booking-card__actions form {
+  margin: 0;
 }
 
 .account-page__actions form {

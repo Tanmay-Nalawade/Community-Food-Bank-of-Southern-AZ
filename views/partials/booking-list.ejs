@@ -1,0 +1,63 @@
+<div class="booking-list">
+  <% reservations.forEach((reservation) => { %>
+    <article class="booking-card<%= typeof muted !== "undefined" && muted ? " booking-card--muted" : "" %>">
+      <div class="booking-card__top">
+        <div>
+          <h3 class="booking-card__vehicle">
+            <%= reservation.vehicleId.year ? reservation.vehicleId.year + " " : "" %><%= reservation.vehicleId.make %> <%= reservation.vehicleId.model %>
+          </h3>
+          <p class="booking-card__window">
+            <%= new Date(reservation.requestedStartTime).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" }) %>
+            &ndash;
+            <%= new Date(reservation.requestedEndTime).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" }) %>
+          </p>
+        </div>
+        <span class="status-pill status-pill--<%= reservation.status.toLowerCase() %>">
+          <%= reservation.status %>
+        </span>
+      </div>
+
+      <% if (reservation.keyCafeAccess?.bookingCode && ["Reserved", "Active"].includes(reservation.status)) { %>
+        <div class="booking-card__access">
+          <div>
+            <span class="booking-card__access-label">KeyCafe pickup code</span>
+            <div class="booking-code"><%= reservation.keyCafeAccess.bookingCode %></div>
+            <p class="booking-card__access-hint">Use this same code to pick up and return the key.</p>
+          </div>
+          <% if (reservation.keyCafeAccess.checkinLink) { %>
+            <a class="booking-card__access-link" href="<%= reservation.keyCafeAccess.checkinLink %>" target="_blank" rel="noopener noreferrer">
+              Open check-in link
+            </a>
+          <% } %>
+        </div>
+      <% } else if (reservation.status === "Pending") { %>
+        <p class="booking-card__pending">Awaiting Transportation review.</p>
+      <% } %>
+
+      <% if (reservation.staffNotes) { %>
+        <p class="booking-card__notes">&ldquo;<%= reservation.staffNotes %>&rdquo;</p>
+      <% } %>
+
+      <% if (
+        reservation.status === "Pending" ||
+        ["Pending", "Reserved"].includes(reservation.status) ||
+        ["Active", "Completed"].includes(reservation.status)
+      ) { %>
+        <div class="booking-card__actions">
+          <% if (reservation.status === "Pending") { %>
+            <a class="admin-table__btn admin-table__btn--edit" href="/reservations/<%= reservation._id %>/edit">Edit</a>
+          <% } %>
+          <% if (["Pending", "Reserved"].includes(reservation.status)) { %>
+            <form action="/reservations/<%= reservation._id %>/cancel" method="POST">
+              <button class="admin-table__btn admin-table__btn--delete" type="submit">Cancel</button>
+            </form>
+          <% } %>
+          <% if (["Active", "Completed"].includes(reservation.status)) { %>
+            <a class="admin-table__btn admin-table__btn--edit" href="/reservations/<%= reservation._id %>/mileage">Report Mileage</a>
+            <a class="admin-table__btn admin-table__btn--edit" href="/reservations/<%= reservation._id %>/issue">Report Issue</a>
+          <% } %>
+        </div>
+      <% } %>
+    </article>
+  <% }) %>
+</div>
