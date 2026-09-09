@@ -63,9 +63,7 @@
               <td><%= vehicle.keyCafeKeyId %></td>
               <td><%= vehicle.currentMileage.toLocaleString() %> mi</td>
               <td>
-                <span class="status-pill status-pill--<%= vehicle.status.toLowerCase().replace(/\s+/g, '-') %>">
-                  <%= vehicle.status %>
-                </span>
+                <%- include('../../partials/status-pill', { value: vehicle.status }) %>
               </td>
               <td class="admin-table__actions">
                 <a class="admin-table__btn admin-table__btn--edit" href="/admin/vehicles/<%= vehicle._id %>">Manage</a>

@@ -1,0 +1,6 @@
+<%
+  const _prefix = typeof prefix !== "undefined" ? prefix : "status-pill";
+  const _slug = typeof slug !== "undefined" ? slug : String(value).toLowerCase().replace(/\s+/g, "-");
+  const _label = typeof label !== "undefined" ? label : value;
+%>
+<span class="<%= _prefix %> <%= _prefix %>--<%= _slug %>"><%= _label %></span>

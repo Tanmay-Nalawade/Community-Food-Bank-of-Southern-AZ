@@ -53,14 +53,13 @@
               <td><%= user.firstName %> <%= user.lastName %></td>
               <td><%= user.email %></td>
               <td>
-                <span class="status-pill status-pill--<%= user.role.toLowerCase().replace(/\s+/g, '-') %>">
-                  <%= user.role %>
-                </span>
+                <%- include('../../partials/status-pill', { value: user.role }) %>
               </td>
               <td>
-                <span class="status-pill status-pill--<%= user.isActive ? 'active-account' : 'inactive-account' %>">
-                  <%= user.isActive ? "Active" : "Inactive" %>
-                </span>
+                <%- include('../../partials/status-pill', {
+                  slug: user.isActive ? 'active-account' : 'inactive-account',
+                  label: user.isActive ? 'Active' : 'Inactive',
+                }) %>
               </td>
               <td class="admin-table__actions">
                 <a class="admin-table__btn admin-table__btn--edit" href="/it/users/<%= user._id %>/edit">Edit</a>

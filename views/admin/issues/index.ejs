@@ -24,9 +24,9 @@
             <tr>
               <td>
                 <% if (issue.reviewed) { %>
-                  <span class="status-pill status-pill--completed">Reviewed</span>
+                  <%- include('../../partials/status-pill', { slug: 'completed', label: 'Reviewed' }) %>
                 <% } else { %>
-                  <span class="status-pill status-pill--pending">New</span>
+                  <%- include('../../partials/status-pill', { slug: 'pending', label: 'New' }) %>
                 <% } %>
               </td>
               <td>

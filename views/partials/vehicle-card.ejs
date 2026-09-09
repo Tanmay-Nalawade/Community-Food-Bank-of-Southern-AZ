@@ -1,0 +1,27 @@
+<a class="vehicle-card vehicle-card--link" href="<%= href %>">
+  <% if (vehicle.photoUrl) { %>
+    <img class="vehicle-card__photo" src="<%= vehicle.photoUrl %>" alt="" />
+  <% } else { %>
+    <div class="vehicle-card__photo vehicle-card__photo--empty">No photo</div>
+  <% } %>
+  <header class="vehicle-card__header">
+    <h2 class="vehicle-card__title">
+      <%= vehicle.year ? vehicle.year + " " : "" %><%= vehicle.make %> <%= vehicle.model %>
+    </h2>
+    <% if (typeof statusSlug !== "undefined") { %>
+      <%- include('./status-pill', { prefix: 'vehicle-card__status', slug: statusSlug, label: statusLabel }) %>
+    <% } else { %>
+      <%- include('./status-pill', { prefix: 'vehicle-card__status', value: vehicle.status }) %>
+    <% } %>
+  </header>
+  <dl class="vehicle-card__details">
+    <div>
+      <dt>License plate</dt>
+      <dd><%= vehicle.licensePlate %></dd>
+    </div>
+    <div>
+      <dt>Mileage</dt>
+      <dd><%= vehicle.currentMileage.toLocaleString() %> mi</dd>
+    </div>
+  </dl>
+</a>

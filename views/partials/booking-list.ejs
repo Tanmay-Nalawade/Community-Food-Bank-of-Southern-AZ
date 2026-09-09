@@ -12,9 +12,7 @@
             <%= new Date(reservation.requestedEndTime).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" }) %>
           </p>
         </div>
-        <span class="status-pill status-pill--<%= reservation.status.toLowerCase() %>">
-          <%= reservation.status %>
-        </span>
+        <%- include('./status-pill', { value: reservation.status }) %>
       </div>
 
       <% if (reservation.keyCafeAccess?.bookingCode && ["Reserved", "Active"].includes(reservation.status)) { %>

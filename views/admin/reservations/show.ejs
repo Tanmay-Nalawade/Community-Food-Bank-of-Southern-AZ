@@ -7,9 +7,7 @@
     <div>
       <h1>Booking Details</h1>
       <p class="vehicles-page__lead">
-        <span class="status-pill status-pill--<%= reservation.status.toLowerCase() %>">
-          <%= reservation.status %>
-        </span>
+        <%- include('../../partials/status-pill', { value: reservation.status }) %>
       </p>
     </div>
     <a class="vehicles-page__add-btn" href="/admin/reservations/<%= reservation._id %>/edit">Edit</a>

@@ -99,9 +99,7 @@
                 <%= new Date(reservation.requestedEndTime).toLocaleString() %>
               </td>
               <td>
-                <span class="status-pill status-pill--<%= reservation.status.toLowerCase() %>">
-                  <%= reservation.status %>
-                </span>
+                <%- include('../../partials/status-pill', { value: reservation.status }) %>
               </td>
               <td class="admin-table__actions">
                 <% if (reservation.status === "Pending") { %>

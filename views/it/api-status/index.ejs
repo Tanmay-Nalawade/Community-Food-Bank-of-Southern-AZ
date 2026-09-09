@@ -9,15 +9,17 @@
 
     <p>
       KeyCafe API credentials:
-      <span class="status-pill status-pill--<%= keycafeConfigured ? 'active-account' : 'inactive-account' %>">
-        <%= keycafeConfigured ? "Configured" : "Not configured (using mock access codes)" %>
-      </span>
+      <%- include('../../partials/status-pill', {
+        slug: keycafeConfigured ? 'active-account' : 'inactive-account',
+        label: keycafeConfigured ? 'Configured' : 'Not configured (using mock access codes)',
+      }) %>
     </p>
     <p>
       Webhook credentials:
-      <span class="status-pill status-pill--<%= webhookConfigured ? 'active-account' : 'inactive-account' %>">
-        <%= webhookConfigured ? "Configured" : "Not configured" %>
-      </span>
+      <%- include('../../partials/status-pill', {
+        slug: webhookConfigured ? 'active-account' : 'inactive-account',
+        label: webhookConfigured ? 'Configured' : 'Not configured',
+      }) %>
     </p>
     <p>Timezone: <strong><%= keycafeTimezone %></strong></p>
 

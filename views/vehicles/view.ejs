@@ -24,9 +24,7 @@
           </h1>
           <p class="vehicle-detail__plate"><%= vehicle.licensePlate %></p>
         </div>
-        <span class="vehicle-card__status vehicle-card__status--<%= vehicle.status.toLowerCase().replace(/\s+/g, '-') %>">
-          <%= vehicle.status %>
-        </span>
+        <%- include('../partials/status-pill', { prefix: 'vehicle-card__status', value: vehicle.status }) %>
       </header>
 
       <div class="vehicle-detail__grid">

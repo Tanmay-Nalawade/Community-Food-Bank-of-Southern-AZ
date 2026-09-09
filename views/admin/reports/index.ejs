@@ -34,7 +34,7 @@
               <td><%= row.lastBookedAt ? new Date(row.lastBookedAt).toLocaleDateString() : "Never" %></td>
               <td>
                 <% if (row.idle) { %>
-                  <span class="status-pill status-pill--maintenance">Idle</span>
+                  <%- include('../../partials/status-pill', { slug: 'maintenance', label: 'Idle' }) %>
                 <% } else { %>
                   —
                 <% } %>

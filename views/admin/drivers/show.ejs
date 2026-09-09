@@ -42,9 +42,7 @@
                   <%= new Date(reservation.requestedEndTime).toLocaleString() %>
                 </td>
                 <td>
-                  <span class="status-pill status-pill--<%= reservation.status.toLowerCase() %>">
-                    <%= reservation.status %>
-                  </span>
+                  <%- include('../../partials/status-pill', { value: reservation.status }) %>
                 </td>
                 <td>
                   <% if (reservation.tripLog?.startMileage != null && reservation.tripLog?.endMileage != null) { %>
