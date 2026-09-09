@@ -55,7 +55,14 @@ app.use(
   }),
 );
 
-app.use(express.static(path.join(__dirname, "public"), { maxAge: "1h" }));
+// Long browser caching for static assets pays off in production, but in
+// development it just makes CSS/JS edits invisible until a hard-refresh —
+// so only cache aggressively when NODE_ENV is production.
+app.use(
+  express.static(path.join(__dirname, "public"), {
+    maxAge: process.env.NODE_ENV === "production" ? "1h" : 0,
+  }),
+);
 app.use(express.urlencoded({ extended: true }));
 app.use(mongoSanitize());
 app.use(methodOverride("_method"));

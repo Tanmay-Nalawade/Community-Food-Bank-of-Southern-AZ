@@ -2,9 +2,7 @@
 
 <section class="reservations-page">
   <h1>My Dashboard</h1>
-  <p class="reservations-page__lead">
-    View your current and upcoming vehicle bookings. Use your KeyCafe access code at the SmartBox to pick up keys.
-  </p>
+  <p class="reservations-page__lead">Your current, upcoming, and past vehicle bookings.</p>
 
   <section class="dashboard-section">
     <div class="dashboard-section__header">
@@ -15,7 +13,9 @@
     </div>
 
     <% if (!currentBookings.length) { %>
-      <p class="vehicles-page__empty">You don't have any current bookings.</p>
+      <div class="dashboard-empty">
+        <p>No vehicle checked out right now. <a href="/">Book a vehicle</a> when you're ready to head out.</p>
+      </div>
     <% } else { %>
       <%- include('../partials/booking-list', { reservations: currentBookings }) %>
     <% } %>
@@ -30,9 +30,9 @@
     </div>
 
     <% if (!upcomingBookings.length) { %>
-      <p class="vehicles-page__empty">
-        You don't have any upcoming bookings. <a href="/">Make a booking</a> if you want.
-      </p>
+      <div class="dashboard-empty">
+        <p>Nothing on the calendar yet. <a href="/">Make a booking</a> if you want.</p>
+      </div>
     <% } else { %>
       <%- include('../partials/booking-list', { reservations: upcomingBookings }) %>
     <% } %>
@@ -47,7 +47,9 @@
     </div>
 
     <% if (!pastBookings.length) { %>
-      <p class="vehicles-page__empty">You don't have any past bookings yet.</p>
+      <div class="dashboard-empty">
+        <p>You don't have any past bookings yet.</p>
+      </div>
     <% } else { %>
       <%- include('../partials/booking-list', { reservations: pastBookings, muted: true }) %>
     <% } %>

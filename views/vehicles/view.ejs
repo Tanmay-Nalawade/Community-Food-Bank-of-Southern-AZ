@@ -11,67 +11,69 @@
 
   <div class="vehicle-detail__layout">
     <div class="vehicle-detail__main">
-      <% if (vehicle.photoUrl) { %>
-        <img class="vehicle-detail__photo" src="<%= vehicle.photoUrl %>" alt="Photo of <%= vehicle.make %> <%= vehicle.model %>" />
-      <% } else { %>
-        <div class="vehicle-detail__photo vehicle-detail__photo--empty">No photo yet</div>
-      <% } %>
+      <div class="vehicle-detail__overview">
+        <% if (vehicle.photoUrl) { %>
+          <img class="vehicle-detail__photo" src="<%= vehicle.photoUrl %>" alt="Photo of <%= vehicle.make %> <%= vehicle.model %>" />
+        <% } else { %>
+          <div class="vehicle-detail__photo vehicle-detail__photo--empty">No photo yet</div>
+        <% } %>
 
-      <header class="vehicle-detail__header">
-        <div>
-          <h1>
-            <%= vehicle.year ? vehicle.year + " " : "" %><%= vehicle.make %> <%= vehicle.model %>
-          </h1>
-          <p class="vehicle-detail__plate"><%= vehicle.licensePlate %></p>
+        <div class="vehicle-detail__overview-body">
+          <header class="vehicle-detail__header">
+            <div>
+              <h1>
+                <%= vehicle.year ? vehicle.year + " " : "" %><%= vehicle.make %> <%= vehicle.model %>
+              </h1>
+              <p class="vehicle-detail__plate"><%= vehicle.licensePlate %></p>
+            </div>
+            <%- include('../partials/status-pill', { prefix: 'vehicle-card__status', value: vehicle.status }) %>
+          </header>
+
+          <dl class="vehicle-detail__card">
+            <div>
+              <dt>Make</dt>
+              <dd><%= vehicle.make %></dd>
+            </div>
+            <div>
+              <dt>Model</dt>
+              <dd><%= vehicle.model %></dd>
+            </div>
+            <div>
+              <dt>Year</dt>
+              <dd><%= vehicle.year || "—" %></dd>
+            </div>
+            <div>
+              <dt>License plate</dt>
+              <dd><%= vehicle.licensePlate %></dd>
+            </div>
+            <div>
+              <dt>Current mileage</dt>
+              <dd><%= vehicle.currentMileage.toLocaleString() %> mi</dd>
+            </div>
+            <div>
+              <dt>KeyCafe key ID</dt>
+              <dd><%= vehicle.keyCafeKeyId %></dd>
+            </div>
+          </dl>
         </div>
-        <%- include('../partials/status-pill', { prefix: 'vehicle-card__status', value: vehicle.status }) %>
-      </header>
+      </div>
 
-      <div class="vehicle-detail__grid">
-        <dl class="vehicle-detail__card">
-          <div>
-            <dt>Make</dt>
-            <dd><%= vehicle.make %></dd>
-          </div>
-          <div>
-            <dt>Model</dt>
-            <dd><%= vehicle.model %></dd>
-          </div>
-          <div>
-            <dt>Year</dt>
-            <dd><%= vehicle.year || "—" %></dd>
-          </div>
-          <div>
-            <dt>License plate</dt>
-            <dd><%= vehicle.licensePlate %></dd>
-          </div>
-          <div>
-            <dt>Current mileage</dt>
-            <dd><%= vehicle.currentMileage.toLocaleString() %> mi</dd>
-          </div>
-          <div>
-            <dt>KeyCafe key ID</dt>
-            <dd><%= vehicle.keyCafeKeyId %></dd>
-          </div>
-        </dl>
-
-        <div class="vehicle-detail__card">
-          <h2 class="vehicle-detail__section-title">Active issues</h2>
-          <% if (!vehicle.activeIssues.length) { %>
-            <p class="vehicle-detail__empty">No reported issues.</p>
-          <% } else { %>
-            <ul class="vehicle-detail__issues">
-              <% vehicle.activeIssues.forEach((issue) => { %>
-                <li>
-                  <span class="vehicle-detail__issue-date">
-                    <%= new Date(issue.reportedAt).toLocaleDateString() %>
-                  </span>
-                  <%= issue.description %>
-                </li>
-              <% }) %>
-            </ul>
-          <% } %>
-        </div>
+      <div class="vehicle-detail__card">
+        <h2 class="vehicle-detail__section-title">Active issues</h2>
+        <% if (!vehicle.activeIssues.length) { %>
+          <p class="vehicle-detail__empty">No reported issues.</p>
+        <% } else { %>
+          <ul class="vehicle-detail__issues">
+            <% vehicle.activeIssues.forEach((issue) => { %>
+              <li>
+                <span class="vehicle-detail__issue-date">
+                  <%= new Date(issue.reportedAt).toLocaleDateString() %>
+                </span>
+                <%= issue.description %>
+              </li>
+            <% }) %>
+          </ul>
+        <% } %>
       </div>
     </div>
 

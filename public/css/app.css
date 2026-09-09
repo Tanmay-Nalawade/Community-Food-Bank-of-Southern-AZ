@@ -16,7 +16,7 @@ body {
   width: 100%;
   max-width: 1600px;
   margin: 0 auto;
-  padding: 2rem clamp(1.5rem, 4vw, 4rem);
+  padding: 1.25rem clamp(1.5rem, 4vw, 4rem) 2.5rem;
   box-sizing: border-box;
 }
 
@@ -343,20 +343,32 @@ body {
   justify-content: space-between;
   gap: 1rem;
   flex-wrap: wrap;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
 }
 
 .vehicle-detail__header h1 {
   font-size: 2rem;
 }
 
+.vehicle-detail__overview {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.vehicle-detail__overview-body {
+  flex: 1;
+  min-width: 0;
+}
+
 .vehicle-detail__photo {
   display: block;
-  width: 100%;
-  height: 420px;
+  flex: 0 0 340px;
+  width: 340px;
+  height: 340px;
   object-fit: cover;
   border-radius: 12px;
-  margin-bottom: 1.5rem;
   background: #f0f0f0;
   box-shadow: 0 4px 16px rgba(99, 44, 79, 0.1);
 }
@@ -365,11 +377,22 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 280px;
   color: #999;
   font-style: italic;
   background: #f5f0f3;
   border: 1px dashed #d4c8ce;
+}
+
+@media (max-width: 720px) {
+  .vehicle-detail__overview {
+    flex-direction: column;
+  }
+
+  .vehicle-detail__photo {
+    width: 100%;
+    height: 260px;
+    flex: none;
+  }
 }
 
 .vehicle-detail__plate {
@@ -755,11 +778,37 @@ body {
 
 .reservations-page__lead,
 .admin-page .vehicles-page__lead {
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
 }
 
 .dashboard-section {
   margin-bottom: 2.5rem;
+}
+
+.dashboard-empty {
+  border: 1px dashed #e0d5da;
+  border-radius: 10px;
+  background: #fbfafb;
+  padding: 1.75rem 1.5rem;
+  text-align: center;
+}
+
+.dashboard-empty p {
+  margin: 0;
+  color: #777;
+  font-style: normal;
+}
+
+.dashboard-empty a {
+  color: #632c4f;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.dashboard-empty a:hover,
+.dashboard-empty a:focus {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .dashboard-section__header {
@@ -805,6 +854,48 @@ body {
 
 .booking-card--muted .booking-card__vehicle {
   color: #555;
+}
+
+.booking-card__layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+}
+
+.booking-card__photo {
+  flex-shrink: 0;
+  width: 260px;
+  height: 175px;
+  object-fit: cover;
+  border-radius: 8px;
+  background: #f0f0f0;
+}
+
+.booking-card__photo--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-size: 0.85rem;
+  font-style: italic;
+  background: #f5f0f3;
+  border: 1px dashed #d4c8ce;
+}
+
+.booking-card__body {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 720px) {
+  .booking-card__layout {
+    flex-direction: column;
+  }
+
+  .booking-card__photo {
+    width: 100%;
+    height: 200px;
+  }
 }
 
 .booking-card__top {
