@@ -5,7 +5,7 @@
     <h1 class="auth-card__title">My Account</h1>
     <p class="auth-card__subtitle">Update your name, email, or password.</p>
 
-    <form class="auth-form" action="/account/edit" method="POST">
+    <form class="auth-form" action="/account/edit" method="POST" novalidate>
       <div class="auth-form__row">
         <div class="auth-form__group">
           <label class="auth-form__label" for="firstName">First name</label>
@@ -16,8 +16,10 @@
             name="firstName"
             value="<%= currentUser.firstName %>"
             autocomplete="given-name"
+            aria-describedby="firstName-error"
             required
           />
+          <p class="auth-form__field-error" id="firstName-error" aria-live="polite"></p>
         </div>
         <div class="auth-form__group">
           <label class="auth-form__label" for="lastName">Last name</label>
@@ -28,8 +30,10 @@
             name="lastName"
             value="<%= currentUser.lastName %>"
             autocomplete="family-name"
+            aria-describedby="lastName-error"
             required
           />
+          <p class="auth-form__field-error" id="lastName-error" aria-live="polite"></p>
         </div>
       </div>
 
@@ -42,14 +46,16 @@
           name="email"
           value="<%= currentUser.email %>"
           autocomplete="email"
+          aria-describedby="email-error"
           required
         />
+        <p class="auth-form__field-error" id="email-error" aria-live="polite"></p>
       </div>
 
       <button class="auth-form__submit" type="submit">Save Changes</button>
     </form>
 
-    <form class="auth-form auth-form--section" action="/account/change-password" method="POST">
+    <form class="auth-form auth-form--section" action="/account/change-password" method="POST" novalidate>
       <h2 class="auth-card__section-title">Change Password</h2>
 
       <div class="auth-form__group">
@@ -63,8 +69,10 @@
           id="currentPassword"
           name="currentPassword"
           autocomplete="current-password"
+          aria-describedby="currentPassword-error"
           required
         />
+        <p class="auth-form__field-error" id="currentPassword-error" aria-live="polite"></p>
       </div>
 
       <div class="auth-form__group">
@@ -78,8 +86,10 @@
           id="newPassword"
           name="newPassword"
           autocomplete="new-password"
+          aria-describedby="newPassword-error"
           required
         />
+        <p class="auth-form__field-error" id="newPassword-error" aria-live="polite"></p>
       </div>
 
       <div class="auth-form__group">
@@ -93,8 +103,10 @@
           id="confirmNewPassword"
           name="confirmNewPassword"
           autocomplete="new-password"
+          aria-describedby="confirmNewPassword-error"
           required
         />
+        <p class="auth-form__field-error" id="confirmNewPassword-error" aria-live="polite"></p>
       </div>
 
       <button class="auth-form__submit" type="submit">Change Password</button>
