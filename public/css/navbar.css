@@ -152,13 +152,21 @@
 }
 
 .site-navbar__dropdown-user {
+  display: block;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 0.9rem;
   font-weight: 700;
   color: var(--cfb-maroon);
+  text-decoration: none;
   margin: 0;
   padding: 0.65rem 1rem 0.5rem;
   border-bottom: 1px solid #eee5ea;
+}
+
+.site-navbar__dropdown-user:hover,
+.site-navbar__dropdown-user:focus {
+  background: #fbf7f9;
+  color: var(--cfb-maroon-hover);
 }
 
 .site-navbar__dropdown-user span {

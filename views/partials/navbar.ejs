@@ -43,10 +43,10 @@
             <a class="site-navbar__dropdown-link" href="/login">Log In</a>
             <a class="site-navbar__dropdown-link" href="/register">Sign Up</a>
           <% } else { %>
-            <p class="site-navbar__dropdown-user">
+            <a class="site-navbar__dropdown-user" href="/account/edit">
               <%= currentUser.firstName %> <%= currentUser.lastName %>
               <span><%= currentUser.role %></span>
-            </p>
+            </a>
 
             <% if (viewAsRole) { %>
               <p class="site-navbar__viewing-as">Currently viewing as <%= viewAsRole %></p>

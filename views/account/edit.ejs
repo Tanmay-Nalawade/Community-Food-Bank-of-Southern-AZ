@@ -1,0 +1,103 @@
+<% layout('layouts/boilerplate') %>
+
+<section class="auth-page">
+  <div class="auth-card auth-card--wide">
+    <h1 class="auth-card__title">My Account</h1>
+    <p class="auth-card__subtitle">Update your name, email, or password.</p>
+
+    <form class="auth-form" action="/account/edit" method="POST">
+      <div class="auth-form__row">
+        <div class="auth-form__group">
+          <label class="auth-form__label" for="firstName">First name</label>
+          <input
+            class="auth-form__input"
+            type="text"
+            id="firstName"
+            name="firstName"
+            value="<%= currentUser.firstName %>"
+            autocomplete="given-name"
+            required
+          />
+        </div>
+        <div class="auth-form__group">
+          <label class="auth-form__label" for="lastName">Last name</label>
+          <input
+            class="auth-form__input"
+            type="text"
+            id="lastName"
+            name="lastName"
+            value="<%= currentUser.lastName %>"
+            autocomplete="family-name"
+            required
+          />
+        </div>
+      </div>
+
+      <div class="auth-form__group">
+        <label class="auth-form__label" for="email">Email</label>
+        <input
+          class="auth-form__input"
+          type="email"
+          id="email"
+          name="email"
+          value="<%= currentUser.email %>"
+          autocomplete="email"
+          required
+        />
+      </div>
+
+      <button class="auth-form__submit" type="submit">Save Changes</button>
+    </form>
+
+    <form class="auth-form auth-form--section" action="/account/change-password" method="POST">
+      <h2 class="auth-card__section-title">Change Password</h2>
+
+      <div class="auth-form__group">
+        <div class="auth-form__label-row">
+          <label class="auth-form__label" for="currentPassword">Current password</label>
+          <button type="button" class="auth-form__toggle-password" data-target="currentPassword">Show</button>
+        </div>
+        <input
+          class="auth-form__input"
+          type="password"
+          id="currentPassword"
+          name="currentPassword"
+          autocomplete="current-password"
+          required
+        />
+      </div>
+
+      <div class="auth-form__group">
+        <div class="auth-form__label-row">
+          <label class="auth-form__label" for="newPassword">New password</label>
+          <button type="button" class="auth-form__toggle-password" data-target="newPassword">Show</button>
+        </div>
+        <input
+          class="auth-form__input"
+          type="password"
+          id="newPassword"
+          name="newPassword"
+          autocomplete="new-password"
+          required
+        />
+      </div>
+
+      <div class="auth-form__group">
+        <div class="auth-form__label-row">
+          <label class="auth-form__label" for="confirmNewPassword">Confirm new password</label>
+          <button type="button" class="auth-form__toggle-password" data-target="confirmNewPassword">Show</button>
+        </div>
+        <input
+          class="auth-form__input"
+          type="password"
+          id="confirmNewPassword"
+          name="confirmNewPassword"
+          autocomplete="new-password"
+          required
+        />
+      </div>
+
+      <button class="auth-form__submit" type="submit">Change Password</button>
+    </form>
+  </div>
+</section>

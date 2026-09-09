@@ -37,4 +37,41 @@ const registerSchema = Joi.object({
   }),
 });
 
-module.exports = { loginSchema, registerSchema };
+const updateProfileSchema = Joi.object({
+  firstName: Joi.string().trim().min(1).max(100).required().messages({
+    "string.empty": "First name is required.",
+    "any.required": "First name is required.",
+  }),
+  lastName: Joi.string().trim().min(1).max(100).required().messages({
+    "string.empty": "Last name is required.",
+    "any.required": "Last name is required.",
+  }),
+  email: Joi.string().trim().email({ tlds: { allow: false } }).max(255).required().messages({
+    "string.empty": "Email is required.",
+    "any.required": "Email is required.",
+    "string.email": "Please enter a valid email address.",
+  }),
+});
+
+const changePasswordSchema = Joi.object({
+  currentPassword: Joi.string().min(1).required().messages({
+    "string.empty": "Your current password is required.",
+    "any.required": "Your current password is required.",
+  }),
+  newPassword: Joi.string().min(8).max(200).required().messages({
+    "string.empty": "New password is required.",
+    "any.required": "New password is required.",
+    "string.min": "New password must be at least 8 characters.",
+  }),
+  confirmNewPassword: Joi.string().valid(Joi.ref("newPassword")).required().messages({
+    "any.only": "Passwords do not match.",
+    "any.required": "Please confirm your new password.",
+  }),
+});
+
+module.exports = {
+  loginSchema,
+  registerSchema,
+  updateProfileSchema,
+  changePasswordSchema,
+};
