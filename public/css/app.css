@@ -397,6 +397,11 @@ body {
   margin: 0;
 }
 
+.vehicle-detail__lead-in {
+  color: #444;
+  margin: 0 0 1rem;
+}
+
 .vehicle-detail__issues {
   margin: 0;
   padding-left: 1.25rem;

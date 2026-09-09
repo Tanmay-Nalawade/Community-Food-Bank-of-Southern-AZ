@@ -97,6 +97,9 @@ exports.viewVehicle = async (req, res) => {
     backLabel = "Back to available vehicles";
   }
 
+  const today = new Date();
+  const minDate = today.toISOString().split("T")[0];
+
   res.render("vehicles/view", {
     title: `${vehicle.make} ${vehicle.model}`,
     vehicle,
@@ -104,5 +107,6 @@ exports.viewVehicle = async (req, res) => {
     bookingLabel: booking ? formatBookingLabel(booking) : null,
     backHref,
     backLabel,
+    minDate,
   });
 };
