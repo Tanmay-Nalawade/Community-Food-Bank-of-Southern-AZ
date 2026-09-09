@@ -12,4 +12,14 @@ document.addEventListener("click", (event) => {
       flash.remove();
     }
   }
+
+  const toggleButton = event.target.closest(".auth-form__toggle-password");
+  if (toggleButton) {
+    const input = document.getElementById(toggleButton.dataset.target);
+    if (input) {
+      const isHidden = input.type === "password";
+      input.type = isHidden ? "text" : "password";
+      toggleButton.textContent = isHidden ? "Hide" : "Show";
+    }
+  }
 });

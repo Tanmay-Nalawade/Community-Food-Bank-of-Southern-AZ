@@ -5,13 +5,6 @@
     <h1 class="auth-card__title">Log In</h1>
     <p class="auth-card__subtitle">Sign in to reserve vehicles and manage your trips.</p>
 
-    <p class="auth-card__description">
-      This is the Community Food Bank of Southern Arizona's motor pool booking
-      system — the internal tool staff use to reserve shared vehicles for
-      deliveries, pickups, and other errands, and to pick up keys from the
-      KeyCafe box on-site.
-    </p>
-
     <p class="auth-card__footer auth-card__footer--demo">
       Demo: <code>jordan.lee@cfb.example</code> (staff), <code>alex.rivera@cfb.example</code> (admin),
       or <code>sam.okafor@cfb.example</code> (IT admin) &mdash; password <code>password123</code>
@@ -31,7 +24,10 @@
       </div>
 
       <div class="auth-form__group">
-        <label class="auth-form__label" for="password">Password</label>
+        <div class="auth-form__label-row">
+          <label class="auth-form__label" for="password">Password</label>
+          <button type="button" class="auth-form__toggle-password" data-target="password">Show</button>
+        </div>
         <input
           class="auth-form__input"
           type="password"
@@ -50,4 +46,11 @@
       <a href="/register">Sign up</a>
     </p>
   </div>
+
+  <p class="auth-page__intro">
+    This is the Community Food Bank of Southern Arizona's motor pool booking
+    system — the internal tool staff use to reserve shared vehicles for
+    deliveries, pickups, and other errands, and to pick up keys from the
+    KeyCafe box on-site.
+  </p>
 </section>

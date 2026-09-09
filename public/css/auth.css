@@ -1,7 +1,21 @@
 .auth-page {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
   padding: 2rem 0 3rem;
+}
+
+.auth-page__intro {
+  width: 100%;
+  max-width: 420px;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 0.85rem;
+  font-style: italic;
+  font-weight: 300;
+  line-height: 1.5;
+  color: #999;
+  text-align: center;
+  margin: 1.5rem 0 0;
 }
 
 .auth-card {
@@ -74,15 +88,6 @@
   margin: 0 0 1.75rem;
 }
 
-.auth-card__description {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 0.85rem;
-  line-height: 1.5;
-  color: #666;
-  text-align: center;
-  margin: 0 0 1.5rem;
-}
-
 .auth-form {
   display: grid;
   gap: 1.15rem;
@@ -106,6 +111,31 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: #632c4f;
+}
+
+.auth-form__label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.auth-form__toggle-password {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #632c4f;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.auth-form__toggle-password:hover,
+.auth-form__toggle-password:focus {
+  color: #4a213b;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .auth-form__input {

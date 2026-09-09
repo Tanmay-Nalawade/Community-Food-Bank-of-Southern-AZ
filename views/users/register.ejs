@@ -44,7 +44,10 @@
       </div>
 
       <div class="auth-form__group">
-        <label class="auth-form__label" for="password">Password</label>
+        <div class="auth-form__label-row">
+          <label class="auth-form__label" for="password">Password</label>
+          <button type="button" class="auth-form__toggle-password" data-target="password">Show</button>
+        </div>
         <input
           class="auth-form__input"
           type="password"
@@ -56,7 +59,10 @@
       </div>
 
       <div class="auth-form__group">
-        <label class="auth-form__label" for="confirmPassword">Confirm password</label>
+        <div class="auth-form__label-row">
+          <label class="auth-form__label" for="confirmPassword">Confirm password</label>
+          <button type="button" class="auth-form__toggle-password" data-target="confirmPassword">Show</button>
+        </div>
         <input
           class="auth-form__input"
           type="password"
