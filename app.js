@@ -93,7 +93,9 @@ app.use((req, res, next) => {
 });
 
 app.use((req, res, next) => {
-  if (
+  if (req.path === "/vehicles/all") {
+    res.locals.activeNav = "all-vehicles";
+  } else if (
     req.path === "/" ||
     req.path === "/vehicles" ||
     req.path.startsWith("/vehicles/")

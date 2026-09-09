@@ -18,6 +18,15 @@
 
       <% if (currentUser) { %>
         <a
+          class="site-navbar__link<%= locals.activeNav === 'all-vehicles' ? ' site-navbar__link--active' : '' %>"
+          href="/vehicles/all"
+        >
+          See All Vehicles
+        </a>
+      <% } %>
+
+      <% if (currentUser) { %>
+        <a
           class="site-navbar__link<%= locals.activeNav === 'dashboard' ? ' site-navbar__link--active' : '' %>"
           href="/reservations/mine"
         >

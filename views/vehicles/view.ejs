@@ -1,7 +1,7 @@
 <% layout('layouts/boilerplate') %>
 
 <section class="vehicle-detail">
-  <a class="vehicle-detail__back" href="/vehicles<%= queryString ? '?' + queryString : '' %>">&larr; Back to available vehicles</a>
+  <a class="vehicle-detail__back" href="<%= backHref %>">&larr; <%= backLabel %></a>
 
   <% if (bookingLabel) { %>
     <p class="vehicle-detail__booking-window">

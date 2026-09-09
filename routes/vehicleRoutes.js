@@ -6,6 +6,8 @@ const vehiclesController = wrapControllerAsync(require("../controllers/vehicleCo
 
 router.get("/", requireLogin, vehiclesController.index);
 
+router.get("/all", requireLogin, vehiclesController.all);
+
 router.get("/:id", requireLogin, vehiclesController.viewVehicle);
 
 module.exports = router;

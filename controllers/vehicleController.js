@@ -52,6 +52,24 @@ exports.index = async (req, res) => {
   });
 };
 
+exports.all = async (req, res) => {
+  const q = (req.query.q || "").trim();
+  const filter = {};
+
+  if (q) {
+    const regex = new RegExp(escapeRegex(q), "i");
+    filter.$or = [{ make: regex }, { model: regex }, { licensePlate: regex }];
+  }
+
+  const vehicles = await Vehicle.find(filter).sort({ make: 1, model: 1 });
+
+  res.render("vehicles/all", {
+    title: "All Vehicles",
+    vehicles,
+    q,
+  });
+};
+
 exports.viewVehicle = async (req, res) => {
   const vehicle = await Vehicle.findById(req.params.id);
 
@@ -66,14 +84,25 @@ exports.viewVehicle = async (req, res) => {
   );
 
   const q = req.query.q || "";
-  const baseQueryString = booking ? toQueryString(booking) : "";
-  const queryString = q ? `${baseQueryString}&q=${encodeURIComponent(q)}` : baseQueryString;
+  let backHref;
+  let backLabel;
+
+  if (req.query.from === "all") {
+    backHref = q ? `/vehicles/all?q=${encodeURIComponent(q)}` : "/vehicles/all";
+    backLabel = "Back to all vehicles";
+  } else {
+    const baseQueryString = booking ? toQueryString(booking) : "";
+    const queryString = q ? `${baseQueryString}&q=${encodeURIComponent(q)}` : baseQueryString;
+    backHref = queryString ? `/vehicles?${queryString}` : "/vehicles";
+    backLabel = "Back to available vehicles";
+  }
 
   res.render("vehicles/view", {
     title: `${vehicle.make} ${vehicle.model}`,
     vehicle,
     booking,
     bookingLabel: booking ? formatBookingLabel(booking) : null,
-    queryString,
+    backHref,
+    backLabel,
   });
 };

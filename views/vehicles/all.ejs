@@ -1,0 +1,68 @@
+<% layout('layouts/boilerplate') %>
+
+<section class="vehicles-page">
+  <div class="vehicles-page__header">
+    <div>
+      <h1>All Vehicles</h1>
+      <p class="vehicles-page__lead">
+        The full fleet roster, regardless of availability for any particular time.
+      </p>
+    </div>
+    <% if (currentUser && effectiveRole === "Admin") { %>
+      <a class="vehicles-page__add-btn" href="/admin/vehicles/add">Add Vehicle</a>
+    <% } %>
+  </div>
+
+  <form class="admin-filters" method="GET" action="/vehicles/all">
+    <div class="admin-filters__field">
+      <label class="auth-form__label" for="q">Search</label>
+      <input
+        class="auth-form__input"
+        type="text"
+        id="q"
+        name="q"
+        placeholder="Make, model, or plate"
+        value="<%= q %>"
+      />
+    </div>
+
+    <button class="admin-filters__submit" type="submit">Search</button>
+    <% if (q) { %>
+      <a class="admin-filters__clear" href="/vehicles/all">Clear</a>
+    <% } %>
+  </form>
+
+  <% if (!vehicles.length) { %>
+    <p class="vehicles-page__empty">No vehicles match your search.</p>
+  <% } else { %>
+    <div class="vehicle-grid">
+      <% vehicles.forEach((vehicle) => { %>
+        <a class="vehicle-card vehicle-card--link" href="/vehicles/<%= vehicle._id %>?from=all<%= q ? '&q=' + encodeURIComponent(q) : '' %>">
+          <% if (vehicle.photoUrl) { %>
+            <img class="vehicle-card__photo" src="<%= vehicle.photoUrl %>" alt="" />
+          <% } else { %>
+            <div class="vehicle-card__photo vehicle-card__photo--empty">No photo</div>
+          <% } %>
+          <header class="vehicle-card__header">
+            <h2 class="vehicle-card__title">
+              <%= vehicle.year ? vehicle.year + " " : "" %><%= vehicle.make %> <%= vehicle.model %>
+            </h2>
+            <span class="vehicle-card__status vehicle-card__status--<%= vehicle.status.toLowerCase().replace(/\s+/g, '-') %>">
+              <%= vehicle.status %>
+            </span>
+          </header>
+          <dl class="vehicle-card__details">
+            <div>
+              <dt>License plate</dt>
+              <dd><%= vehicle.licensePlate %></dd>
+            </div>
+            <div>
+              <dt>Mileage</dt>
+              <dd><%= vehicle.currentMileage.toLocaleString() %> mi</dd>
+            </div>
+          </dl>
+        </a>
+      <% }) %>
+    </div>
+  <% } %>
+</section>
