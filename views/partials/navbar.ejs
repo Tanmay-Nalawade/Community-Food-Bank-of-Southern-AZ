@@ -86,7 +86,9 @@
             </a>
 
             <% if (viewAsRole) { %>
-              <p class="site-navbar__viewing-as">Currently viewing as <%= viewAsRole %></p>
+              <p class="site-navbar__viewing-as">
+                Viewing as <%= viewAsRole %> — your account is <%= currentUser.role %>
+              </p>
             <% } %>
 
             <% if (effectiveRole === "IT Admin") { %>
