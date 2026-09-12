@@ -463,6 +463,12 @@ body {
   margin: 0;
 }
 
+.vehicle-detail__warning {
+  color: #c62828;
+  font-weight: 700;
+  margin: 0;
+}
+
 .vehicle-detail__lead-in {
   color: #444;
   margin: 0 0 1rem;
@@ -667,10 +673,14 @@ body {
 }
 
 .status-pill--completed,
-.status-pill--cancelled,
 .status-pill--denied {
   background: #f0f0f0;
   color: #555;
+}
+
+.status-pill--cancelled {
+  background: #fdecea;
+  color: #c62828;
 }
 
 .status-pill--available,
