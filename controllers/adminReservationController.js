@@ -62,7 +62,7 @@ exports.listReservations = async (req, res) => {
       startDate: startDate || "",
       endDate: endDate || "",
     },
-    activeNav: "admin",
+    activeNav: "admin-reservations",
   });
 };
 
@@ -78,7 +78,7 @@ exports.pastReservations = async (req, res) => {
   res.render("admin/reservations/history", {
     title: "Booking History",
     reservations,
-    activeNav: "admin",
+    activeNav: "admin-reservations",
   });
 };
 
@@ -95,7 +95,7 @@ exports.showReservation = async (req, res) => {
   res.render("admin/reservations/show", {
     title: "Booking Details",
     reservation,
-    activeNav: "admin",
+    activeNav: "admin-reservations",
   });
 };
 
@@ -114,7 +114,7 @@ exports.editReservation = async (req, res) => {
     title: "Edit Reservation",
     reservation,
     vehicles,
-    activeNav: "admin",
+    activeNav: "admin-reservations",
   });
 };
 

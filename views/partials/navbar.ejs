@@ -1,6 +1,11 @@
+<%
+  const brandHref =
+    effectiveRole === "Admin" ? "/admin/dashboard" : effectiveRole === "IT Admin" ? "/it/users" : "/";
+  const showStaffNav = !currentUser || effectiveRole === "Staff";
+%>
 <header class="site-navbar" role="banner">
   <div class="site-navbar__inner">
-    <a class="site-navbar__brand" href="/" aria-label="Community Food Bank of Southern Arizona — Home">
+    <a class="site-navbar__brand" href="<%= brandHref %>" aria-label="Community Food Bank of Southern Arizona — Home">
       <img
         class="site-navbar__logo"
         src="/images/Logo.png"
@@ -9,28 +14,60 @@
     </a>
 
     <nav class="site-navbar__nav" aria-label="Main navigation">
-      <a
-        class="site-navbar__link<%= locals.activeNav === 'vehicles' ? ' site-navbar__link--active' : '' %>"
-        href="/"
-      >
-        Book a Vehicle
-      </a>
-
-      <% if (currentUser) { %>
+      <% if (showStaffNav) { %>
         <a
-          class="site-navbar__link<%= locals.activeNav === 'all-vehicles' ? ' site-navbar__link--active' : '' %>"
-          href="/vehicles/all"
+          class="site-navbar__link<%= locals.activeNav === 'vehicles' ? ' site-navbar__link--active' : '' %>"
+          href="/"
         >
-          See All Vehicles
+          Book a Vehicle
         </a>
+
+        <% if (currentUser) { %>
+          <a
+            class="site-navbar__link<%= locals.activeNav === 'all-vehicles' ? ' site-navbar__link--active' : '' %>"
+            href="/vehicles/all"
+          >
+            See All Vehicles
+          </a>
+          <a
+            class="site-navbar__link<%= locals.activeNav === 'dashboard' ? ' site-navbar__link--active' : '' %>"
+            href="/reservations/mine"
+          >
+            Dashboard
+          </a>
+        <% } %>
       <% } %>
 
-      <% if (currentUser) { %>
+      <% if (effectiveRole === "Admin") { %>
         <a
-          class="site-navbar__link<%= locals.activeNav === 'dashboard' ? ' site-navbar__link--active' : '' %>"
-          href="/reservations/mine"
+          class="site-navbar__link<%= locals.activeNav === 'admin-dashboard' ? ' site-navbar__link--active' : '' %>"
+          href="/admin/dashboard"
         >
           Dashboard
+        </a>
+        <a
+          class="site-navbar__link<%= locals.activeNav === 'admin-reservations' ? ' site-navbar__link--active' : '' %>"
+          href="/admin/reservations"
+        >
+          Reservations
+        </a>
+        <a
+          class="site-navbar__link<%= locals.activeNav === 'admin-vehicles' ? ' site-navbar__link--active' : '' %>"
+          href="/admin/vehicles"
+        >
+          Vehicles
+        </a>
+        <a
+          class="site-navbar__link<%= locals.activeNav === 'admin-issues' ? ' site-navbar__link--active' : '' %>"
+          href="/admin/issues"
+        >
+          Issues
+        </a>
+        <a
+          class="site-navbar__link<%= locals.activeNav === 'admin-reports' ? ' site-navbar__link--active' : '' %>"
+          href="/admin/reports"
+        >
+          Reports
         </a>
       <% } %>
 
@@ -59,11 +96,7 @@
             <% } %>
 
             <% if (effectiveRole === "Admin") { %>
-              <a class="site-navbar__dropdown-link" href="/admin/reservations">Reservations</a>
-              <a class="site-navbar__dropdown-link" href="/admin/vehicles">Vehicles</a>
               <a class="site-navbar__dropdown-link" href="/admin/drivers">Drivers</a>
-              <a class="site-navbar__dropdown-link" href="/admin/reports">Reports</a>
-              <a class="site-navbar__dropdown-link" href="/admin/issues">Vehicle Issues</a>
             <% } %>
 
             <% if (viewAsRole) { %>

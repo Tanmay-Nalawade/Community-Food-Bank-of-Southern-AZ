@@ -1021,3 +1021,99 @@ body {
 .account-page__actions form {
   margin: 0;
 }
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2.5rem;
+}
+
+.stat-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  text-decoration: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.stat-tile:hover,
+.stat-tile:focus {
+  border-color: #632c4f;
+  box-shadow: 0 4px 14px rgba(99, 44, 79, 0.14);
+  transform: translateY(-1px);
+}
+
+.stat-tile__value {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #632c4f;
+  line-height: 1;
+}
+
+.stat-tile__label {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #6b6b6b;
+}
+
+.notification-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.notification-item {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-left: 4px solid #a3849a;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.notification-item--booking {
+  border-left-color: #1565c0;
+}
+
+.notification-item--issue {
+  border-left-color: #c62828;
+}
+
+.notification-item__link {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  padding: 0.9rem 1.1rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.notification-item__link:hover,
+.notification-item__link:focus {
+  background: #fbf7f9;
+}
+
+.notification-item__message {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.notification-item__time {
+  flex-shrink: 0;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 0.8rem;
+  color: #999;
+  white-space: nowrap;
+}

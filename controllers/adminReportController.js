@@ -55,6 +55,6 @@ exports.index = async (req, res) => {
     title: "Reports",
     vehicleReport,
     accessLogs,
-    activeNav: "admin",
+    activeNav: "admin-reports",
   });
 };

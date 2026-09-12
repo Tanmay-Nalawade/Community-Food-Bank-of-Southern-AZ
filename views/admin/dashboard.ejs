@@ -1,0 +1,57 @@
+<% layout('layouts/boilerplate') %>
+
+<section class="admin-page">
+  <h1>Admin Dashboard</h1>
+  <p class="vehicles-page__lead">A quick look at what's going on across the fleet right now.</p>
+
+  <div class="stat-grid">
+    <a class="stat-tile" href="/admin/reservations?status=Pending">
+      <span class="stat-tile__value"><%= stats.pending %></span>
+      <span class="stat-tile__label">Pending Requests</span>
+    </a>
+    <a class="stat-tile" href="/admin/reservations?status=Active">
+      <span class="stat-tile__value"><%= stats.ongoing %></span>
+      <span class="stat-tile__label">Ongoing Bookings</span>
+    </a>
+    <a class="stat-tile" href="/admin/reservations?status=Reserved">
+      <span class="stat-tile__value"><%= stats.upcoming %></span>
+      <span class="stat-tile__label">Upcoming Reservations</span>
+    </a>
+    <a class="stat-tile" href="/admin/issues">
+      <span class="stat-tile__value"><%= stats.unresolvedIssues %></span>
+      <span class="stat-tile__label">Unresolved Issues</span>
+    </a>
+    <a class="stat-tile" href="/admin/vehicles">
+      <span class="stat-tile__value"><%= stats.vehiclesNeedingAttention %></span>
+      <span class="stat-tile__label">Vehicles Needing Attention</span>
+    </a>
+  </div>
+
+  <section class="dashboard-section">
+    <div class="dashboard-section__header">
+      <h2 class="dashboard-section__title">Needs Your Attention</h2>
+      <% if (notifications.length) { %>
+        <span class="dashboard-section__count"><%= notifications.length %></span>
+      <% } %>
+    </div>
+
+    <% if (!notifications.length) { %>
+      <div class="dashboard-empty">
+        <p>Nothing needs review right now.</p>
+      </div>
+    <% } else { %>
+      <ul class="notification-list">
+        <% notifications.forEach((note) => { %>
+          <li class="notification-item notification-item--<%= note.type %>">
+            <a class="notification-item__link" href="<%= note.link %>">
+              <span class="notification-item__message"><%= note.message %></span>
+              <span class="notification-item__time">
+                <%= new Date(note.at).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" }) %>
+              </span>
+            </a>
+          </li>
+        <% }) %>
+      </ul>
+    <% } %>
+  </section>
+</section>

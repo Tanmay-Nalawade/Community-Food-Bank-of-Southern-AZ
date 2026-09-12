@@ -22,7 +22,7 @@ exports.index = async (req, res) => {
   res.render("admin/issues/index", {
     title: "Vehicle Issues",
     issues,
-    activeNav: "admin",
+    activeNav: "admin-issues",
   });
 };
 

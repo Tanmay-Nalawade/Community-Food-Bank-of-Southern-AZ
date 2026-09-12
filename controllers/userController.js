@@ -2,6 +2,7 @@ const passport = require("passport");
 const User = require("../models/user");
 const Reservation = require("../models/reservation");
 const ActivityLog = require("../models/activityLog");
+const { landingPathForRole } = require("../middleware/auth");
 
 async function getLandingPath(userId) {
   const now = new Date();
@@ -12,6 +13,17 @@ async function getLandingPath(userId) {
   });
 
   return hasBookings ? "/reservations/mine" : "/";
+}
+
+// Staff land on their own booking dashboard (or the booking form if they
+// have nothing on the books); Admin/IT Admin land on their management
+// dashboards instead — they aren't drivers, so "do you have a booking?"
+// isn't the right question for them.
+async function landingPathFor(user) {
+  if (user.role === "Staff") {
+    return getLandingPath(user._id);
+  }
+  return landingPathForRole(user.role);
 }
 
 exports.home = (req, res) => {
@@ -72,7 +84,7 @@ exports.login = (req, res, next) => {
           return res.redirect(returnTo);
         }
 
-        res.redirect(await getLandingPath(user._id));
+        res.redirect(await landingPathFor(user));
       });
     });
   })(req, res, next);

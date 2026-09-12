@@ -6,7 +6,7 @@ const ALLOWED_VIEW_AS = {
 
 function landingPathForRole(role) {
   if (role === "Admin") {
-    return "/admin/reservations";
+    return "/admin/dashboard";
   }
   if (role === "IT Admin") {
     return "/it/users";

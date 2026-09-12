@@ -31,7 +31,7 @@ exports.index = async (req, res) => {
     vehicles,
     q,
     status,
-    activeNav: "admin",
+    activeNav: "admin-vehicles",
   });
 };
 
@@ -51,7 +51,7 @@ exports.show = async (req, res) => {
     title: `${vehicle.make} ${vehicle.model}`,
     vehicle,
     reservations,
-    activeNav: "admin",
+    activeNav: "admin-vehicles",
   });
 };
 

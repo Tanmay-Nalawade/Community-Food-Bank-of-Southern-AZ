@@ -9,11 +9,15 @@ const {
   adminNotesSchema,
 } = require("../validators/adminReservationSchemas");
 const adminController = wrapControllerAsync(require("../controllers/adminController"));
+const adminDashboardController = wrapControllerAsync(require("../controllers/adminDashboardController"));
 const adminReservationController = wrapControllerAsync(require("../controllers/adminReservationController"));
 const adminIssueController = wrapControllerAsync(require("../controllers/adminIssueController"));
 const adminVehicleController = wrapControllerAsync(require("../controllers/adminVehicleController"));
 const adminDriverController = wrapControllerAsync(require("../controllers/adminDriverController"));
 const adminReportController = wrapControllerAsync(require("../controllers/adminReportController"));
+
+router.get("/", requireAdmin, (req, res) => res.redirect("/admin/dashboard"));
+router.get("/dashboard", requireAdmin, adminDashboardController.index);
 
 router.get("/vehicles", requireAdmin, adminVehicleController.index);
 router.get("/vehicles/add", requireAdmin, adminController.getAddVehicle);

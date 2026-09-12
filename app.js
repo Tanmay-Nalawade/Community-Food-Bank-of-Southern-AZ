@@ -115,6 +115,18 @@ app.use((req, res, next) => {
     res.locals.activeNav = "account";
   } else if (req.path.startsWith("/reservations")) {
     res.locals.activeNav = "dashboard";
+  } else if (req.path.startsWith("/admin/dashboard")) {
+    res.locals.activeNav = "admin-dashboard";
+  } else if (req.path.startsWith("/admin/reservations")) {
+    res.locals.activeNav = "admin-reservations";
+  } else if (req.path.startsWith("/admin/vehicles")) {
+    res.locals.activeNav = "admin-vehicles";
+  } else if (req.path.startsWith("/admin/drivers")) {
+    res.locals.activeNav = "admin-drivers";
+  } else if (req.path.startsWith("/admin/issues")) {
+    res.locals.activeNav = "admin-issues";
+  } else if (req.path.startsWith("/admin/reports")) {
+    res.locals.activeNav = "admin-reports";
   } else if (req.path.startsWith("/admin")) {
     res.locals.activeNav = "admin";
   } else if (req.path.startsWith("/it")) {
