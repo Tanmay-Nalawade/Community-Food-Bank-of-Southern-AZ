@@ -7,6 +7,8 @@ const {
   revokeReservationAccess,
 } = require("../services/reservationKeycafe");
 
+const HOLDING_STATUSES = ["Reserved", "Active"];
+
 function escapeRegex(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -135,19 +137,53 @@ exports.updateReservation = async (req, res) => {
     return res.status(400).send("Invalid booking time.");
   }
 
-  const previousStatus = reservation.status;
+  const previousVehicleId = String(reservation.vehicleId._id);
+  const nextVehicleId = req.body.vehicleId;
   const nextStatus = req.body.status;
+  const vehicleChanged = previousVehicleId !== nextVehicleId;
 
-  reservation.vehicleId = req.body.vehicleId;
-  reservation.requestedStartTime = booking.start;
-  reservation.requestedEndTime = booking.end;
-  reservation.status = nextStatus;
-  reservation.adminNotes = req.body.adminNotes || "";
-  reservation.reviewedBy = res.locals.currentUser._id;
-  reservation.reviewedAt = new Date();
+  // Only Reserved/Active actually hold a vehicle exclusively — block the
+  // save if the requested vehicle/window now conflicts with another booking
+  // (the staff-facing booking form already guards against this; this path
+  // didn't, so an admin edit could silently double-book a vehicle).
+  if (HOLDING_STATUSES.includes(nextStatus)) {
+    const conflictExists = await Reservation.exists({
+      _id: { $ne: reservation._id },
+      vehicleId: nextVehicleId,
+      status: { $in: ["Pending", "Reserved", "Active"] },
+      requestedStartTime: { $lt: booking.end },
+      requestedEndTime: { $gt: booking.start },
+    });
+
+    if (conflictExists) {
+      req.flash("error", "That vehicle is already booked during that window.");
+      return res.redirect(`/admin/reservations/${reservation._id}/edit`);
+    }
+  }
+
+  let newVehicle = reservation.vehicleId;
+  if (vehicleChanged) {
+    newVehicle = await Vehicle.findById(nextVehicleId, "make model keyCafeKeyId");
+    if (!newVehicle) {
+      req.flash("error", "That vehicle could not be found.");
+      return res.redirect(`/admin/reservations/${reservation._id}/edit`);
+    }
+  }
 
   try {
-    if (nextStatus === "Reserved" && previousStatus !== "Reserved") {
+    // An existing KeyCafe access is scoped to the OLD vehicle's key — if the
+    // vehicle is being changed, that access no longer matches the
+    // reservation and has to be revoked rather than left in place pointing
+    // at the wrong vehicle.
+    if (vehicleChanged && reservation.keyCafeAccess?.accessId) {
+      await revokeReservationAccess(reservation);
+    }
+
+    if (vehicleChanged) {
+      reservation.vehicleId = newVehicle;
+    }
+
+    if (HOLDING_STATUSES.includes(nextStatus) && !reservation.keyCafeAccess?.accessId) {
       await grantReservationAccess(reservation);
     } else if (
       ["Denied", "Cancelled"].includes(nextStatus) &&
@@ -164,7 +200,29 @@ exports.updateReservation = async (req, res) => {
     return res.redirect(`/admin/reservations/${reservation._id}/edit`);
   }
 
+  reservation.vehicleId = nextVehicleId;
+  reservation.requestedStartTime = booking.start;
+  reservation.requestedEndTime = booking.end;
+  reservation.status = nextStatus;
+  reservation.adminNotes = req.body.adminNotes || "";
+  reservation.reviewedBy = res.locals.currentUser._id;
+  reservation.reviewedAt = new Date();
+
   await reservation.save();
+
+  // Keep Vehicle.status in sync: release the old vehicle if this
+  // reservation no longer holds it, and reflect the new vehicle's state.
+  if (vehicleChanged) {
+    await freeVehicleIfHeldBy(previousVehicleId);
+  }
+
+  if (HOLDING_STATUSES.includes(nextStatus)) {
+    await Vehicle.findByIdAndUpdate(nextVehicleId, {
+      status: nextStatus === "Active" ? "In Use" : "Reserved",
+    });
+  } else if (["Denied", "Cancelled", "Completed"].includes(nextStatus)) {
+    await freeVehicleIfHeldBy(nextVehicleId);
+  }
 
   if (["Denied", "Cancelled"].includes(nextStatus)) {
     req.flash("success", "Booking canceled.");
