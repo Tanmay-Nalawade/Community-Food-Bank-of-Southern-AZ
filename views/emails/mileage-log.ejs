@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+  <body style="margin:0; padding:0; background:#fbf7f9; font-family: Helvetica, Arial, sans-serif;">
+    <div style="max-width:640px; margin:0 auto; padding:32px 24px;">
+      <h1 style="color:#632c4f; font-size:20px; margin:0 0 16px;">Community Food Bank Motor Pool</h1>
+      <p style="color:#333; font-size:15px; line-height:1.5; margin:0 0 12px;">
+        Monthly mileage log for <strong><%= vehicleName %></strong> (<%= licensePlate %>) — <%= monthLabel %>.
+      </p>
+
+      <% if (isEmpty) { %>
+        <p style="color:#333; font-size:14px; margin:0 0 24px;">No trips were recorded for this vehicle this month.</p>
+      <% } else { %>
+        <table style="width:100%; border-collapse:collapse; margin:16px 0; font-size:13px;" cellpadding="8" cellspacing="0">
+          <thead>
+            <tr style="background:#fbf7f9;">
+              <th style="text-align:left; color:#632c4f; border-bottom:1px solid #e0e0e0;">Date</th>
+              <th style="text-align:left; color:#632c4f; border-bottom:1px solid #e0e0e0;">Driver</th>
+              <th style="text-align:left; color:#632c4f; border-bottom:1px solid #e0e0e0;">Start</th>
+              <th style="text-align:left; color:#632c4f; border-bottom:1px solid #e0e0e0;">End</th>
+              <th style="text-align:left; color:#632c4f; border-bottom:1px solid #e0e0e0;">Distance</th>
+              <th style="text-align:left; color:#632c4f; border-bottom:1px solid #e0e0e0;">Pre-Trip</th>
+              <th style="text-align:left; color:#632c4f; border-bottom:1px solid #e0e0e0;">Fuel %</th>
+              <th style="text-align:left; color:#632c4f; border-bottom:1px solid #e0e0e0;">Drop off</th>
+              <th style="text-align:left; color:#632c4f; border-bottom:1px solid #e0e0e0;">Pick up</th>
+              <th style="text-align:left; color:#632c4f; border-bottom:1px solid #e0e0e0;">Other</th>
+              <th style="text-align:left; color:#632c4f; border-bottom:1px solid #e0e0e0;">Washed</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% rows.forEach((row) => { %>
+              <tr>
+                <td style="border-bottom:1px solid #f0f0f0; color:#333;"><%= new Date(row.date).toLocaleDateString() %></td>
+                <td style="border-bottom:1px solid #f0f0f0; color:#333;"><%= row.driverInitials %></td>
+                <td style="border-bottom:1px solid #f0f0f0; color:#333;"><%= row.startMileage != null ? row.startMileage.toLocaleString() : "—" %></td>
+                <td style="border-bottom:1px solid #f0f0f0; color:#333;"><%= row.endMileage != null ? row.endMileage.toLocaleString() : "—" %></td>
+                <td style="border-bottom:1px solid #f0f0f0; color:#333;"><%= row.distanceTravelled != null ? row.distanceTravelled.toLocaleString() : "—" %></td>
+                <td style="border-bottom:1px solid #f0f0f0; color:#333;"><%= row.preTripInspectionPassed === null ? "—" : (row.preTripInspectionPassed ? "Y" : "N") %></td>
+                <td style="border-bottom:1px solid #f0f0f0; color:#333;"><%= row.fuelLevelEndPercent != null ? row.fuelLevelEndPercent + "%" : "—" %></td>
+                <td style="border-bottom:1px solid #f0f0f0; color:#333;"><%= row.droppedOffFood ? "Y" : "N" %></td>
+                <td style="border-bottom:1px solid #f0f0f0; color:#333;"><%= row.pickedUpFood ? "Y" : "N" %></td>
+                <td style="border-bottom:1px solid #f0f0f0; color:#333;"><%= row.other ? (row.otherNote || "Y") : "N" %></td>
+                <td style="border-bottom:1px solid #f0f0f0; color:#333;"><%= row.washed ? "Y" : "N" %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      <% } %>
+
+      <p style="font-size:14px; margin:0 0 24px;">
+        <a href="<%= logUrl %>" style="color:#632c4f; font-weight:bold; text-decoration:none;">View or print this log &rarr;</a>
+      </p>
+
+      <p style="color:#999; font-size:12px; margin-top:24px;">
+        This log was generated automatically by the Community Food Bank Motor Pool system.
+      </p>
+    </div>
+  </body>
+</html>

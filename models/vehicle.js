@@ -14,6 +14,9 @@ const vehicleSchema = new Schema(
 
     currentMileage: { type: Number, required: true, default: 0 },
 
+    nextMaintenanceDueMileage: { type: Number },
+    nextMaintenanceDueDate: { type: Date },
+
     status: {
       type: String,
       enum: [

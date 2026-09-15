@@ -15,6 +15,7 @@ const adminIssueController = wrapControllerAsync(require("../controllers/adminIs
 const adminVehicleController = wrapControllerAsync(require("../controllers/adminVehicleController"));
 const adminDriverController = wrapControllerAsync(require("../controllers/adminDriverController"));
 const adminReportController = wrapControllerAsync(require("../controllers/adminReportController"));
+const adminMileageLogController = wrapControllerAsync(require("../controllers/adminMileageLogController"));
 
 router.get("/", requireAdmin, (req, res) => res.redirect("/admin/dashboard"));
 router.get("/dashboard", requireAdmin, adminDashboardController.index);
@@ -29,6 +30,11 @@ router.post(
 );
 router.get("/vehicles/:id", requireAdmin, adminVehicleController.show);
 router.put("/vehicles/:id", requireAdmin, adminVehicleController.update);
+router.get(
+  "/vehicles/:id/mileage-log",
+  requireAdmin,
+  adminMileageLogController.show,
+);
 router.post(
   "/vehicles/:id/issues",
   requireAdmin,

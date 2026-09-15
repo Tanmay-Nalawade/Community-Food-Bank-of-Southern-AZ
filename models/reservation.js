@@ -34,6 +34,13 @@ const reservationSchema = new Schema(
       tripEndedAt: { type: Date },
       startMileage: { type: Number },
       endMileage: { type: Number },
+      preTripInspectionPassed: { type: Boolean },
+      fuelLevelEndPercent: { type: Number, min: 0, max: 100 },
+      droppedOffFood: { type: Boolean, default: false },
+      pickedUpFood: { type: Boolean, default: false },
+      otherDuty: { type: Boolean, default: false },
+      otherDutyNote: { type: String, default: "" },
+      washed: { type: Boolean, default: false },
     },
 
     notifications: {

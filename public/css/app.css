@@ -1198,3 +1198,52 @@ textarea {
   color: var(--cfb-grey);
   white-space: nowrap;
 }
+
+.mileage-log-page__header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.mileage-log-header-table {
+  margin-bottom: 1.25rem;
+}
+
+.mileage-log-header-table th {
+  width: 260px;
+  white-space: nowrap;
+}
+
+.mileage-log-page__month-nav {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+@media print {
+  .site-navbar,
+  .site-footer,
+  .flash,
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  .page-content {
+    max-width: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .admin-table,
+  .admin-table th,
+  .admin-table td {
+    border-color: #000 !important;
+  }
+}

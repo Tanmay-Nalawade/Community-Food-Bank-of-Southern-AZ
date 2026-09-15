@@ -261,7 +261,7 @@ exports.submitMileage = async (req, res) => {
     return res.redirect("/reservations/mine");
   }
 
-  const { startMileage, endMileage } = req.body;
+  const { startMileage, endMileage, fuelLevelEndPercent, otherDutyNote } = req.body;
 
   if (startMileage !== "" && startMileage !== undefined) {
     reservation.tripLog.startMileage = Number(startMileage);
@@ -269,6 +269,16 @@ exports.submitMileage = async (req, res) => {
   if (endMileage !== "" && endMileage !== undefined) {
     reservation.tripLog.endMileage = Number(endMileage);
   }
+  if (fuelLevelEndPercent !== "" && fuelLevelEndPercent !== undefined) {
+    reservation.tripLog.fuelLevelEndPercent = Number(fuelLevelEndPercent);
+  }
+
+  reservation.tripLog.preTripInspectionPassed = req.body.preTripInspectionPassed === "on";
+  reservation.tripLog.droppedOffFood = req.body.droppedOffFood === "on";
+  reservation.tripLog.pickedUpFood = req.body.pickedUpFood === "on";
+  reservation.tripLog.otherDuty = req.body.otherDuty === "on";
+  reservation.tripLog.otherDutyNote = (otherDutyNote || "").trim();
+  reservation.tripLog.washed = req.body.washed === "on";
 
   await reservation.save();
 

@@ -94,6 +94,8 @@ async function seed() {
       keyCafeKeyId: "KC-ODY-01",
       currentMileage: 67100,
       status: "In Use",
+      nextMaintenanceDueMileage: 70000,
+      nextMaintenanceDueDate: dayOffset(45),
     },
     {
       make: "Nissan",
@@ -169,6 +171,8 @@ async function seed() {
       tripLog: {
         tripStartedAt: setTime(today, 8, 20),
         startMileage: 67050,
+        preTripInspectionPassed: true,
+        pickedUpFood: true,
       },
     },
     {
@@ -193,6 +197,10 @@ async function seed() {
         tripEndedAt: setTime(dayOffset(-2), 11, 45),
         startMileage: 28380,
         endMileage: 28450,
+        preTripInspectionPassed: true,
+        fuelLevelEndPercent: 75,
+        droppedOffFood: true,
+        washed: true,
       },
     },
     {

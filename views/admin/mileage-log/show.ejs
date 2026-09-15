@@ -1,0 +1,96 @@
+<% layout('layouts/boilerplate') %>
+
+<section class="admin-page mileage-log-page">
+  <a class="vehicle-detail__back no-print" href="/admin/vehicles/<%= vehicle._id %>">&larr; Back to vehicle</a>
+
+  <div class="mileage-log-page__header-row">
+    <h1>Monthly Vehicle Mileage Log</h1>
+    <button class="admin-table__btn admin-table__btn--edit no-print" type="button" onclick="window.print()">
+      Print
+    </button>
+  </div>
+
+  <div class="vehicle-detail__card admin-history-card mileage-log-card">
+    <table class="admin-table mileage-log-header-table">
+      <tbody>
+        <tr>
+          <th>Vehicle</th>
+          <td>
+            <%= vehicle.year ? vehicle.year + " " : "" %><%= vehicle.make %> <%= vehicle.model %>
+            (<%= vehicle.licensePlate %>)
+          </td>
+        </tr>
+        <tr>
+          <th>Month</th>
+          <td><%= log.monthLabel %></td>
+        </tr>
+        <tr>
+          <th>Next Maintenance Due Mileage</th>
+          <td>
+            <%= vehicle.nextMaintenanceDueMileage != null ? vehicle.nextMaintenanceDueMileage.toLocaleString() + " mi" : "—" %>
+          </td>
+        </tr>
+        <tr>
+          <th>Next Maintenance Due Date</th>
+          <td>
+            <%= vehicle.nextMaintenanceDueDate ? new Date(vehicle.nextMaintenanceDueDate).toLocaleDateString() : "—" %>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="mileage-log-page__month-nav no-print">
+      <a class="admin-table__btn admin-table__btn--edit" href="?year=<%= prev.year %>&month=<%= prev.month %>">
+        &larr; Previous month
+      </a>
+      <a class="admin-table__btn admin-table__btn--edit" href="?year=<%= next.year %>&month=<%= next.month %>">
+        Next month &rarr;
+      </a>
+    </div>
+
+    <% if (log.isEmpty) { %>
+      <p class="vehicle-detail__empty">No trips recorded for this vehicle in <%= log.monthLabel %>.</p>
+    <% } else { %>
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Driver Initials</th>
+              <th>Start Odometer</th>
+              <th>End Odometer</th>
+              <th>Distance Travelled</th>
+              <th>Pre-Trip Inspection</th>
+              <th>Fuel Level (End) %</th>
+              <th>Drop off Food</th>
+              <th>Pick up Food</th>
+              <th>Other</th>
+              <th>Washed</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% log.rows.forEach((row) => { %>
+              <tr>
+                <td><%= new Date(row.date).toLocaleDateString() %></td>
+                <td><%= row.driverInitials %></td>
+                <td><%= row.startMileage != null ? row.startMileage.toLocaleString() : "—" %></td>
+                <td><%= row.endMileage != null ? row.endMileage.toLocaleString() : "—" %></td>
+                <td><%= row.distanceTravelled != null ? row.distanceTravelled.toLocaleString() : "—" %></td>
+                <td><%= row.preTripInspectionPassed === null ? "—" : (row.preTripInspectionPassed ? "Y" : "N") %></td>
+                <td><%= row.fuelLevelEndPercent != null ? row.fuelLevelEndPercent + "%" : "—" %></td>
+                <td><%= row.droppedOffFood ? "Y" : "N" %></td>
+                <td><%= row.pickedUpFood ? "Y" : "N" %></td>
+                <td><%= row.other ? (row.otherNote || "Y") : "N" %></td>
+                <td><%= row.washed ? "Y" : "N" %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+
+  <p class="vehicle-detail__empty admin-hint no-print">
+    This log is also emailed automatically to Transportation on the last business day of each month.
+  </p>
+</section>

@@ -31,7 +31,31 @@ const mileageSchema = Joi.object({
     "number.base": "End mileage must be a number.",
     "number.min": "End mileage can't be negative.",
   }),
-});
+  fuelLevelEndPercent: Joi.number().integer().min(0).max(100).empty("").optional().messages({
+    "number.base": "Fuel level must be a number.",
+    "number.min": "Fuel level can't be negative.",
+    "number.max": "Fuel level can't be more than 100%.",
+  }),
+  preTripInspectionPassed: Joi.string().valid("on").empty("").optional(),
+  droppedOffFood: Joi.string().valid("on").empty("").optional(),
+  pickedUpFood: Joi.string().valid("on").empty("").optional(),
+  otherDuty: Joi.string().valid("on").empty("").optional(),
+  otherDutyNote: Joi.string().trim().max(500).empty("").optional(),
+  washed: Joi.string().valid("on").empty("").optional(),
+})
+  .custom((value, helpers) => {
+    if (
+      value.startMileage !== undefined &&
+      value.endMileage !== undefined &&
+      value.endMileage < value.startMileage
+    ) {
+      return helpers.error("mileage.endBeforeStart");
+    }
+    return value;
+  })
+  .messages({
+    "mileage.endBeforeStart": "End mileage can't be less than start mileage.",
+  });
 
 const issueSchema = Joi.object({
   description: Joi.string().trim().min(1).max(2000).required().messages({

@@ -41,6 +41,82 @@
         Enter whichever you know right now — you can come back and fill in the other later.
       </p>
 
+      <div class="auth-form__row">
+        <div class="auth-form__group">
+          <label class="auth-form__label" for="fuelLevelEndPercent">Fuel level at end (%)</label>
+          <input
+            class="auth-form__input"
+            type="number"
+            id="fuelLevelEndPercent"
+            name="fuelLevelEndPercent"
+            min="0"
+            max="100"
+            value="<%= reservation.tripLog?.fuelLevelEndPercent ?? '' %>"
+          />
+        </div>
+      </div>
+
+      <div class="auth-form__group">
+        <label class="auth-form__label">
+          <input
+            type="checkbox"
+            name="preTripInspectionPassed"
+            <%= reservation.tripLog?.preTripInspectionPassed ? "checked" : "" %>
+          />
+          Pre-trip inspection passed
+        </label>
+      </div>
+
+      <div class="auth-form__group">
+        <label class="auth-form__label">
+          <input
+            type="checkbox"
+            name="droppedOffFood"
+            <%= reservation.tripLog?.droppedOffFood ? "checked" : "" %>
+          />
+          Dropped off CFB food using this vehicle
+        </label>
+      </div>
+
+      <div class="auth-form__group">
+        <label class="auth-form__label">
+          <input
+            type="checkbox"
+            name="pickedUpFood"
+            <%= reservation.tripLog?.pickedUpFood ? "checked" : "" %>
+          />
+          Picked up CFB food using this vehicle
+        </label>
+      </div>
+
+      <div class="auth-form__group">
+        <label class="auth-form__label">
+          <input
+            type="checkbox"
+            name="otherDuty"
+            <%= reservation.tripLog?.otherDuty ? "checked" : "" %>
+          />
+          Used for other CFB business
+        </label>
+      </div>
+
+      <div class="auth-form__group">
+        <label class="auth-form__label" for="otherDutyNote">If "other," briefly describe</label>
+        <textarea
+          class="auth-form__input"
+          id="otherDutyNote"
+          name="otherDutyNote"
+          rows="2"
+        ><%= reservation.tripLog?.otherDutyNote || "" %></textarea>
+      </div>
+
+      <div class="auth-form__group">
+        <label class="auth-form__label">
+          <input type="checkbox" name="washed" <%= reservation.tripLog?.washed ? "checked" : "" %> />
+          Vehicle washed
+        </label>
+      </div>
+
       <button class="auth-form__submit" type="submit">Save Mileage</button>
     </form>
   </div>

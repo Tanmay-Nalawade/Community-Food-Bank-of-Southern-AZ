@@ -3,8 +3,17 @@
 <section class="admin-page">
   <a class="vehicle-detail__back" href="/admin/vehicles">&larr; Back to vehicles</a>
 
-  <h1><%= vehicle.year ? vehicle.year + " " : "" %><%= vehicle.make %> <%= vehicle.model %></h1>
-  <p class="vehicles-page__lead"><%= vehicle.licensePlate %></p>
+  <div class="vehicles-page__header">
+    <div>
+      <h1><%= vehicle.year ? vehicle.year + " " : "" %><%= vehicle.make %> <%= vehicle.model %></h1>
+      <p class="vehicles-page__lead"><%= vehicle.licensePlate %></p>
+    </div>
+    <div class="admin-page__header-actions">
+      <a class="admin-table__btn admin-table__btn--edit" href="/admin/vehicles/<%= vehicle._id %>/mileage-log">
+        View mileage log
+      </a>
+    </div>
+  </div>
 
   <div class="vehicle-detail__grid">
     <div class="vehicle-detail__card">
@@ -49,6 +58,30 @@
                 <option value="<%= option %>" <%= vehicle.status === option ? "selected" : "" %>><%= option %></option>
               <% }) %>
             </select>
+          </div>
+        </div>
+
+        <div class="auth-form__row">
+          <div class="auth-form__group">
+            <label class="auth-form__label" for="nextMaintenanceDueMileage">Next maintenance due (mileage)</label>
+            <input
+              class="auth-form__input"
+              type="number"
+              id="nextMaintenanceDueMileage"
+              name="nextMaintenanceDueMileage"
+              min="0"
+              value="<%= vehicle.nextMaintenanceDueMileage ?? '' %>"
+            />
+          </div>
+          <div class="auth-form__group">
+            <label class="auth-form__label" for="nextMaintenanceDueDate">Next maintenance due (date)</label>
+            <input
+              class="auth-form__input"
+              type="date"
+              id="nextMaintenanceDueDate"
+              name="nextMaintenanceDueDate"
+              value="<%= vehicle.nextMaintenanceDueDate ? new Date(vehicle.nextMaintenanceDueDate).toISOString().slice(0, 10) : '' %>"
+            />
           </div>
         </div>
 

@@ -62,7 +62,17 @@ exports.update = async (req, res) => {
     return res.status(404).send("Vehicle not found.");
   }
 
-  const { make, model, year, licensePlate, keyCafeKeyId, currentMileage, status } = req.body;
+  const {
+    make,
+    model,
+    year,
+    licensePlate,
+    keyCafeKeyId,
+    currentMileage,
+    status,
+    nextMaintenanceDueMileage,
+    nextMaintenanceDueDate,
+  } = req.body;
 
   vehicle.make = make;
   vehicle.model = model;
@@ -71,6 +81,12 @@ exports.update = async (req, res) => {
   vehicle.keyCafeKeyId = keyCafeKeyId;
   vehicle.currentMileage = Number(currentMileage) || 0;
   vehicle.status = status;
+  vehicle.nextMaintenanceDueMileage = nextMaintenanceDueMileage
+    ? Number(nextMaintenanceDueMileage)
+    : undefined;
+  vehicle.nextMaintenanceDueDate = nextMaintenanceDueDate
+    ? new Date(nextMaintenanceDueDate)
+    : undefined;
 
   await vehicle.save();
 

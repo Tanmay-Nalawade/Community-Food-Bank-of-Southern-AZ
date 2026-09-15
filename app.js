@@ -16,6 +16,7 @@ const webhookRoutes = require("./routes/webhookRoutes");
 const accountRoutes = require("./routes/accountRoutes");
 const itRoutes = require("./routes/itRoutes");
 const reminderScheduler = require("./jobs/reminderScheduler");
+const mileageLogScheduler = require("./jobs/mileageLogScheduler");
 const passport = require("./config/passport");
 const { computeEffectiveRole } = require("./middleware/auth");
 
@@ -198,6 +199,7 @@ app.listen(port, "0.0.0.0", () => {
 });
 
 reminderScheduler.start();
+mileageLogScheduler.start();
 
 process.on("unhandledRejection", (reason) => {
   console.error("Unhandled promise rejection:", reason);
