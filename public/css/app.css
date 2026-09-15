@@ -1,5 +1,47 @@
+@font-face {
+  font-family: "Oswald";
+  src: url("/fonts/oswald-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Oswald";
+  src: url("/fonts/oswald-500.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Oswald";
+  src: url("/fonts/oswald-600.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Oswald";
+  src: url("/fonts/oswald-700.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 body {
-  background: #fbf7f9;
+  background: var(--cfb-paper);
+  color: var(--cfb-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+input,
+button,
+select,
+textarea {
+  font-family: inherit;
 }
 
 .site-shell {
@@ -27,7 +69,7 @@ body {
   gap: 1rem;
   margin: 0 0 1.5rem;
   padding: 0.75rem 1rem;
-  border-radius: 8px;
+  border-radius: 2px;
   font-size: 0.95rem;
 }
 
@@ -67,19 +109,19 @@ body {
 }
 
 .flash--view-as {
-  background: #fff3e0;
-  color: #a05a1e;
+  background: var(--cfb-gold-wash);
+  color: var(--cfb-orange-dark);
 }
 
 .flash__view-as-return {
   flex-shrink: 0;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.85rem;
   font-weight: 700;
-  color: #a05a1e;
+  color: var(--cfb-orange-dark);
   background: #fff;
-  border: 1px solid #a05a1e;
-  border-radius: 6px;
+  border: 1px solid var(--cfb-orange-dark);
+  border-radius: 2px;
   padding: 0.4rem 0.75rem;
   cursor: pointer;
   white-space: nowrap;
@@ -87,21 +129,22 @@ body {
 
 .flash__view-as-return:hover,
 .flash__view-as-return:focus {
-  background: #a05a1e;
+  background: var(--cfb-orange-dark);
   color: #fff;
 }
 
 .page-content h1 {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: #632c4f;
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--cfb-ink);
   margin: 0 0 0.5rem;
 }
 
 .page-content p {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  color: #444;
+  font-family: var(--font-sans);
+  color: var(--cfb-ink);
   margin: 0;
 }
 
@@ -112,16 +155,16 @@ body {
 .vehicles-page__change-date {
   display: inline-block;
   margin-top: 0.5rem;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.95rem;
   font-weight: 700;
-  color: #632c4f;
+  color: var(--cfb-maroon);
   text-decoration: none;
 }
 
 .vehicles-page__change-date:hover,
 .vehicles-page__change-date:focus {
-  color: #4a213b;
+  color: var(--cfb-maroon-hover);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -142,13 +185,15 @@ body {
 }
 
 .vehicles-page__add-btn {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 1rem;
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   color: #ffffff;
-  background: #632c4f;
-  border: 2px solid #632c4f;
-  border-radius: 6px;
+  background: var(--cfb-maroon);
+  border: 1px solid var(--cfb-maroon);
+  border-radius: 2px;
   padding: 0.65rem 1.25rem;
   text-decoration: none;
   white-space: nowrap;
@@ -157,13 +202,13 @@ body {
 
 .vehicles-page__add-btn:hover,
 .vehicles-page__add-btn:focus {
-  background: #4a213b;
-  border-color: #4a213b;
+  background: var(--cfb-maroon-hover);
+  border-color: var(--cfb-maroon-hover);
   color: #ffffff;
 }
 
 .vehicles-page__empty {
-  color: #666;
+  color: var(--cfb-grey);
   font-style: italic;
 }
 
@@ -174,25 +219,22 @@ body {
 }
 
 .vehicle-card {
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
+  border: 1px solid var(--cfb-line);
+  border-radius: 2px;
   padding: 1.25rem;
   background: #fff;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
 .vehicle-card--link {
   display: block;
   text-decoration: none;
   color: inherit;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  transition: border-color 0.12s ease;
 }
 
 .vehicle-card--link:hover,
 .vehicle-card--link:focus {
-  border-color: #632c4f;
-  box-shadow: 0 4px 12px rgba(99, 44, 79, 0.12);
-  transform: translateY(-2px);
+  border-color: var(--cfb-maroon);
 }
 
 .vehicle-card__photo {
@@ -201,15 +243,15 @@ body {
   height: 160px;
   margin: -1.25rem -1.25rem 1rem;
   object-fit: cover;
-  border-radius: 8px 8px 0 0;
-  background: #f0f0f0;
+  border-radius: 2px 2px 0 0;
+  background: var(--cfb-line);
 }
 
 .vehicle-card__photo--empty {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #999;
+  color: var(--cfb-grey);
   font-size: 0.85rem;
   font-style: italic;
 }
@@ -223,44 +265,12 @@ body {
 }
 
 .vehicle-card__title {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #632c4f;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--cfb-ink);
   margin: 0;
-  line-height: 1.3;
-}
-
-.vehicle-card__status {
-  flex-shrink: 0;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  background: #f0f0f0;
-  color: #444;
-}
-
-.vehicle-card__status--available {
-  background: #e8f5e9;
-  color: #2e7d32;
-}
-
-.vehicle-card__status--reserved {
-  background: #fff8e1;
-  color: #f57f17;
-}
-
-.vehicle-card__status--in-use {
-  background: #e3f2fd;
-  color: #1565c0;
-}
-
-.vehicle-card__status--maintenance,
-.vehicle-card__status--out-of-service {
-  background: #fce4ec;
-  color: #c62828;
+  line-height: 1.25;
 }
 
 .vehicle-card__details {
@@ -275,38 +285,39 @@ body {
 }
 
 .vehicle-card__details dt {
+  font-family: var(--font-display);
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: #888;
+  letter-spacing: 0.06em;
+  color: var(--cfb-grey);
   margin: 0;
 }
 
 .vehicle-card__details dd {
   margin: 0;
   font-size: 0.95rem;
-  color: #333;
+  color: var(--cfb-ink);
 }
 
 .vehicle-detail__back {
   display: inline-block;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans);
   font-weight: 700;
-  color: #632c4f;
+  color: var(--cfb-maroon);
   text-decoration: none;
   margin-bottom: 1.25rem;
 }
 
 .vehicle-detail__booking-window {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  color: #444;
+  font-family: var(--font-sans);
+  color: var(--cfb-ink);
   margin: 0 0 1.25rem;
 }
 
 .vehicle-detail__back:hover,
 .vehicle-detail__back:focus {
-  color: #4a213b;
+  color: var(--cfb-maroon-hover);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -368,19 +379,18 @@ body {
   width: 340px;
   height: 340px;
   object-fit: cover;
-  border-radius: 12px;
-  background: #f0f0f0;
-  box-shadow: 0 4px 16px rgba(99, 44, 79, 0.1);
+  border-radius: 2px;
+  background: var(--cfb-line);
 }
 
 .vehicle-detail__photo--empty {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #999;
+  color: var(--cfb-grey);
   font-style: italic;
-  background: #f5f0f3;
-  border: 1px dashed #d4c8ce;
+  background: var(--cfb-paper);
+  border: 1px dashed var(--cfb-line);
 }
 
 @media (max-width: 720px) {
@@ -396,8 +406,8 @@ body {
 }
 
 .vehicle-detail__plate {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  color: #6b6b6b;
+  font-family: var(--font-sans);
+  color: var(--cfb-grey);
   margin: 0.35rem 0 0;
 }
 
@@ -409,10 +419,9 @@ body {
 
 .vehicle-detail__card {
   background: #ffffff;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
+  border: 1px solid var(--cfb-line);
+  border-radius: 2px;
   padding: 1.25rem;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
 .vehicle-detail__card dl > div {
@@ -421,7 +430,7 @@ body {
   justify-content: space-between;
   gap: 1.25rem;
   padding: 0.7rem 0;
-  border-bottom: 1px solid #f0eaee;
+  border-bottom: 1px solid var(--cfb-line);
 }
 
 .vehicle-detail__card dl > div:first-child {
@@ -436,7 +445,7 @@ body {
 .vehicle-detail__card dt {
   font-size: 0.9rem;
   font-weight: 500;
-  color: #6b6b6b;
+  color: var(--cfb-grey);
   margin: 0;
   flex-shrink: 0;
 }
@@ -445,20 +454,20 @@ body {
   margin: 0;
   font-size: 1.05rem;
   font-weight: 700;
-  color: #222;
+  color: var(--cfb-ink);
   text-align: right;
 }
 
 .vehicle-detail__section-title {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #632c4f;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--cfb-ink);
   margin: 0 0 1rem;
 }
 
 .vehicle-detail__empty {
-  color: #666;
+  color: var(--cfb-grey);
   font-style: italic;
   margin: 0;
 }
@@ -470,7 +479,7 @@ body {
 }
 
 .vehicle-detail__lead-in {
-  color: #444;
+  color: var(--cfb-ink);
   margin: 0 0 1rem;
 }
 
@@ -482,7 +491,7 @@ body {
 }
 
 .vehicle-detail__issues li {
-  color: #333;
+  color: var(--cfb-ink);
   line-height: 1.4;
 }
 
@@ -490,7 +499,7 @@ body {
   display: block;
   font-size: 0.8rem;
   font-weight: 600;
-  color: #888;
+  color: var(--cfb-grey);
   margin-bottom: 0.15rem;
 }
 
@@ -505,43 +514,45 @@ body {
 }
 
 .account-page__btn {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 1rem;
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   padding: 0.65rem 1.5rem;
-  border-radius: 6px;
+  border-radius: 2px;
   text-decoration: none;
   transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .account-page__btn--primary {
   color: #ffffff;
-  background: #632c4f;
-  border: 2px solid #632c4f;
+  background: var(--cfb-maroon);
+  border: 1px solid var(--cfb-maroon);
 }
 
 .account-page__btn--primary:hover,
 .account-page__btn--primary:focus {
-  background: #4a213b;
-  border-color: #4a213b;
+  background: var(--cfb-maroon-hover);
+  border-color: var(--cfb-maroon-hover);
   color: #ffffff;
 }
 
 .account-page__btn--secondary {
-  color: #632c4f;
+  color: var(--cfb-maroon);
   background: #ffffff;
-  border: 2px solid #632c4f;
+  border: 1px solid var(--cfb-maroon);
 }
 
 .account-page__btn--secondary:hover,
 .account-page__btn--secondary:focus {
-  background: #f5eef2;
-  color: #4a213b;
+  background: var(--cfb-maroon-wash);
+  color: var(--cfb-maroon-hover);
 }
 
 .site-footer {
   background: #ffffff;
-  border-top: 1px solid #e8e0e4;
+  border-top: 1px solid var(--cfb-line);
   margin-top: 2.5rem;
 }
 
@@ -553,21 +564,23 @@ body {
 }
 
 .site-footer__brand {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-weight: 800;
-  color: #632c4f;
-  letter-spacing: 0.01em;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--cfb-maroon);
+  letter-spacing: 0.08em;
 }
 
 .site-footer__bottom {
   margin-top: 0.75rem;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  color: #6b6b6b;
+  font-family: var(--font-sans);
+  color: var(--cfb-grey);
   font-size: 0.95rem;
 }
 
 .booking-request-card {
-  border-top: 3px solid #632c4f;
+  border-top: 3px solid var(--cfb-maroon);
 }
 
 .booking-request-card .auth-form__row {
@@ -582,35 +595,36 @@ body {
 .admin-table-wrap {
   overflow-x: auto;
   background: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--cfb-line);
+  border-radius: 2px;
 }
 
 .admin-table {
   width: 100%;
   border-collapse: collapse;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans);
 }
 
 .admin-table th,
 .admin-table td {
   padding: 1rem;
   text-align: left;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--cfb-line);
   vertical-align: top;
 }
 
 .admin-table th {
+  font-family: var(--font-display);
   font-size: 0.8rem;
+  font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #632c4f;
-  background: #fbf7f9;
+  letter-spacing: 0.06em;
+  color: var(--cfb-maroon);
+  background: var(--cfb-paper);
 }
 
 .admin-table__subtext {
-  color: #6b6b6b;
+  color: var(--cfb-grey);
   font-size: 0.85rem;
 }
 
@@ -621,10 +635,12 @@ body {
 }
 
 .admin-table__btn {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 0.85rem;
-  font-weight: 700;
-  border-radius: 6px;
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-radius: 2px;
   padding: 0.45rem 0.75rem;
   text-decoration: none;
   border: none;
@@ -643,18 +659,31 @@ body {
 }
 
 .admin-table__btn--edit {
-  background: #632c4f;
+  background: var(--cfb-maroon);
   color: #fff;
   display: inline-block;
 }
 
 .status-pill {
-  display: inline-block;
-  padding: 0.25rem 0.55rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-shrink: 0;
+  padding: 0.3rem 0.7rem 0.3rem 0.6rem;
+  border-radius: 999px;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
   font-weight: 700;
-  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.status-pill::before {
+  content: "";
+  width: 0.45rem;
+  height: 0.45rem;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: currentColor;
 }
 
 .status-pill--pending {
@@ -674,8 +703,8 @@ body {
 
 .status-pill--completed,
 .status-pill--denied {
-  background: #f0f0f0;
-  color: #555;
+  background: var(--cfb-line);
+  color: var(--cfb-grey);
 }
 
 .status-pill--cancelled {
@@ -709,8 +738,8 @@ body {
   align-items: end;
   gap: 1rem;
   background: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
+  border: 1px solid var(--cfb-line);
+  border-radius: 2px;
   padding: 1.25rem;
   margin-bottom: 1.5rem;
 }
@@ -722,13 +751,15 @@ body {
 }
 
 .admin-filters__submit {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 0.95rem;
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   color: #ffffff;
-  background: #632c4f;
-  border: 2px solid #632c4f;
-  border-radius: 6px;
+  background: var(--cfb-maroon);
+  border: 1px solid var(--cfb-maroon);
+  border-radius: 2px;
   padding: 0.65rem 1.25rem;
   cursor: pointer;
   height: fit-content;
@@ -736,15 +767,15 @@ body {
 
 .admin-filters__submit:hover,
 .admin-filters__submit:focus {
-  background: #4a213b;
-  border-color: #4a213b;
+  background: var(--cfb-maroon-hover);
+  border-color: var(--cfb-maroon-hover);
 }
 
 .admin-filters__clear {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.9rem;
   font-weight: 700;
-  color: #632c4f;
+  color: var(--cfb-maroon);
   text-decoration: none;
   align-self: center;
 }
@@ -774,7 +805,7 @@ body {
 .admin-issue-form {
   margin-top: 1.25rem;
   padding-top: 1.25rem;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--cfb-line);
 }
 
 .admin-edit-card {
@@ -782,7 +813,7 @@ body {
 }
 
 .admin-edit-card__staff-notes {
-  color: #444;
+  color: var(--cfb-ink);
   margin: 0;
 }
 
@@ -796,21 +827,21 @@ body {
 }
 
 .dashboard-empty {
-  border: 1px dashed #e0d5da;
-  border-radius: 10px;
-  background: #fbfafb;
+  border: 1px dashed var(--cfb-line);
+  border-radius: 2px;
+  background: var(--cfb-paper);
   padding: 1.75rem 1.5rem;
   text-align: center;
 }
 
 .dashboard-empty p {
   margin: 0;
-  color: #777;
+  color: var(--cfb-grey);
   font-style: normal;
 }
 
 .dashboard-empty a {
-  color: #632c4f;
+  color: var(--cfb-maroon);
   font-weight: 700;
   text-decoration: none;
 }
@@ -829,17 +860,19 @@ body {
 }
 
 .dashboard-section__title {
-  font-size: 1.2rem;
-  color: #632c4f;
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--cfb-ink);
   margin: 0;
 }
 
 .dashboard-section__count {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.85rem;
   font-weight: 700;
-  color: #a3849a;
-  background: #f5eef2;
+  color: var(--cfb-mauve);
+  background: var(--cfb-maroon-wash);
   border-radius: 999px;
   padding: 0.1rem 0.6rem;
 }
@@ -850,20 +883,21 @@ body {
 }
 
 .booking-card {
+  --ticket-bg: #ffffff;
   background: #ffffff;
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
+  border: 1px solid var(--cfb-line);
+  border-radius: 2px;
   padding: 1.25rem 1.5rem;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
 }
 
 .booking-card--muted {
-  background: #fbfafa;
+  --ticket-bg: var(--cfb-paper);
+  background: var(--cfb-paper);
   box-shadow: none;
 }
 
 .booking-card--muted .booking-card__vehicle {
-  color: #555;
+  color: var(--cfb-grey);
 }
 
 .booking-card__layout {
@@ -877,19 +911,19 @@ body {
   width: 260px;
   height: 175px;
   object-fit: cover;
-  border-radius: 8px;
-  background: #f0f0f0;
+  border-radius: 2px;
+  background: var(--cfb-line);
 }
 
 .booking-card__photo--empty {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #999;
+  color: var(--cfb-grey);
   font-size: 0.85rem;
   font-style: italic;
-  background: #f5f0f3;
-  border: 1px dashed #d4c8ce;
+  background: var(--cfb-paper);
+  border: 1px dashed var(--cfb-line);
 }
 
 .booking-card__body {
@@ -917,66 +951,96 @@ body {
 }
 
 .booking-card__vehicle {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: #632c4f;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--cfb-ink);
   margin: 0;
 }
 
 .booking-card__window {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.9rem;
-  color: #666;
+  color: var(--cfb-grey);
   margin: 0.3rem 0 0;
 }
 
 .booking-card__access {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 1rem;
   margin-top: 1.1rem;
-  padding: 0.85rem 1rem;
-  background: #fbf7f9;
-  border: 1px dashed #d4c8ce;
-  border-radius: 8px;
+  padding: 0.9rem 1.1rem 0.9rem 1.4rem;
+  background: var(--cfb-paper);
+  border: 1px solid var(--cfb-line);
+  border-left: 5px solid var(--cfb-orange);
+  border-radius: 2px;
+}
+
+/* A KeyCafe code is a physical claim check — the notches read as a stub torn from a perforated edge. */
+.booking-card__access::before,
+.booking-card__access::after {
+  content: "";
+  position: absolute;
+  left: -8px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--ticket-bg, #ffffff);
+  border: 1px solid var(--cfb-line);
+}
+
+.booking-card__access::before {
+  top: -8px;
+}
+
+.booking-card__access::after {
+  bottom: -8px;
 }
 
 .booking-card__access-label {
   display: block;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: var(--font-display);
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #a3849a;
-  margin-bottom: 0.2rem;
+  letter-spacing: 0.08em;
+  color: var(--cfb-mauve);
+  margin-bottom: 0.35rem;
 }
 
 .booking-code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 1.35rem;
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
-  color: #632c4f;
+  letter-spacing: 0.14em;
+  color: var(--cfb-maroon);
+  background: #ffffff;
+  border: 1px solid var(--cfb-line);
+  border-radius: 3px;
+  padding: 0.2rem 0.6rem;
 }
 
 .booking-card__access-hint {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.8rem;
-  color: #777;
-  margin: 0.3rem 0 0;
+  color: var(--cfb-grey);
+  margin: 0.4rem 0 0;
 }
 
 .booking-card__access-link {
   flex-shrink: 0;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.9rem;
   font-weight: 700;
-  color: #632c4f;
+  color: var(--cfb-maroon);
   text-decoration: none;
+  padding-left: 1.1rem;
+  border-left: 1px dashed var(--cfb-line);
 }
 
 .booking-card__access-link:hover,
@@ -986,22 +1050,22 @@ body {
 }
 
 .booking-card__pending {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.9rem;
   font-weight: 600;
-  color: #a3702a;
+  color: var(--cfb-orange-dark);
   background: #fff8e1;
-  border-radius: 6px;
+  border-radius: 2px;
   display: inline-block;
   margin: 1.1rem 0 0;
   padding: 0.4rem 0.75rem;
 }
 
 .booking-card__notes {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.9rem;
   font-style: italic;
-  color: #666;
+  color: var(--cfb-grey);
   margin: 1rem 0 0;
 }
 
@@ -1011,7 +1075,7 @@ body {
   gap: 0.6rem;
   margin-top: 1.1rem;
   padding-top: 1.1rem;
-  border-top: 1px solid #f0eaee;
+  border-top: 1px solid var(--cfb-line);
 }
 
 .booking-card__actions form {
@@ -1030,38 +1094,56 @@ body {
 }
 
 .stat-tile {
+  --stat-accent: var(--cfb-mauve);
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
   background: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
+  border: 1px solid var(--cfb-line);
+  border-left: 4px solid var(--stat-accent);
+  border-radius: 2px;
   padding: 1.25rem 1.5rem;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
   text-decoration: none;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  transition: border-color 0.12s ease;
 }
 
 .stat-tile:hover,
 .stat-tile:focus {
-  border-color: #632c4f;
-  box-shadow: 0 4px 14px rgba(99, 44, 79, 0.14);
-  transform: translateY(-1px);
+  border-color: var(--stat-accent);
+}
+
+.stat-tile--pending {
+  --stat-accent: var(--cfb-orange);
+}
+
+.stat-tile--ongoing {
+  --stat-accent: #1565c0;
+}
+
+.stat-tile--upcoming {
+  --stat-accent: var(--cfb-maroon);
+}
+
+.stat-tile--alert {
+  --stat-accent: #c62828;
 }
 
 .stat-tile__value {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 2.25rem;
-  font-weight: 700;
-  color: #632c4f;
+  font-family: var(--font-display);
+  font-size: 2.75rem;
+  font-weight: 600;
+  color: var(--cfb-ink);
   line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
 
 .stat-tile__label {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #6b6b6b;
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--cfb-grey);
 }
 
 .notification-list {
@@ -1074,10 +1156,9 @@ body {
 
 .notification-item {
   background: #fff;
-  border: 1px solid #e0e0e0;
-  border-left: 4px solid #a3849a;
-  border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--cfb-line);
+  border-left: 4px solid var(--cfb-mauve);
+  border-radius: 2px;
 }
 
 .notification-item--booking {
@@ -1101,19 +1182,19 @@ body {
 
 .notification-item__link:hover,
 .notification-item__link:focus {
-  background: #fbf7f9;
+  background: var(--cfb-paper);
 }
 
 .notification-item__message {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.95rem;
-  color: #333;
+  color: var(--cfb-ink);
 }
 
 .notification-item__time {
   flex-shrink: 0;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.8rem;
-  color: #999;
+  color: var(--cfb-grey);
   white-space: nowrap;
 }

@@ -129,6 +129,12 @@ app.use((req, res, next) => {
     res.locals.activeNav = "admin-reports";
   } else if (req.path.startsWith("/admin")) {
     res.locals.activeNav = "admin";
+  } else if (req.path.startsWith("/it/users")) {
+    res.locals.activeNav = "it-users";
+  } else if (req.path.startsWith("/it/activity")) {
+    res.locals.activeNav = "it-activity";
+  } else if (req.path.startsWith("/it/api-status")) {
+    res.locals.activeNav = "it-api-status";
   } else if (req.path.startsWith("/it")) {
     res.locals.activeNav = "it";
   }

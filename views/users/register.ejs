@@ -1,6 +1,17 @@
 <% layout('layouts/boilerplate') %>
 
-<section class="auth-page">
+<section class="auth-page auth-page--split">
+  <aside class="auth-panel">
+    <p class="auth-panel__eyebrow">Motor Pool &middot; New Account</p>
+    <h2 class="auth-panel__heading">One account gets you on the road.</h2>
+    <p class="auth-panel__copy">
+      Create your account to start booking shared vehicles for deliveries,
+      pickups, and errands across the Food Bank, and to pick up keys from
+      the KeyCafe box on-site.
+    </p>
+  </aside>
+
+  <div class="auth-page__content">
   <div class="auth-card">
     <h1 class="auth-card__title">Sign Up</h1>
     <p class="auth-card__subtitle">Create an account to access the motor pool.</p>
@@ -80,5 +91,6 @@
       Already have an account?
       <a href="/login">Log in</a>
     </p>
+  </div>
   </div>
 </section>

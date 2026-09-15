@@ -16,7 +16,7 @@
     <nav class="site-navbar__nav" aria-label="Main navigation">
       <% if (showStaffNav) { %>
         <a
-          class="site-navbar__link<%= locals.activeNav === 'vehicles' ? ' site-navbar__link--active' : '' %>"
+          class="site-navbar__link<%= typeof activeNav !== 'undefined' && activeNav === 'vehicles' ? ' site-navbar__link--active' : '' %>"
           href="/"
         >
           Book a Vehicle
@@ -24,13 +24,13 @@
 
         <% if (currentUser) { %>
           <a
-            class="site-navbar__link<%= locals.activeNav === 'all-vehicles' ? ' site-navbar__link--active' : '' %>"
+            class="site-navbar__link<%= typeof activeNav !== 'undefined' && activeNav === 'all-vehicles' ? ' site-navbar__link--active' : '' %>"
             href="/vehicles/all"
           >
             See All Vehicles
           </a>
           <a
-            class="site-navbar__link<%= locals.activeNav === 'dashboard' ? ' site-navbar__link--active' : '' %>"
+            class="site-navbar__link<%= typeof activeNav !== 'undefined' && activeNav === 'dashboard' ? ' site-navbar__link--active' : '' %>"
             href="/reservations/mine"
           >
             Dashboard
@@ -40,34 +40,55 @@
 
       <% if (effectiveRole === "Admin") { %>
         <a
-          class="site-navbar__link<%= locals.activeNav === 'admin-dashboard' ? ' site-navbar__link--active' : '' %>"
+          class="site-navbar__link<%= typeof activeNav !== 'undefined' && activeNav === 'admin-dashboard' ? ' site-navbar__link--active' : '' %>"
           href="/admin/dashboard"
         >
           Dashboard
         </a>
         <a
-          class="site-navbar__link<%= locals.activeNav === 'admin-reservations' ? ' site-navbar__link--active' : '' %>"
+          class="site-navbar__link<%= typeof activeNav !== 'undefined' && activeNav === 'admin-reservations' ? ' site-navbar__link--active' : '' %>"
           href="/admin/reservations"
         >
           Reservations
         </a>
         <a
-          class="site-navbar__link<%= locals.activeNav === 'admin-vehicles' ? ' site-navbar__link--active' : '' %>"
+          class="site-navbar__link<%= typeof activeNav !== 'undefined' && activeNav === 'admin-vehicles' ? ' site-navbar__link--active' : '' %>"
           href="/admin/vehicles"
         >
           Vehicles
         </a>
         <a
-          class="site-navbar__link<%= locals.activeNav === 'admin-issues' ? ' site-navbar__link--active' : '' %>"
+          class="site-navbar__link<%= typeof activeNav !== 'undefined' && activeNav === 'admin-issues' ? ' site-navbar__link--active' : '' %>"
           href="/admin/issues"
         >
           Issues
         </a>
         <a
-          class="site-navbar__link<%= locals.activeNav === 'admin-reports' ? ' site-navbar__link--active' : '' %>"
+          class="site-navbar__link<%= typeof activeNav !== 'undefined' && activeNav === 'admin-reports' ? ' site-navbar__link--active' : '' %>"
           href="/admin/reports"
         >
           Reports
+        </a>
+      <% } %>
+
+      <% if (effectiveRole === "IT Admin") { %>
+        <a
+          class="site-navbar__link<%= typeof activeNav !== 'undefined' && activeNav === 'it-users' ? ' site-navbar__link--active' : '' %>"
+          href="/it/users"
+        >
+          Users
+        </a>
+        <a
+          class="site-navbar__link<%= typeof activeNav !== 'undefined' && activeNav === 'it-activity' ? ' site-navbar__link--active' : '' %>"
+          href="/it/activity"
+        >
+          Activity Log
+        </a>
+        <a
+          class="site-navbar__link<%= typeof activeNav !== 'undefined' && activeNav === 'it-api-status' ? ' site-navbar__link--active' : '' %>"
+          href="/it/api-status"
+        >
+          API Status
         </a>
       <% } %>
 
@@ -89,12 +110,6 @@
               <p class="site-navbar__viewing-as">
                 Viewing as <%= viewAsRole %> — your account is <%= currentUser.role %>
               </p>
-            <% } %>
-
-            <% if (effectiveRole === "IT Admin") { %>
-              <a class="site-navbar__dropdown-link" href="/it/users">Manage Users</a>
-              <a class="site-navbar__dropdown-link" href="/it/activity">Activity Log</a>
-              <a class="site-navbar__dropdown-link" href="/it/api-status">API Status</a>
             <% } %>
 
             <% if (effectiveRole === "Admin") { %>

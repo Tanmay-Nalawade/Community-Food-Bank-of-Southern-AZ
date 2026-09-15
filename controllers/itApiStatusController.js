@@ -8,7 +8,7 @@ exports.index = async (req, res) => {
       process.env.KEYCAFE_WEBHOOK_USERNAME && process.env.KEYCAFE_WEBHOOK_PASSWORD,
     ),
     keycafeTimezone: process.env.KEYCAFE_TIMEZONE || "America/Phoenix",
-    activeNav: "it",
+    activeNav: "it-api-status",
   });
 };
 

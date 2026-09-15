@@ -1,16 +1,25 @@
 :root {
   --cfb-maroon: #632c4f;
   --cfb-maroon-hover: #4a213b;
-  --cfb-orange: #f5a623;
+  --cfb-maroon-wash: #f5eef2;
+  --cfb-orange: #d9821f;
+  --cfb-orange-dark: #a8620f;
+  --cfb-gold-wash: #fbf1e1;
   --cfb-grey: #6b6b6b;
+  --cfb-mauve: #a3849a;
+  --cfb-ink: #2a2024;
+  --cfb-line: #e6ddd2;
+  --cfb-paper: #faf6ee;
   --cfb-white: #ffffff;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-display: "Oswald", "Arial Narrow", var(--font-sans);
   --navbar-height: 88px;
 }
 
 .site-navbar {
   background: var(--cfb-white);
-  border-bottom: 1px solid #e8e8e8;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  border-bottom: 3px solid var(--cfb-orange);
 }
 
 .site-navbar__inner {
@@ -55,39 +64,44 @@
 }
 
 .site-navbar__link {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--cfb-maroon);
+  position: relative;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  color: var(--cfb-ink);
   text-decoration: none;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.06em;
   white-space: nowrap;
-  transition: color 0.15s ease;
+  padding-bottom: 0.35rem;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s ease, border-color 0.15s ease;
 }
 
 .site-navbar__link:hover,
 .site-navbar__link:focus {
-  color: var(--cfb-maroon-hover);
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  color: var(--cfb-maroon);
+  border-color: var(--cfb-line);
+  text-decoration: none;
 }
 
 .site-navbar__link--active {
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  color: var(--cfb-maroon);
+  border-color: var(--cfb-orange);
 }
 
 .site-navbar__btn {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 1rem;
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   color: var(--cfb-white);
   background: var(--cfb-maroon);
-  border: 2px solid var(--cfb-maroon);
-  border-radius: 6px;
-  padding: 0.5rem 1.25rem;
+  border: 1px solid var(--cfb-maroon);
+  border-radius: 2px;
+  padding: 0.55rem 1.1rem;
   text-decoration: none;
-  letter-spacing: 0.02em;
   white-space: nowrap;
   transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
@@ -147,8 +161,9 @@
   top: calc(100% + 0.5rem);
   min-width: 220px;
   background: var(--cfb-white);
-  border: 1px solid #e8e0e4;
-  border-radius: 8px;
+  border: 1px solid var(--cfb-line);
+  border-top: 2px solid var(--cfb-orange);
+  border-radius: 0;
   box-shadow: 0 8px 24px rgba(99, 44, 79, 0.12);
   padding: 0.5rem 0;
   z-index: 100;
@@ -156,19 +171,19 @@
 
 .site-navbar__dropdown-user {
   display: block;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.9rem;
   font-weight: 700;
   color: var(--cfb-maroon);
   text-decoration: none;
   margin: 0;
   padding: 0.65rem 1rem 0.5rem;
-  border-bottom: 1px solid #eee5ea;
+  border-bottom: 1px solid var(--cfb-line);
 }
 
 .site-navbar__dropdown-user:hover,
 .site-navbar__dropdown-user:focus {
-  background: #fbf7f9;
+  background: var(--cfb-paper);
   color: var(--cfb-maroon-hover);
 }
 
@@ -183,7 +198,7 @@
 .site-navbar__dropdown-link {
   display: block;
   width: 100%;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.95rem;
   font-weight: 600;
   color: var(--cfb-maroon);
@@ -197,13 +212,13 @@
 
 .site-navbar__dropdown-link:hover,
 .site-navbar__dropdown-link:focus {
-  background: #fbf7f9;
+  background: var(--cfb-paper);
   color: var(--cfb-maroon-hover);
   text-decoration: none;
 }
 
 .site-navbar__dropdown-link--button {
-  border-top: 1px solid #eee5ea;
+  border-top: 1px solid var(--cfb-line);
   margin-top: 0.25rem;
   padding-top: 0.85rem;
 }
@@ -213,17 +228,17 @@
 }
 
 .site-navbar__viewing-as {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.75rem;
   font-weight: 700;
-  color: #a05a1e;
-  background: #fff3e0;
+  color: var(--cfb-orange-dark);
+  background: var(--cfb-gold-wash);
   margin: 0;
   padding: 0.3rem 1rem;
 }
 
 .site-navbar__view-switch:first-of-type {
-  border-top: 1px solid #eee5ea;
+  border-top: 1px solid var(--cfb-line);
   margin-top: 0.25rem;
   padding-top: 0;
 }

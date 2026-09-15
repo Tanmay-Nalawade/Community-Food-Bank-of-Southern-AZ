@@ -9,6 +9,6 @@ exports.index = async (req, res) => {
   res.render("it/activity/index", {
     title: "Activity Log",
     logs,
-    activeNav: "it",
+    activeNav: "it-activity",
   });
 };

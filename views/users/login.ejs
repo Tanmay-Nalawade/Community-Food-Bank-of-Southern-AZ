@@ -1,6 +1,18 @@
 <% layout('layouts/boilerplate') %>
 
-<section class="auth-page">
+<section class="auth-page auth-page--split">
+  <aside class="auth-panel">
+    <p class="auth-panel__eyebrow">Motor Pool &middot; Staff Sign-In</p>
+    <h2 class="auth-panel__heading">Your keys are waiting at the pod.</h2>
+    <p class="auth-panel__copy">
+      This is the Community Food Bank of Southern Arizona's motor pool
+      booking system — the internal tool staff use to reserve shared
+      vehicles for deliveries, pickups, and other errands, and to pick up
+      keys from the KeyCafe box on-site.
+    </p>
+  </aside>
+
+  <div class="auth-page__content">
   <div class="auth-card">
     <h1 class="auth-card__title">Log In</h1>
     <p class="auth-card__subtitle">Sign in to reserve vehicles and manage your trips.</p>
@@ -46,11 +58,5 @@
       <a href="/register">Sign up</a>
     </p>
   </div>
-
-  <p class="auth-page__intro">
-    This is the Community Food Bank of Southern Arizona's motor pool booking
-    system — the internal tool staff use to reserve shared vehicles for
-    deliveries, pickups, and other errands, and to pick up keys from the
-    KeyCafe box on-site.
-  </p>
+  </div>
 </section>

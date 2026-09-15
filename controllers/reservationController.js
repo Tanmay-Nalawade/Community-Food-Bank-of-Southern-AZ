@@ -193,7 +193,10 @@ exports.cancelRequest = async (req, res) => {
     return res.status(404).send("Reservation not found.");
   }
 
-  if (!CANCELABLE_STATUSES.includes(reservation.status)) {
+  if (
+    !CANCELABLE_STATUSES.includes(reservation.status) ||
+    reservation.requestedEndTime <= new Date()
+  ) {
     req.flash("error", "This booking can no longer be canceled here. Contact an admin.");
     return res.redirect("/reservations/mine");
   }

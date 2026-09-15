@@ -5,27 +5,13 @@
   padding: 2rem 0 3rem;
 }
 
-.auth-page__intro {
-  width: 100%;
-  max-width: 420px;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 0.85rem;
-  font-style: italic;
-  font-weight: 300;
-  line-height: 1.5;
-  color: #999;
-  text-align: center;
-  margin: 1.5rem 0 0;
-}
-
 .auth-card {
   width: 100%;
   max-width: 420px;
   background: #ffffff;
-  border: 1px solid #e8e0e4;
-  border-radius: 10px;
+  border: 1px solid var(--cfb-line);
+  border-radius: 2px;
   padding: 2rem 2rem 2.25rem;
-  box-shadow: 0 4px 16px rgba(99, 44, 79, 0.08);
 }
 
 .auth-card--wide {
@@ -37,16 +23,9 @@
   padding: 2.75rem 3rem 3rem;
 }
 
-.auth-card--booking .auth-card__title {
-  font-size: 2.25rem;
-  margin-bottom: 0.5rem;
+.auth-page--booking {
+  padding: 3rem 0 4rem;
 }
-
-.auth-card--booking .auth-card__subtitle {
-  font-size: 1.1rem;
-  margin-bottom: 2.25rem;
-}
-
 
 .auth-card--booking .auth-form {
   gap: 1.5rem;
@@ -67,25 +46,146 @@
   margin-top: 0.75rem;
 }
 
-.auth-page--booking {
-  padding: 3rem 0 4rem;
+/*
+ * The split layout replaces the "floating card on empty page" pattern for the
+ * three entry points (sign in, sign up, book a vehicle) with a two-panel
+ * layout: brand/context on the left, the task on the right. Settings-style
+ * pages (account edit) keep the plain centered .auth-card above.
+ */
+.auth-page--split {
+  display: grid;
+  grid-template-columns: minmax(0, 320px) minmax(0, 460px);
+  width: 100%;
+  max-width: 800px;
+  min-height: min(560px, 70vh);
+  border: 1px solid var(--cfb-line);
+  padding: 0;
+  align-items: stretch;
+}
+
+.auth-panel {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1.1rem;
+  background: var(--cfb-maroon);
+  color: #ffffff;
+  padding: 2.5rem;
+}
+
+.auth-panel::after {
+  content: "";
+  position: absolute;
+  right: -90px;
+  bottom: -110px;
+  width: 220px;
+  height: 220px;
+  background: var(--cfb-orange);
+  opacity: 0.14;
+  transform: rotate(18deg);
+  z-index: 0;
+}
+
+.auth-panel__eyebrow,
+.auth-panel__heading,
+.auth-panel__copy {
+  position: relative;
+  z-index: 1;
+}
+
+.auth-panel__eyebrow {
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--cfb-orange);
+  margin: 0;
+}
+
+.auth-panel__heading {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 600;
+  line-height: 1.15;
+  margin: 0;
+  max-width: 20ch;
+}
+
+.auth-panel__copy {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.82);
+  max-width: 30ch;
+  margin: 0;
+}
+
+.auth-page__content {
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  padding: 2.5rem clamp(1.5rem, 4vw, 2.5rem);
+  min-width: 0;
+}
+
+.auth-page--split .auth-card {
+  border: none;
+  padding: 0;
+  margin: 0;
+  max-width: 420px;
+}
+
+.auth-page--split .auth-card__title,
+.auth-page--split .auth-card__subtitle {
+  text-align: left;
+}
+
+@media (max-width: 860px) {
+  .auth-page--split {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+  }
+
+  .auth-panel {
+    padding: 2rem 1.5rem;
+  }
+
+  .auth-panel__heading {
+    font-size: 1.6rem;
+  }
+
+  .auth-page__content {
+    padding: 2rem 1.5rem;
+  }
 }
 
 .auth-card__title {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: #632c4f;
+  font-family: var(--font-display);
+  font-size: 1.9rem;
+  font-weight: 600;
+  color: var(--cfb-ink);
   margin: 0 0 0.35rem;
   text-align: center;
 }
 
+.auth-card--booking .auth-card__title {
+  font-size: 2.4rem;
+}
+
 .auth-card__subtitle {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.95rem;
-  color: #6b6b6b;
+  color: var(--cfb-grey);
   text-align: center;
   margin: 0 0 1.75rem;
+}
+
+.auth-card--booking .auth-card__subtitle {
+  font-size: 1.05rem;
+  margin-bottom: 2.25rem;
 }
 
 .auth-form {
@@ -105,12 +205,12 @@
 }
 
 .auth-form__label {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: var(--font-display);
   font-size: 0.8rem;
-  font-weight: 600;
+  font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #632c4f;
+  letter-spacing: 0.07em;
+  color: var(--cfb-maroon);
 }
 
 .auth-form__label-row {
@@ -121,10 +221,10 @@
 }
 
 .auth-form__toggle-password {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.75rem;
   font-weight: 700;
-  color: #632c4f;
+  color: var(--cfb-maroon);
   background: none;
   border: none;
   padding: 0;
@@ -133,25 +233,25 @@
 
 .auth-form__toggle-password:hover,
 .auth-form__toggle-password:focus {
-  color: #4a213b;
+  color: var(--cfb-maroon-hover);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 
 .auth-form__input {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans);
   font-size: 1rem;
   padding: 0.65rem 0.85rem;
-  border: 1px solid #d4c8ce;
-  border-radius: 6px;
-  color: #333;
+  border: 1px solid var(--cfb-line);
+  border-radius: 2px;
+  color: var(--cfb-ink);
   background: #fff;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .auth-form__input:focus {
   outline: none;
-  border-color: #632c4f;
+  border-color: var(--cfb-maroon);
   box-shadow: 0 0 0 3px rgba(99, 44, 79, 0.12);
 }
 
@@ -165,7 +265,7 @@
 }
 
 .auth-form__field-error {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.8rem;
   color: #b3261e;
   margin: 0;
@@ -173,13 +273,15 @@
 }
 
 .auth-form__submit {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: var(--font-display);
   font-size: 1rem;
-  font-weight: 700;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   color: #ffffff;
-  background: #632c4f;
-  border: 2px solid #632c4f;
-  border-radius: 6px;
+  background: var(--cfb-maroon);
+  border: 1px solid var(--cfb-maroon);
+  border-radius: 2px;
   padding: 0.75rem 1.25rem;
   margin-top: 0.5rem;
   cursor: pointer;
@@ -188,33 +290,33 @@
 
 .auth-form__submit:hover,
 .auth-form__submit:focus {
-  background: #4a213b;
-  border-color: #4a213b;
+  background: var(--cfb-maroon-hover);
+  border-color: var(--cfb-maroon-hover);
 }
 
 .auth-form--section {
   margin-top: 1.75rem;
   padding-top: 1.5rem;
-  border-top: 1px solid #eee5ea;
+  border-top: 1px solid var(--cfb-line);
 }
 
 .auth-card__section-title {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: #632c4f;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--cfb-ink);
   text-align: left;
   margin: 0;
 }
 
 .auth-card__footer {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.95rem;
-  color: #444;
+  color: var(--cfb-ink);
   text-align: center;
   margin: 1.5rem 0 0;
   padding-top: 1.25rem;
-  border-top: 1px solid #eee5ea;
+  border-top: 1px solid var(--cfb-line);
 }
 
 .auth-card__footer--demo {
@@ -224,14 +326,14 @@
 }
 
 .auth-card__footer a {
-  color: #632c4f;
+  color: var(--cfb-maroon);
   font-weight: 700;
   text-decoration: none;
 }
 
 .auth-card__footer a:hover,
 .auth-card__footer a:focus {
-  color: #4a213b;
+  color: var(--cfb-maroon-hover);
   text-decoration: underline;
   text-underline-offset: 3px;
 }

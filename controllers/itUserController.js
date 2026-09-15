@@ -25,7 +25,7 @@ exports.index = async (req, res) => {
     users,
     q,
     role,
-    activeNav: "it",
+    activeNav: "it-users",
   });
 };
 
@@ -40,7 +40,7 @@ exports.edit = async (req, res) => {
     title: `${user.firstName} ${user.lastName}`,
     editUser: user,
     isSelf: String(user._id) === String(res.locals.currentUser._id),
-    activeNav: "it",
+    activeNav: "it-users",
   });
 };
 

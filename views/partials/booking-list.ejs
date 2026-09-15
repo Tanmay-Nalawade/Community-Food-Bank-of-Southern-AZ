@@ -57,7 +57,7 @@
               <% if (reservation.status === "Pending") { %>
                 <a class="admin-table__btn admin-table__btn--edit" href="/reservations/<%= reservation._id %>/edit">Edit</a>
               <% } %>
-              <% if (["Pending", "Reserved"].includes(reservation.status)) { %>
+              <% if (["Pending", "Reserved"].includes(reservation.status) && new Date(reservation.requestedEndTime) > new Date()) { %>
                 <form action="/reservations/<%= reservation._id %>/cancel" method="POST">
                   <button class="admin-table__btn admin-table__btn--delete" type="submit">Cancel</button>
                 </form>

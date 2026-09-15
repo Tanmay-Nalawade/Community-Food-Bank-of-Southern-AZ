@@ -9,9 +9,9 @@
       <%= vehicle.year ? vehicle.year + " " : "" %><%= vehicle.make %> <%= vehicle.model %>
     </h2>
     <% if (typeof statusSlug !== "undefined") { %>
-      <%- include('./status-pill', { prefix: 'vehicle-card__status', slug: statusSlug, label: statusLabel }) %>
+      <%- include('./status-pill', { slug: statusSlug, label: statusLabel }) %>
     <% } else { %>
-      <%- include('./status-pill', { prefix: 'vehicle-card__status', value: vehicle.status }) %>
+      <%- include('./status-pill', { value: vehicle.status }) %>
     <% } %>
   </header>
   <dl class="vehicle-card__details">

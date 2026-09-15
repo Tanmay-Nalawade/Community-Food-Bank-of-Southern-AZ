@@ -5,23 +5,23 @@
   <p class="vehicles-page__lead">A quick look at what's going on across the fleet right now.</p>
 
   <div class="stat-grid">
-    <a class="stat-tile" href="/admin/reservations?status=Pending">
+    <a class="stat-tile stat-tile--pending" href="/admin/reservations?status=Pending">
       <span class="stat-tile__value"><%= stats.pending %></span>
       <span class="stat-tile__label">Pending Requests</span>
     </a>
-    <a class="stat-tile" href="/admin/reservations?status=Active">
+    <a class="stat-tile stat-tile--ongoing" href="/admin/reservations?status=Active">
       <span class="stat-tile__value"><%= stats.ongoing %></span>
       <span class="stat-tile__label">Ongoing Bookings</span>
     </a>
-    <a class="stat-tile" href="/admin/reservations?status=Reserved">
+    <a class="stat-tile stat-tile--upcoming" href="/admin/reservations?status=Reserved">
       <span class="stat-tile__value"><%= stats.upcoming %></span>
       <span class="stat-tile__label">Upcoming Reservations</span>
     </a>
-    <a class="stat-tile" href="/admin/issues">
+    <a class="stat-tile stat-tile--alert" href="/admin/issues">
       <span class="stat-tile__value"><%= stats.unresolvedIssues %></span>
       <span class="stat-tile__label">Unresolved Issues</span>
     </a>
-    <a class="stat-tile" href="/admin/vehicles">
+    <a class="stat-tile stat-tile--alert" href="/admin/vehicles">
       <span class="stat-tile__value"><%= stats.vehiclesNeedingAttention %></span>
       <span class="stat-tile__label">Vehicles Needing Attention</span>
     </a>
