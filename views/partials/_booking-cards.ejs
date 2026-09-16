@@ -62,6 +62,9 @@
               </form>
             <% } %>
             <% if (["Active", "Completed"].includes(reservation.status)) { %>
+              <a class="admin-table__btn admin-table__btn--edit" href="/reservations/<%= reservation._id %>/inspection">
+                <%= reservation.status === "Active" ? "Return Vehicle" : "Vehicle Inspection" %>
+              </a>
               <a class="admin-table__btn admin-table__btn--edit" href="/reservations/<%= reservation._id %>/mileage">Report Mileage</a>
               <a class="admin-table__btn admin-table__btn--edit" href="/reservations/<%= reservation._id %>/issue">Report Issue</a>
             <% } %>

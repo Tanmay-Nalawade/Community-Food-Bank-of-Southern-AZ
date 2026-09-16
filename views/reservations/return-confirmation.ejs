@@ -1,0 +1,32 @@
+<% layout('layouts/boilerplate') %>
+
+<section class="reservations-page">
+  <h1><%= skipped ? "Vehicle Returned" : "Thanks for the inspection!" %></h1>
+  <p class="reservations-page__lead">
+    <%= reservation.vehicleId.year ? reservation.vehicleId.year + " " : "" %>
+    <%= reservation.vehicleId.make %> <%= reservation.vehicleId.model %>
+    (<%= reservation.vehicleId.licensePlate %>)
+    &mdash; <%= skipped ? "inspection skipped" : "inspection submitted" %>
+  </p>
+
+  <div class="auth-card auth-card--wide admin-edit-card">
+    <% if (reservation.keyCafeAccess?.bookingCode) { %>
+      <div class="booking-card__access">
+        <div>
+          <span class="booking-card__access-label">KeyCafe drop-off code</span>
+          <div class="booking-code"><%= reservation.keyCafeAccess.bookingCode %></div>
+          <p class="booking-card__access-hint">Use this same code to drop the key back in the KeyCafe box.</p>
+        </div>
+        <% if (reservation.keyCafeAccess.checkinLink) { %>
+          <a class="booking-card__access-link" href="<%= reservation.keyCafeAccess.checkinLink %>" target="_blank" rel="noopener noreferrer">
+            Open check-in link
+          </a>
+        <% } %>
+      </div>
+    <% } else { %>
+      <p class="vehicle-detail__empty">No KeyCafe code is on file for this booking — drop the key off as usual.</p>
+    <% } %>
+
+    <a class="vehicles-page__add-btn" href="/reservations/mine">Back to my dashboard</a>
+  </div>
+</section>

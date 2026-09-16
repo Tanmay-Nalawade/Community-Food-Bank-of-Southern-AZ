@@ -7,6 +7,10 @@ const {
 } = require("../services/keycafe/reservationAccess");
 const { sendBookingConfirmation } = require("../services/email/reservationNotifications");
 const { fetchPage, PAGE_SIZE } = require("../utils/pagination");
+const {
+  VEHICLE_INSPECTION_GROUPS,
+  VEHICLE_INSPECTION_ITEMS,
+} = require("../utils/vehicleInspectionItems");
 
 const CANCELABLE_STATUSES = ["Pending", "Reserved"];
 const REPORTABLE_STATUSES = ["Active", "Completed"];
@@ -384,4 +388,90 @@ exports.submitIssue = async (req, res) => {
 
   req.flash("success", "Issue reported to Transportation for review.");
   res.redirect("/reservations/mine");
+};
+
+// "Return Vehicle": an optional, encouraged-not-required inspection shown
+// when a driver is done with a trip. There's no real "return" action in
+// KeyCafe itself (one access code covers both pickup and drop-off — the
+// physical box detects direction on its own), so this is purely an in-app
+// checkpoint: fill out the inspection or skip it, either way land on a
+// confirmation screen reminding them of their existing drop-off code.
+exports.inspectionForm = async (req, res) => {
+  const reservation = await Reservation.findOne({
+    _id: req.params.id,
+    userId: res.locals.currentUser._id,
+  }).populate("vehicleId", "make model year licensePlate");
+
+  if (!reservation) {
+    return res.status(404).send("Reservation not found.");
+  }
+
+  if (!REPORTABLE_STATUSES.includes(reservation.status)) {
+    req.flash("error", "The vehicle can only be returned for a trip that has started.");
+    return res.redirect("/reservations/mine");
+  }
+
+  res.render("reservations/inspection", {
+    title: "Return Vehicle",
+    reservation,
+    groups: VEHICLE_INSPECTION_GROUPS,
+    activeNav: "dashboard",
+  });
+};
+
+exports.submitInspection = async (req, res) => {
+  const reservation = await Reservation.findOne({
+    _id: req.params.id,
+    userId: res.locals.currentUser._id,
+  }).populate("vehicleId", "make model year licensePlate");
+
+  if (!reservation) {
+    return res.status(404).send("Reservation not found.");
+  }
+
+  if (!REPORTABLE_STATUSES.includes(reservation.status)) {
+    req.flash("error", "The vehicle can only be returned for a trip that has started.");
+    return res.redirect("/reservations/mine");
+  }
+
+  const skipped = req.body.action === "skip";
+
+  if (skipped) {
+    reservation.vehicleInspection = { completedAt: new Date(), skipped: true };
+  } else {
+    const defects = (req.body.defects || []).filter((item) =>
+      VEHICLE_INSPECTION_ITEMS.includes(item),
+    );
+
+    reservation.vehicleInspection = {
+      completedAt: new Date(),
+      skipped: false,
+      conditionSatisfactory: req.body.conditionSatisfactory === "on",
+      remarks: (req.body.remarks || "").trim(),
+    };
+
+    if (defects.length) {
+      await Vehicle.findByIdAndUpdate(reservation.vehicleId._id, {
+        $push: {
+          activeIssues: {
+            $each: defects.map((item) => ({
+              description: `Vehicle inspection: ${item}`,
+              reportedBy: res.locals.currentUser._id,
+              reservationId: reservation._id,
+              reviewed: false,
+            })),
+          },
+        },
+      });
+    }
+  }
+
+  await reservation.save();
+
+  res.render("reservations/return-confirmation", {
+    title: "Vehicle Returned",
+    reservation,
+    skipped,
+    activeNav: "dashboard",
+  });
 };

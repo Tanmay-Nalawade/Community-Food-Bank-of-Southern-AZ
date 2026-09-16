@@ -1,0 +1,64 @@
+<% layout('layouts/boilerplate') %>
+
+<section class="reservations-page">
+  <a class="vehicle-detail__back" href="/reservations/mine">&larr; Back to my dashboard</a>
+
+  <h1>Return Vehicle</h1>
+  <p class="reservations-page__lead">
+    <%= reservation.vehicleId.year ? reservation.vehicleId.year + " " : "" %>
+    <%= reservation.vehicleId.make %> <%= reservation.vehicleId.model %>
+    (<%= reservation.vehicleId.licensePlate %>)
+  </p>
+
+  <div class="auth-card auth-card--wide admin-edit-card">
+    <p class="vehicle-detail__empty">
+      A quick vehicle check helps Transportation catch problems early. It only takes a minute,
+      but it's optional — skip it if you're in a hurry.
+    </p>
+
+    <form class="auth-form" action="/reservations/<%= reservation._id %>/inspection" method="POST">
+      <% groups.forEach((group) => { %>
+        <div class="inspection-group">
+          <h2 class="inspection-group__title"><%= group.label %></h2>
+          <div class="inspection-group__items">
+            <% group.items.forEach((item) => { %>
+              <label class="inspection-item">
+                <input type="checkbox" name="defects" value="<%= item %>" />
+                <%= item %>
+              </label>
+            <% }) %>
+          </div>
+        </div>
+      <% }) %>
+
+      <p class="vehicle-detail__empty">Check anything that's damaged or not working. Leave it unchecked if it's fine.</p>
+
+      <div class="auth-form__group">
+        <label class="auth-form__label">
+          <input type="checkbox" name="conditionSatisfactory" />
+          Overall, this vehicle's condition is satisfactory
+        </label>
+      </div>
+
+      <div class="auth-form__group">
+        <label class="auth-form__label" for="remarks">Remarks (optional)</label>
+        <textarea
+          class="auth-form__input"
+          id="remarks"
+          name="remarks"
+          rows="3"
+          placeholder="Anything else worth mentioning?"
+        ></textarea>
+      </div>
+
+      <div class="inspection-actions">
+        <button class="auth-form__submit" type="submit" name="action" value="submit">
+          Submit Inspection
+        </button>
+        <button class="inspection-skip" type="submit" name="action" value="skip" formnovalidate>
+          Skip for now
+        </button>
+      </div>
+    </form>
+  </div>
+</section>

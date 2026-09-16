@@ -122,6 +122,36 @@
     </div>
 
     <div class="vehicle-detail__card">
+      <h2 class="vehicle-detail__section-title">Vehicle Inspection</h2>
+      <% if (!reservation.vehicleInspection?.completedAt) { %>
+        <p class="vehicle-detail__empty">Not yet reported by the driver.</p>
+      <% } else if (reservation.vehicleInspection.skipped) { %>
+        <p class="vehicle-detail__empty">
+          Skipped by the driver on <%= new Date(reservation.vehicleInspection.completedAt).toLocaleString() %>.
+        </p>
+      <% } else { %>
+        <dl>
+          <div>
+            <dt>Condition satisfactory</dt>
+            <dd><%= reservation.vehicleInspection.conditionSatisfactory ? "Yes" : "No" %></dd>
+          </div>
+          <div>
+            <dt>Submitted</dt>
+            <dd><%= new Date(reservation.vehicleInspection.completedAt).toLocaleString() %></dd>
+          </div>
+          <div>
+            <dt>Remarks</dt>
+            <dd><%= reservation.vehicleInspection.remarks || "—" %></dd>
+          </div>
+        </dl>
+        <p class="vehicle-detail__empty admin-hint">
+          Any items the driver flagged as defective were added to
+          <a href="/admin/issues">Vehicle Issues</a>.
+        </p>
+      <% } %>
+    </div>
+
+    <div class="vehicle-detail__card">
       <h2 class="vehicle-detail__section-title">Notes</h2>
       <dl>
         <div>

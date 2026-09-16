@@ -7,6 +7,7 @@ const {
   bookingWindowSchema,
   mileageSchema,
   issueSchema,
+  inspectionSchema,
 } = require("../validators/reservation");
 const reservationController = wrapControllerAsync(require("../controllers/reservation"));
 
@@ -50,6 +51,16 @@ router.post(
     redirect: (req) => `/reservations/${req.params.id}/issue`,
   }),
   reservationController.submitIssue,
+);
+
+router.get("/:id/inspection", requireLogin, reservationController.inspectionForm);
+router.post(
+  "/:id/inspection",
+  requireLogin,
+  validateBody(inspectionSchema, {
+    redirect: (req) => `/reservations/${req.params.id}/inspection`,
+  }),
+  reservationController.submitInspection,
 );
 
 module.exports = router;

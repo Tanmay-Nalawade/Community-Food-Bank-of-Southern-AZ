@@ -48,6 +48,13 @@ const reservationSchema = new Schema(
       reminder3DaySentAt: { type: Date },
       reminderFinalSentAt: { type: Date },
     },
+
+    vehicleInspection: {
+      completedAt: { type: Date },
+      skipped: { type: Boolean, default: false },
+      conditionSatisfactory: { type: Boolean },
+      remarks: { type: String, default: "" },
+    },
   },
   { timestamps: true },
 );

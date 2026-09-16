@@ -1,4 +1,5 @@
 const Joi = require("joi");
+const { VEHICLE_INSPECTION_ITEMS } = require("../utils/vehicleInspectionItems");
 
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
@@ -64,4 +65,15 @@ const issueSchema = Joi.object({
   }),
 });
 
-module.exports = { bookingWindowSchema, mileageSchema, issueSchema };
+const inspectionSchema = Joi.object({
+  action: Joi.string().valid("submit", "skip").required(),
+  conditionSatisfactory: Joi.string().valid("on").empty("").optional(),
+  remarks: Joi.string().trim().max(2000).empty("").optional(),
+  defects: Joi.array()
+    .items(Joi.string().valid(...VEHICLE_INSPECTION_ITEMS))
+    .single()
+    .empty(Joi.array().length(0))
+    .optional(),
+});
+
+module.exports = { bookingWindowSchema, mileageSchema, issueSchema, inspectionSchema };
