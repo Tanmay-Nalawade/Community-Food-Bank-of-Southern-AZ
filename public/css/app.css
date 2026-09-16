@@ -53,9 +53,6 @@ textarea {
 
 .page-content {
   flex: 1;
-}
-
-.page-content {
   width: 100%;
   max-width: 1600px;
   margin: 0 auto;
@@ -504,53 +501,6 @@ textarea {
   margin-bottom: 0.15rem;
 }
 
-.account-page__lead {
-  margin-bottom: 1.5rem;
-}
-
-.account-page__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.account-page__btn {
-  font-family: var(--font-display);
-  font-size: 0.95rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 0.65rem 1.5rem;
-  border-radius: 2px;
-  text-decoration: none;
-  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-}
-
-.account-page__btn--primary {
-  color: #ffffff;
-  background: var(--cfb-maroon);
-  border: 1px solid var(--cfb-maroon);
-}
-
-.account-page__btn--primary:hover,
-.account-page__btn--primary:focus {
-  background: var(--cfb-maroon-hover);
-  border-color: var(--cfb-maroon-hover);
-  color: #ffffff;
-}
-
-.account-page__btn--secondary {
-  color: var(--cfb-maroon);
-  background: #ffffff;
-  border: 1px solid var(--cfb-maroon);
-}
-
-.account-page__btn--secondary:hover,
-.account-page__btn--secondary:focus {
-  background: var(--cfb-maroon-wash);
-  color: var(--cfb-maroon-hover);
-}
-
 .site-footer {
   background: #ffffff;
   border-top: 1px solid var(--cfb-line);
@@ -703,7 +653,8 @@ textarea {
 }
 
 .status-pill--completed,
-.status-pill--denied {
+.status-pill--denied,
+.status-pill--staff {
   background: var(--cfb-line);
   color: var(--cfb-grey);
 }
@@ -1080,10 +1031,6 @@ textarea {
 }
 
 .booking-card__actions form {
-  margin: 0;
-}
-
-.account-page__actions form {
   margin: 0;
 }
 

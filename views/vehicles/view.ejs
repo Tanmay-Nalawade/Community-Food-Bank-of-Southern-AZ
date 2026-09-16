@@ -26,7 +26,7 @@
               </h1>
               <p class="vehicle-detail__plate"><%= vehicle.licensePlate %></p>
             </div>
-            <%- include('../partials/status-pill', { prefix: 'vehicle-card__status', value: vehicle.status }) %>
+            <%- include('../partials/status-pill', { value: vehicle.status }) %>
           </header>
 
           <dl class="vehicle-detail__card">
