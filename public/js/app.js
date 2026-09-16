@@ -22,6 +22,18 @@ document.addEventListener("click", (event) => {
       toggleButton.textContent = isHidden ? "Hide" : "Show";
     }
   }
+
+  // "← Back to X" links across the app point at a fixed destination (e.g.
+  // the reservations list), which is wrong whenever the page was actually
+  // reached from somewhere else (a dashboard notification, a driver's page,
+  // etc.). Prefer real browser history when there's somewhere to go back
+  // to, and only fall back to the link's hardcoded href (still present in
+  // the markup) when there isn't — e.g. the page was opened directly.
+  const backLink = event.target.closest(".vehicle-detail__back");
+  if (backLink && window.history.length > 1) {
+    event.preventDefault();
+    window.history.back();
+  }
 });
 
 // Inline field validation for forms opted out of native browser validation
