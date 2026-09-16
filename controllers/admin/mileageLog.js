@@ -1,10 +1,11 @@
 const Vehicle = require("../../models/vehicle");
+const { renderError } = require("../../utils/httpError");
 const { buildMonthlyLog } = require("../../services/mileageLog");
 
 exports.show = async (req, res) => {
   const vehicle = await Vehicle.findById(req.params.id);
   if (!vehicle) {
-    return res.status(404).send("Vehicle not found.");
+    return renderError(res, 404, "Vehicle not found.");
   }
 
   const now = new Date();

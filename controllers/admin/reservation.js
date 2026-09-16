@@ -1,6 +1,7 @@
 const Reservation = require("../../models/reservation");
 const Vehicle = require("../../models/vehicle");
 const User = require("../../models/user");
+const { renderError } = require("../../utils/httpError");
 const { parseBookingWindow, formatBookingLabel } = require("../../utils/availability");
 const {
   grantReservationAccess,
@@ -156,7 +157,7 @@ exports.showReservation = async (req, res) => {
     .populate("reviewedBy", "firstName lastName");
 
   if (!reservation) {
-    return res.status(404).send("Reservation not found.");
+    return renderError(res, 404, "Reservation not found.");
   }
 
   res.render("admin/reservations/show", {
@@ -172,7 +173,7 @@ exports.editReservation = async (req, res) => {
     .populate("vehicleId");
 
   if (!reservation) {
-    return res.status(404).send("Reservation not found.");
+    return renderError(res, 404, "Reservation not found.");
   }
 
   const vehicles = await Vehicle.find({}).sort({ make: 1, model: 1 });
@@ -191,7 +192,7 @@ exports.updateReservation = async (req, res) => {
     .populate("vehicleId", "make model keyCafeKeyId");
 
   if (!reservation) {
-    return res.status(404).send("Reservation not found.");
+    return renderError(res, 404, "Reservation not found.");
   }
 
   const booking = parseBookingWindow(
@@ -201,7 +202,7 @@ exports.updateReservation = async (req, res) => {
   );
 
   if (!booking) {
-    return res.status(400).send("Invalid booking time.");
+    return renderError(res, 400, "Invalid booking time.");
   }
 
   const previousVehicleId = String(reservation.vehicleId._id);
@@ -306,7 +307,7 @@ exports.approveReservation = async (req, res) => {
     .populate("vehicleId", "make model keyCafeKeyId");
 
   if (!reservation) {
-    return res.status(404).send("Reservation not found.");
+    return renderError(res, 404, "Reservation not found.");
   }
 
   try {
@@ -343,7 +344,7 @@ async function freeVehicleIfHeldBy(vehicleId) {
 exports.denyReservation = async (req, res) => {
   const reservation = await Reservation.findById(req.params.id);
   if (!reservation) {
-    return res.status(404).send("Reservation not found.");
+    return renderError(res, 404, "Reservation not found.");
   }
 
   let revokeFailed = false;
@@ -376,7 +377,7 @@ exports.denyReservation = async (req, res) => {
 exports.cancelReservation = async (req, res) => {
   const reservation = await Reservation.findById(req.params.id);
   if (!reservation) {
-    return res.status(404).send("Reservation not found.");
+    return renderError(res, 404, "Reservation not found.");
   }
 
   if (!["Reserved", "Active"].includes(reservation.status)) {

@@ -1,5 +1,6 @@
 const Reservation = require("../models/reservation");
 const Vehicle = require("../models/vehicle");
+const { renderError } = require("../utils/httpError");
 const { parseBookingWindow } = require("../utils/availability");
 const {
   grantReservationAccess,
@@ -165,7 +166,7 @@ exports.editForm = async (req, res) => {
   }).populate("vehicleId");
 
   if (!reservation) {
-    return res.status(404).send("Reservation not found.");
+    return renderError(res, 404, "Reservation not found.");
   }
 
   if (reservation.status !== "Pending") {
@@ -187,7 +188,7 @@ exports.updateRequest = async (req, res) => {
   });
 
   if (!reservation) {
-    return res.status(404).send("Reservation not found.");
+    return renderError(res, 404, "Reservation not found.");
   }
 
   if (reservation.status !== "Pending") {
@@ -235,7 +236,7 @@ exports.cancelRequest = async (req, res) => {
   });
 
   if (!reservation) {
-    return res.status(404).send("Reservation not found.");
+    return renderError(res, 404, "Reservation not found.");
   }
 
   if (
@@ -276,7 +277,7 @@ exports.mileageForm = async (req, res) => {
   }).populate("vehicleId", "make model year licensePlate");
 
   if (!reservation) {
-    return res.status(404).send("Reservation not found.");
+    return renderError(res, 404, "Reservation not found.");
   }
 
   if (!REPORTABLE_STATUSES.includes(reservation.status)) {
@@ -298,7 +299,7 @@ exports.submitMileage = async (req, res) => {
   });
 
   if (!reservation) {
-    return res.status(404).send("Reservation not found.");
+    return renderError(res, 404, "Reservation not found.");
   }
 
   if (!REPORTABLE_STATUSES.includes(reservation.status)) {
@@ -338,7 +339,7 @@ exports.issueForm = async (req, res) => {
   }).populate("vehicleId", "make model year licensePlate");
 
   if (!reservation) {
-    return res.status(404).send("Reservation not found.");
+    return renderError(res, 404, "Reservation not found.");
   }
 
   if (!REPORTABLE_STATUSES.includes(reservation.status)) {
@@ -360,7 +361,7 @@ exports.submitIssue = async (req, res) => {
   });
 
   if (!reservation) {
-    return res.status(404).send("Reservation not found.");
+    return renderError(res, 404, "Reservation not found.");
   }
 
   if (!REPORTABLE_STATUSES.includes(reservation.status)) {
@@ -403,7 +404,7 @@ exports.inspectionForm = async (req, res) => {
   }).populate("vehicleId", "make model year licensePlate");
 
   if (!reservation) {
-    return res.status(404).send("Reservation not found.");
+    return renderError(res, 404, "Reservation not found.");
   }
 
   if (!REPORTABLE_STATUSES.includes(reservation.status)) {
@@ -426,7 +427,7 @@ exports.submitInspection = async (req, res) => {
   }).populate("vehicleId", "make model year licensePlate");
 
   if (!reservation) {
-    return res.status(404).send("Reservation not found.");
+    return renderError(res, 404, "Reservation not found.");
   }
 
   if (!REPORTABLE_STATUSES.includes(reservation.status)) {

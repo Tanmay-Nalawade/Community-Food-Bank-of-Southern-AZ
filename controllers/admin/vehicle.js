@@ -1,5 +1,6 @@
 const Vehicle = require("../../models/vehicle");
 const Reservation = require("../../models/reservation");
+const { renderError } = require("../../utils/httpError");
 const { fetchPage, PAGE_SIZE } = require("../../utils/pagination");
 
 function escapeRegex(value) {
@@ -101,7 +102,7 @@ exports.show = async (req, res) => {
   const vehicle = await Vehicle.findById(req.params.id);
 
   if (!vehicle) {
-    return res.status(404).send("Vehicle not found.");
+    return renderError(res, 404, "Vehicle not found.");
   }
 
   const fetchReservations = (skip, limit) =>
@@ -128,7 +129,7 @@ exports.moreReservations = async (req, res) => {
   const vehicle = await Vehicle.findById(req.params.id);
 
   if (!vehicle) {
-    return res.status(404).send("Vehicle not found.");
+    return renderError(res, 404, "Vehicle not found.");
   }
 
   const skip = Math.max(0, Number(req.query.skip) || 0);
@@ -150,7 +151,7 @@ exports.update = async (req, res) => {
   const vehicle = await Vehicle.findById(req.params.id);
 
   if (!vehicle) {
-    return res.status(404).send("Vehicle not found.");
+    return renderError(res, 404, "Vehicle not found.");
   }
 
   const {
@@ -189,7 +190,7 @@ exports.addIssue = async (req, res) => {
   const vehicle = await Vehicle.findById(req.params.id);
 
   if (!vehicle) {
-    return res.status(404).send("Vehicle not found.");
+    return renderError(res, 404, "Vehicle not found.");
   }
 
   const description = (req.body.description || "").trim();
@@ -210,7 +211,7 @@ exports.resolveIssue = async (req, res) => {
   const vehicle = await Vehicle.findById(req.params.id);
 
   if (!vehicle) {
-    return res.status(404).send("Vehicle not found.");
+    return renderError(res, 404, "Vehicle not found.");
   }
 
   const issue = vehicle.activeIssues.id(req.params.issueId);

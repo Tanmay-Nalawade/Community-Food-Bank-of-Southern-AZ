@@ -1,4 +1,5 @@
 const User = require("../../models/user");
+const { renderError } = require("../../utils/httpError");
 const { fetchPage, PAGE_SIZE } = require("../../utils/pagination");
 
 function escapeRegex(value) {
@@ -71,7 +72,7 @@ exports.edit = async (req, res) => {
   const user = await User.findById(req.params.id);
 
   if (!user) {
-    return res.status(404).send("User not found.");
+    return renderError(res, 404, "User not found.");
   }
 
   res.render("it/users/edit", {
@@ -86,7 +87,7 @@ exports.update = async (req, res) => {
   const user = await User.findById(req.params.id);
 
   if (!user) {
-    return res.status(404).send("User not found.");
+    return renderError(res, 404, "User not found.");
   }
 
   if (String(user._id) === String(res.locals.currentUser._id)) {

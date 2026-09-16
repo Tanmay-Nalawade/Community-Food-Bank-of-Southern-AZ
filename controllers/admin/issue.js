@@ -1,4 +1,5 @@
 const Vehicle = require("../../models/vehicle");
+const { renderError } = require("../../utils/httpError");
 const { fetchPage, PAGE_SIZE } = require("../../utils/pagination");
 
 // Issues live inside each vehicle's activeIssues array, not their own
@@ -72,12 +73,12 @@ exports.markReviewed = async (req, res) => {
   const vehicle = await Vehicle.findById(req.params.vehicleId);
 
   if (!vehicle) {
-    return res.status(404).send("Vehicle not found.");
+    return renderError(res, 404, "Vehicle not found.");
   }
 
   const issue = vehicle.activeIssues.id(req.params.issueId);
   if (!issue) {
-    return res.status(404).send("Issue not found.");
+    return renderError(res, 404, "Issue not found.");
   }
 
   issue.reviewed = true;
@@ -93,7 +94,7 @@ exports.dismiss = async (req, res) => {
   const vehicle = await Vehicle.findById(req.params.vehicleId);
 
   if (!vehicle) {
-    return res.status(404).send("Vehicle not found.");
+    return renderError(res, 404, "Vehicle not found.");
   }
 
   const issue = vehicle.activeIssues.id(req.params.issueId);

@@ -1,5 +1,6 @@
 const User = require("../../models/user");
 const Reservation = require("../../models/reservation");
+const { renderError } = require("../../utils/httpError");
 const { fetchPage, PAGE_SIZE } = require("../../utils/pagination");
 
 function escapeRegex(value) {
@@ -57,7 +58,7 @@ exports.show = async (req, res) => {
   const driver = await User.findById(req.params.id);
 
   if (!driver) {
-    return res.status(404).send("Driver not found.");
+    return renderError(res, 404, "Driver not found.");
   }
 
   const fetchReservations = (skip, limit) =>
@@ -84,7 +85,7 @@ exports.moreReservations = async (req, res) => {
   const driver = await User.findById(req.params.id);
 
   if (!driver) {
-    return res.status(404).send("Driver not found.");
+    return renderError(res, 404, "Driver not found.");
   }
 
   const skip = Math.max(0, Number(req.query.skip) || 0);
