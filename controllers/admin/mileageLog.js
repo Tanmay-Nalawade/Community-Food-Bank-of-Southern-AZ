@@ -1,5 +1,5 @@
-const Vehicle = require("../models/vehicle");
-const { buildMonthlyLog } = require("../services/mileageLog");
+const Vehicle = require("../../models/vehicle");
+const { buildMonthlyLog } = require("../../services/mileageLog");
 
 exports.show = async (req, res) => {
   const vehicle = await Vehicle.findById(req.params.id);

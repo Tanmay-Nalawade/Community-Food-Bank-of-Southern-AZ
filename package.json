@@ -17,7 +17,7 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
-    "seed": "node seeds/seed.js",
+    "seed": "node seeds/index.js",
     "register-webhook": "node scripts/register-keycafe-webhook.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

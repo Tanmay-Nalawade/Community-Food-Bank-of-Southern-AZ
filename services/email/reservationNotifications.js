@@ -1,8 +1,8 @@
 const path = require("path");
 const ejs = require("ejs");
-const Reservation = require("../models/reservation");
-const { sendEmail } = require("./email");
-const { formatBookingLabel } = require("../utils/availability");
+const Reservation = require("../../models/reservation");
+const { sendEmail } = require("./index");
+const { formatBookingLabel } = require("../../utils/availability");
 
 const APP_BASE_URL = process.env.APP_BASE_URL || "http://localhost:8080";
 
@@ -18,7 +18,7 @@ function bookingLabelFor(reservation) {
 }
 
 function renderEmail(templateName, data) {
-  const templatePath = path.join(__dirname, "..", "views", "emails", `${templateName}.ejs`);
+  const templatePath = path.join(__dirname, "..", "..", "views", "emails", `${templateName}.ejs`);
   return ejs.renderFile(templatePath, data);
 }
 

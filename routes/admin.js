@@ -3,31 +3,30 @@ const router = express.Router();
 const { requireAdmin } = require("../middleware/auth");
 const { wrapControllerAsync } = require("../utils/asyncHandler");
 const { validateBody } = require("../middleware/validate");
-const { addVehicleSchema } = require("../validators/vehicleSchemas");
+const { addVehicleSchema } = require("../validators/vehicle");
 const {
   updateReservationSchema,
   adminNotesSchema,
-} = require("../validators/adminReservationSchemas");
-const adminController = wrapControllerAsync(require("../controllers/adminController"));
-const adminDashboardController = wrapControllerAsync(require("../controllers/adminDashboardController"));
-const adminReservationController = wrapControllerAsync(require("../controllers/adminReservationController"));
-const adminIssueController = wrapControllerAsync(require("../controllers/adminIssueController"));
-const adminVehicleController = wrapControllerAsync(require("../controllers/adminVehicleController"));
-const adminDriverController = wrapControllerAsync(require("../controllers/adminDriverController"));
-const adminReportController = wrapControllerAsync(require("../controllers/adminReportController"));
-const adminMileageLogController = wrapControllerAsync(require("../controllers/adminMileageLogController"));
+} = require("../validators/admin/reservation");
+const adminDashboardController = wrapControllerAsync(require("../controllers/admin/dashboard"));
+const adminReservationController = wrapControllerAsync(require("../controllers/admin/reservation"));
+const adminIssueController = wrapControllerAsync(require("../controllers/admin/issue"));
+const adminVehicleController = wrapControllerAsync(require("../controllers/admin/vehicle"));
+const adminDriverController = wrapControllerAsync(require("../controllers/admin/driver"));
+const adminReportController = wrapControllerAsync(require("../controllers/admin/report"));
+const adminMileageLogController = wrapControllerAsync(require("../controllers/admin/mileageLog"));
 
 router.get("/", requireAdmin, (req, res) => res.redirect("/admin/dashboard"));
 router.get("/dashboard", requireAdmin, adminDashboardController.index);
 
 router.get("/vehicles", requireAdmin, adminVehicleController.index);
 router.get("/vehicles/more", requireAdmin, adminVehicleController.more);
-router.get("/vehicles/add", requireAdmin, adminController.getAddVehicle);
+router.get("/vehicles/add", requireAdmin, adminVehicleController.getAddVehicle);
 router.post(
   "/vehicles/add",
   requireAdmin,
   validateBody(addVehicleSchema, { redirect: "/admin/vehicles/add" }),
-  adminController.postAddVehicle,
+  adminVehicleController.postAddVehicle,
 );
 router.get("/vehicles/:id", requireAdmin, adminVehicleController.show);
 router.put("/vehicles/:id", requireAdmin, adminVehicleController.update);

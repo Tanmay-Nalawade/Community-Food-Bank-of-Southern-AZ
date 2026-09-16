@@ -1,5 +1,5 @@
-const keycafe = require("./keycafe");
-const AccessLog = require("../models/accessLog");
+const keycafe = require("./index");
+const AccessLog = require("../../models/accessLog");
 
 function refId(value) {
   return value?._id || value;

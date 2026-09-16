@@ -1,5 +1,5 @@
-const Reservation = require("../models/reservation");
-const Vehicle = require("../models/vehicle");
+const Reservation = require("../../models/reservation");
+const Vehicle = require("../../models/vehicle");
 
 const OUT_OF_SERVICE_STATUSES = ["Maintenance", "Out of Service"];
 

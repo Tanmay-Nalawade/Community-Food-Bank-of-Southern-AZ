@@ -1,7 +1,7 @@
 const Vehicle = require("../models/vehicle");
 const MileageLogSend = require("../models/mileageLogSend");
 const { buildMonthlyLog } = require("../services/mileageLog");
-const { sendMonthlyMileageLog } = require("../services/mileageLogNotifications");
+const { sendMonthlyMileageLog } = require("../services/email/mileageLogNotifications");
 
 const CHECK_INTERVAL_MS = 60 * 60 * 1000;
 const TIMEZONE = process.env.MILEAGE_LOG_TIMEZONE || "America/Phoenix";

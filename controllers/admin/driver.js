@@ -1,6 +1,6 @@
-const User = require("../models/user");
-const Reservation = require("../models/reservation");
-const { fetchPage, PAGE_SIZE } = require("../utils/pagination");
+const User = require("../../models/user");
+const Reservation = require("../../models/reservation");
+const { fetchPage, PAGE_SIZE } = require("../../utils/pagination");
 
 function escapeRegex(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

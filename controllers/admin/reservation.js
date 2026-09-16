@@ -1,12 +1,12 @@
-const Reservation = require("../models/reservation");
-const Vehicle = require("../models/vehicle");
-const User = require("../models/user");
-const { parseBookingWindow, formatBookingLabel } = require("../utils/availability");
+const Reservation = require("../../models/reservation");
+const Vehicle = require("../../models/vehicle");
+const User = require("../../models/user");
+const { parseBookingWindow, formatBookingLabel } = require("../../utils/availability");
 const {
   grantReservationAccess,
   revokeReservationAccess,
-} = require("../services/reservationKeycafe");
-const { fetchPage, PAGE_SIZE } = require("../utils/pagination");
+} = require("../../services/keycafe/reservationAccess");
+const { fetchPage, PAGE_SIZE } = require("../../utils/pagination");
 
 const HOLDING_STATUSES = ["Reserved", "Active"];
 

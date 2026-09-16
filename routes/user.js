@@ -3,8 +3,8 @@ const router = express.Router();
 const { requireLogin } = require("../middleware/auth");
 const { wrapControllerAsync } = require("../utils/asyncHandler");
 const { validateBody } = require("../middleware/validate");
-const { loginSchema, registerSchema } = require("../validators/userSchemas");
-const users = wrapControllerAsync(require("../controllers/userController"));
+const { loginSchema, registerSchema } = require("../validators/user");
+const users = wrapControllerAsync(require("../controllers/user"));
 
 router.get("/", requireLogin, users.home);
 router.get("/login", users.login);

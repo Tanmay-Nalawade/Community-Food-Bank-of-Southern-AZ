@@ -4,8 +4,8 @@ const { parseBookingWindow } = require("../utils/availability");
 const {
   grantReservationAccess,
   revokeReservationAccess,
-} = require("../services/reservationKeycafe");
-const { sendBookingConfirmation } = require("../services/reservationNotifications");
+} = require("../services/keycafe/reservationAccess");
+const { sendBookingConfirmation } = require("../services/email/reservationNotifications");
 const { fetchPage, PAGE_SIZE } = require("../utils/pagination");
 
 const CANCELABLE_STATUSES = ["Pending", "Reserved"];

@@ -3,8 +3,8 @@ const router = express.Router();
 const { requireLogin } = require("../middleware/auth");
 const { wrapControllerAsync } = require("../utils/asyncHandler");
 const { validateBody } = require("../middleware/validate");
-const { updateProfileSchema, changePasswordSchema } = require("../validators/userSchemas");
-const accountController = wrapControllerAsync(require("../controllers/accountController"));
+const { updateProfileSchema, changePasswordSchema } = require("../validators/user");
+const accountController = wrapControllerAsync(require("../controllers/account"));
 
 router.get("/edit", requireLogin, accountController.editForm);
 router.post(

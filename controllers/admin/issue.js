@@ -1,5 +1,5 @@
-const Vehicle = require("../models/vehicle");
-const { fetchPage, PAGE_SIZE } = require("../utils/pagination");
+const Vehicle = require("../../models/vehicle");
+const { fetchPage, PAGE_SIZE } = require("../../utils/pagination");
 
 // Issues live inside each vehicle's activeIssues array, not their own
 // collection, so paginating "all issues across all vehicles, unreviewed

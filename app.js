@@ -8,13 +8,13 @@ const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
 const engine = require("ejs-mate");
 
-const userRoutes = require("./routes/userRoutes");
-const vehicleRoutes = require("./routes/vehicleRoutes");
-const adminRoutes = require("./routes/adminRoutes");
-const reservationRoutes = require("./routes/reservationRoutes");
-const webhookRoutes = require("./routes/webhookRoutes");
-const accountRoutes = require("./routes/accountRoutes");
-const itRoutes = require("./routes/itRoutes");
+const userRoutes = require("./routes/user");
+const vehicleRoutes = require("./routes/vehicle");
+const adminRoutes = require("./routes/admin");
+const reservationRoutes = require("./routes/reservation");
+const webhookRoutes = require("./routes/webhook");
+const accountRoutes = require("./routes/account");
+const itRoutes = require("./routes/it");
 const reminderScheduler = require("./jobs/reminderScheduler");
 const mileageLogScheduler = require("./jobs/mileageLogScheduler");
 const passport = require("./config/passport");
@@ -22,7 +22,7 @@ const { computeEffectiveRole } = require("./middleware/auth");
 
 const app = express();
 
-require("./db");
+require("./config/db");
 
 if (process.env.NODE_ENV === "production" && !process.env.SESSION_SECRET) {
   console.error(

@@ -2,9 +2,9 @@ const express = require("express");
 const router = express.Router();
 const { requireITAdmin } = require("../middleware/auth");
 const { wrapControllerAsync } = require("../utils/asyncHandler");
-const itUserController = wrapControllerAsync(require("../controllers/itUserController"));
-const itActivityController = wrapControllerAsync(require("../controllers/itActivityController"));
-const itApiStatusController = wrapControllerAsync(require("../controllers/itApiStatusController"));
+const itUserController = wrapControllerAsync(require("../controllers/it/user"));
+const itActivityController = wrapControllerAsync(require("../controllers/it/activity"));
+const itApiStatusController = wrapControllerAsync(require("../controllers/it/apiStatus"));
 
 router.get("/users", requireITAdmin, itUserController.index);
 router.get("/users/more", requireITAdmin, itUserController.more);

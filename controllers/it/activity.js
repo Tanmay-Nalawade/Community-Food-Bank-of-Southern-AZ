@@ -1,4 +1,4 @@
-const ActivityLog = require("../models/activityLog");
+const ActivityLog = require("../../models/activityLog");
 
 const PAGE_SIZE = 10;
 const MAX_LOGS = 200;

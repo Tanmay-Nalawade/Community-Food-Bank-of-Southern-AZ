@@ -1,6 +1,6 @@
-const Vehicle = require("../models/vehicle");
-const Reservation = require("../models/reservation");
-const { fetchPage, PAGE_SIZE } = require("../utils/pagination");
+const Vehicle = require("../../models/vehicle");
+const Reservation = require("../../models/reservation");
+const { fetchPage, PAGE_SIZE } = require("../../utils/pagination");
 
 function escapeRegex(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -35,6 +35,31 @@ function filterQueryString(query) {
   const qs = params.toString();
   return qs ? `?${qs}` : "";
 }
+
+// Was its own "adminController.js" at the controllers/ root — merged in here
+// since it only ever handled adding a vehicle to the fleet.
+exports.getAddVehicle = (req, res) => {
+  res.render("vehicles/add", {
+    title: "Add Vehicle",
+  });
+};
+
+exports.postAddVehicle = async (req, res) => {
+  const { make, model, year, licensePlate, keyCafeKeyId, photoUrl, currentMileage } =
+    req.body;
+  const newVehicle = new Vehicle({
+    make,
+    model,
+    year: year ? Number(year) : undefined,
+    licensePlate,
+    keyCafeKeyId,
+    photoUrl: (photoUrl || "").trim(),
+    currentMileage: Number(currentMileage) || 0,
+  });
+  await newVehicle.save();
+  req.flash("success", `${newVehicle.make} ${newVehicle.model} added to the fleet.`);
+  res.redirect("/vehicles");
+};
 
 exports.index = async (req, res) => {
   const q = (req.query.q || "").trim();

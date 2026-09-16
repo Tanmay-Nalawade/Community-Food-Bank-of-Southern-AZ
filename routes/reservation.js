@@ -7,8 +7,8 @@ const {
   bookingWindowSchema,
   mileageSchema,
   issueSchema,
-} = require("../validators/reservationSchemas");
-const reservationController = wrapControllerAsync(require("../controllers/reservationController"));
+} = require("../validators/reservation");
+const reservationController = wrapControllerAsync(require("../controllers/reservation"));
 
 router.get("/mine", requireLogin, reservationController.mine);
 router.get("/mine/past/more", requireLogin, reservationController.morePast);

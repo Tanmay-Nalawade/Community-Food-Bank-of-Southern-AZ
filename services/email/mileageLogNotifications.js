@@ -1,6 +1,6 @@
 const path = require("path");
 const ejs = require("ejs");
-const { sendEmail } = require("./email");
+const { sendEmail } = require("./index");
 
 const RECIPIENT = process.env.MILEAGE_LOG_RECIPIENT || "Transportation@communityfoodbank.org";
 const APP_BASE_URL = process.env.APP_BASE_URL || "http://localhost:8080";
@@ -16,7 +16,7 @@ async function sendMonthlyMileageLog(log) {
 
   try {
     const html = await ejs.renderFile(
-      path.join(__dirname, "..", "views", "emails", "mileage-log.ejs"),
+      path.join(__dirname, "..", "..", "views", "emails", "mileage-log.ejs"),
       {
         vehicleName: vehicleLabel(log.vehicle),
         licensePlate: log.vehicle.licensePlate,

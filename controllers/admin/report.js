@@ -1,7 +1,7 @@
-const Vehicle = require("../models/vehicle");
-const Reservation = require("../models/reservation");
-const AccessLog = require("../models/accessLog");
-const { fetchPage, PAGE_SIZE } = require("../utils/pagination");
+const Vehicle = require("../../models/vehicle");
+const Reservation = require("../../models/reservation");
+const AccessLog = require("../../models/accessLog");
+const { fetchPage, PAGE_SIZE } = require("../../utils/pagination");
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 

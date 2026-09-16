@@ -1,5 +1,5 @@
 const Reservation = require("../models/reservation");
-const { sendReminder } = require("../services/reservationNotifications");
+const { sendReminder } = require("../services/email/reservationNotifications");
 
 const CHECK_INTERVAL_MS = 15 * 60 * 1000;
 const HOUR_MS = 60 * 60 * 1000;

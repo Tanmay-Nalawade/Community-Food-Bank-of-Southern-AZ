@@ -1,4 +1,4 @@
-const keycafe = require("../services/keycafe");
+const keycafe = require("../../services/keycafe");
 
 exports.index = async (req, res) => {
   res.render("it/api-status/index", {
