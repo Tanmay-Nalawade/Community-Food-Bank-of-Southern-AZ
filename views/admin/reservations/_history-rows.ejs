@@ -1,0 +1,24 @@
+<% reservations.forEach((reservation) => { %>
+  <tr>
+    <td>
+      <%= reservation.userId.firstName %> <%= reservation.userId.lastName %><br />
+      <span class="admin-table__subtext"><%= reservation.userId.email %></span>
+    </td>
+    <td>
+      <%= reservation.vehicleId.year ? reservation.vehicleId.year + " " : "" %>
+      <%= reservation.vehicleId.make %> <%= reservation.vehicleId.model %><br />
+      <span class="admin-table__subtext"><%= reservation.vehicleId.licensePlate %></span>
+    </td>
+    <td>
+      <%= new Date(reservation.requestedStartTime).toLocaleString() %>
+      &ndash;
+      <%= new Date(reservation.requestedEndTime).toLocaleString() %>
+    </td>
+    <td>
+      <%- include('../../partials/status-pill', { value: reservation.status }) %>
+    </td>
+    <td class="admin-table__actions">
+      <a class="admin-table__btn admin-table__btn--edit" href="/admin/reservations/<%= reservation._id %>">View</a>
+    </td>
+  </tr>
+<% }) %>

@@ -17,25 +17,24 @@
             <th>Detail</th>
           </tr>
         </thead>
-        <tbody>
-          <% logs.forEach((log) => { %>
-            <tr>
-              <td><%= new Date(log.createdAt).toLocaleString() %></td>
-              <td>
-                <% if (log.userId) { %>
-                  <%= log.userId.firstName %> <%= log.userId.lastName %>
-                  <br />
-                  <span class="admin-table__subtext"><%= log.userId.email %></span>
-                <% } else { %>
-                  —
-                <% } %>
-              </td>
-              <td><%= log.action %></td>
-              <td><%= log.detail || "—" %></td>
-            </tr>
-          <% }) %>
+        <tbody id="activity-log-body">
+          <%- include('_rows', { logs }) %>
         </tbody>
       </table>
     </div>
+
+    <% if (hasMore) { %>
+      <button
+        class="admin-table__btn admin-table__btn--edit load-more-btn"
+        type="button"
+        data-load-more
+        data-url="/it/activity/more"
+        data-target="activity-log-body"
+        data-page-size="<%= pageSize %>"
+        data-skip="<%= nextSkip %>"
+      >
+        Load more
+      </button>
+    <% } %>
   <% } %>
 </section>

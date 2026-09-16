@@ -47,27 +47,24 @@
             <th>Actions</th>
           </tr>
         </thead>
-        <tbody>
-          <% users.forEach((user) => { %>
-            <tr>
-              <td><%= user.firstName %> <%= user.lastName %></td>
-              <td><%= user.email %></td>
-              <td>
-                <%- include('../../partials/status-pill', { value: user.role }) %>
-              </td>
-              <td>
-                <%- include('../../partials/status-pill', {
-                  slug: user.isActive ? 'active-account' : 'inactive-account',
-                  label: user.isActive ? 'Active' : 'Inactive',
-                }) %>
-              </td>
-              <td class="admin-table__actions">
-                <a class="admin-table__btn admin-table__btn--edit" href="/it/users/<%= user._id %>/edit">Edit</a>
-              </td>
-            </tr>
-          <% }) %>
+        <tbody id="users-body">
+          <%- include('_rows', { users }) %>
         </tbody>
       </table>
     </div>
+
+    <% if (hasMore) { %>
+      <button
+        class="admin-table__btn admin-table__btn--edit load-more-btn"
+        type="button"
+        data-load-more
+        data-url="<%= moreUrl %>"
+        data-target="users-body"
+        data-page-size="<%= pageSize %>"
+        data-skip="<%= nextSkip %>"
+      >
+        Load more
+      </button>
+    <% } %>
   <% } %>
 </section>

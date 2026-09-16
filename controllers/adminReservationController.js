@@ -6,6 +6,7 @@ const {
   grantReservationAccess,
   revokeReservationAccess,
 } = require("../services/reservationKeycafe");
+const { fetchPage, PAGE_SIZE } = require("../utils/pagination");
 
 const HOLDING_STATUSES = ["Reserved", "Active"];
 
@@ -13,8 +14,8 @@ function escapeRegex(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-exports.listReservations = async (req, res) => {
-  const { status, vehicleId, driver, startDate, endDate } = req.query;
+async function buildReservationFilter(query) {
+  const { status, vehicleId, driver, startDate, endDate } = query;
   const filter = {};
 
   if (status) {
@@ -43,11 +44,35 @@ exports.listReservations = async (req, res) => {
     }
   }
 
-  const [reservations, vehicles] = await Promise.all([
-    Reservation.find(filter)
-      .populate("userId", "firstName lastName email role")
-      .populate("vehicleId", "make model year licensePlate")
-      .sort({ createdAt: -1 }),
+  return filter;
+}
+
+function filterQueryString(query) {
+  const params = new URLSearchParams();
+  ["status", "vehicleId", "driver", "startDate", "endDate"].forEach((key) => {
+    if (query[key]) {
+      params.set(key, query[key]);
+    }
+  });
+  const qs = params.toString();
+  return qs ? `?${qs}` : "";
+}
+
+function fetchReservations(filter, skip, limit) {
+  return Reservation.find(filter)
+    .populate("userId", "firstName lastName email role")
+    .populate("vehicleId", "make model year licensePlate")
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
+}
+
+exports.listReservations = async (req, res) => {
+  const { status, vehicleId, driver, startDate, endDate } = req.query;
+  const filter = await buildReservationFilter(req.query);
+
+  const [{ items: reservations, hasMore, nextSkip }, vehicles] = await Promise.all([
+    fetchPage((skip, limit) => fetchReservations(filter, skip, limit), 0),
     Vehicle.find({}).sort({ make: 1, model: 1 }),
   ]);
 
@@ -62,24 +87,66 @@ exports.listReservations = async (req, res) => {
       startDate: startDate || "",
       endDate: endDate || "",
     },
+    hasMore,
+    nextSkip,
+    pageSize: PAGE_SIZE,
+    moreUrl: `/admin/reservations/more${filterQueryString(req.query)}`,
     activeNav: "admin-reservations",
   });
+};
+
+exports.moreReservations = async (req, res) => {
+  const filter = await buildReservationFilter(req.query);
+  const skip = Math.max(0, Number(req.query.skip) || 0);
+
+  const { items: reservations, hasMore } = await fetchPage(
+    (s, limit) => fetchReservations(filter, s, limit),
+    skip,
+  );
+
+  res.set("X-Has-More", hasMore ? "1" : "0");
+  res.render("admin/reservations/_rows", { reservations });
 };
 
 exports.pastReservations = async (req, res) => {
   const now = new Date();
 
-  const reservations = await Reservation.find({ requestedEndTime: { $lt: now } })
-    .populate("userId", "firstName lastName email role")
-    .populate("vehicleId", "make model year licensePlate")
-    .sort({ requestedEndTime: -1 })
-    .limit(200);
+  const fetchHistory = (skip, limit) =>
+    Reservation.find({ requestedEndTime: { $lt: now } })
+      .populate("userId", "firstName lastName email role")
+      .populate("vehicleId", "make model year licensePlate")
+      .sort({ requestedEndTime: -1 })
+      .skip(skip)
+      .limit(limit);
+
+  const { items: reservations, hasMore, nextSkip } = await fetchPage(fetchHistory, 0);
 
   res.render("admin/reservations/history", {
     title: "Booking History",
     reservations,
+    hasMore,
+    nextSkip,
+    pageSize: PAGE_SIZE,
     activeNav: "admin-reservations",
   });
+};
+
+exports.moreHistory = async (req, res) => {
+  const now = new Date();
+  const skip = Math.max(0, Number(req.query.skip) || 0);
+
+  const fetchHistory = (s, limit) =>
+    Reservation.find({ requestedEndTime: { $lt: now } })
+      .populate("userId", "firstName lastName email role")
+      .populate("vehicleId", "make model year licensePlate")
+      .sort({ requestedEndTime: -1 })
+      .skip(s)
+      .limit(limit);
+
+  const { items: reservations, hasMore } = await fetchPage(fetchHistory, skip);
+
+  res.set("X-Has-More", hasMore ? "1" : "0");
+  res.render("admin/reservations/_history-rows", { reservations });
 };
 
 exports.showReservation = async (req, res) => {

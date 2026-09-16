@@ -1,0 +1,21 @@
+<% accessLogs.forEach((log) => { %>
+  <tr>
+    <td><%= new Date(log.createdAt).toLocaleString() %></td>
+    <td><%= log.action %></td>
+    <td>
+      <% if (log.userId) { %>
+        <%= log.userId.firstName %> <%= log.userId.lastName %>
+      <% } else { %>
+        —
+      <% } %>
+    </td>
+    <td>
+      <% if (log.vehicleId) { %>
+        <%= log.vehicleId.make %> <%= log.vehicleId.model %>
+      <% } else { %>
+        —
+      <% } %>
+    </td>
+    <td><%= log.bookingCode || "—" %></td>
+  </tr>
+<% }) %>

@@ -101,3 +101,50 @@ document.addEventListener("click", (event) => {
     });
   });
 })();
+
+// Generic "Load more" lazy loading: any button with data-load-more fetches
+// the next batch of rows as an HTML fragment from data-url and appends it
+// to the element named by data-target, using the X-Has-More response
+// header (not the row count) to decide whether to keep offering another
+// batch — so this works correctly even when a batch happens to come back
+// exactly page-size long.
+document.addEventListener("click", async (event) => {
+  const button = event.target.closest("[data-load-more]");
+  if (!button) {
+    return;
+  }
+
+  const target = document.getElementById(button.dataset.target);
+  if (!target) {
+    return;
+  }
+
+  const skip = Number(button.dataset.skip) || 0;
+  const originalLabel = button.textContent;
+
+  button.disabled = true;
+  button.textContent = "Loading…";
+
+  try {
+    // data-url may already carry filter params (e.g. "?status=Pending"), so
+    // don't assume "?" is safe to prepend — reuse "&" when it already has one.
+    const separator = button.dataset.url.includes("?") ? "&" : "?";
+    const response = await fetch(`${button.dataset.url}${separator}skip=${skip}`);
+    const html = await response.text();
+
+    if (html.trim()) {
+      target.insertAdjacentHTML("beforeend", html);
+    }
+
+    if (response.headers.get("X-Has-More") === "1") {
+      button.dataset.skip = skip + Number(button.dataset.pageSize);
+      button.disabled = false;
+      button.textContent = originalLabel;
+    } else {
+      button.remove();
+    }
+  } catch (error) {
+    button.disabled = false;
+    button.textContent = originalLabel;
+  }
+});

@@ -1248,3 +1248,13 @@ textarea {
     border-color: #000 !important;
   }
 }
+
+.load-more-btn {
+  display: block;
+  margin: 1.25rem auto 0;
+}
+
+.load-more-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}

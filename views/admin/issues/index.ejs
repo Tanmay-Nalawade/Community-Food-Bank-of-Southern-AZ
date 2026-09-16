@@ -19,43 +19,24 @@
             <th>Actions</th>
           </tr>
         </thead>
-        <tbody>
-          <% issues.forEach(({ vehicle, issue }) => { %>
-            <tr>
-              <td>
-                <% if (issue.reviewed) { %>
-                  <%- include('../../partials/status-pill', { slug: 'completed', label: 'Reviewed' }) %>
-                <% } else { %>
-                  <%- include('../../partials/status-pill', { slug: 'pending', label: 'New' }) %>
-                <% } %>
-              </td>
-              <td>
-                <%= vehicle.year ? vehicle.year + " " : "" %><%= vehicle.make %> <%= vehicle.model %><br />
-                <span class="admin-table__subtext"><%= vehicle.licensePlate %></span>
-              </td>
-              <td><%= issue.description %></td>
-              <td>
-                <% if (issue.reportedBy) { %>
-                  <%= issue.reportedBy.firstName %> <%= issue.reportedBy.lastName %>
-                <% } else { %>
-                  —
-                <% } %>
-              </td>
-              <td><%= new Date(issue.reportedAt).toLocaleString() %></td>
-              <td class="admin-table__actions">
-                <% if (!issue.reviewed) { %>
-                  <form action="/admin/issues/<%= vehicle._id %>/<%= issue._id %>/review" method="POST">
-                    <button class="admin-table__btn admin-table__btn--approve" type="submit">Mark Reviewed</button>
-                  </form>
-                <% } %>
-                <form action="/admin/issues/<%= vehicle._id %>/<%= issue._id %>/dismiss" method="POST">
-                  <button class="admin-table__btn admin-table__btn--delete" type="submit">Dismiss</button>
-                </form>
-              </td>
-            </tr>
-          <% }) %>
+        <tbody id="issues-body">
+          <%- include('_rows', { issues }) %>
         </tbody>
       </table>
     </div>
+
+    <% if (hasMore) { %>
+      <button
+        class="admin-table__btn admin-table__btn--edit load-more-btn"
+        type="button"
+        data-load-more
+        data-url="/admin/issues/more"
+        data-target="issues-body"
+        data-page-size="<%= pageSize %>"
+        data-skip="<%= nextSkip %>"
+      >
+        Load more
+      </button>
+    <% } %>
   <% } %>
 </section>

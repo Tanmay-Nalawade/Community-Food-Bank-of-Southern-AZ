@@ -36,20 +36,24 @@
             <th>Actions</th>
           </tr>
         </thead>
-        <tbody>
-          <% drivers.forEach((driver) => { %>
-            <tr>
-              <td><%= driver.firstName %> <%= driver.lastName %></td>
-              <td><%= driver.email %></td>
-              <td><%= driver.role %></td>
-              <td><%= driver.isActive ? "Active" : "Inactive" %></td>
-              <td class="admin-table__actions">
-                <a class="admin-table__btn admin-table__btn--edit" href="/admin/drivers/<%= driver._id %>">View</a>
-              </td>
-            </tr>
-          <% }) %>
+        <tbody id="drivers-body">
+          <%- include('_rows', { drivers }) %>
         </tbody>
       </table>
     </div>
+
+    <% if (hasMore) { %>
+      <button
+        class="admin-table__btn admin-table__btn--edit load-more-btn"
+        type="button"
+        data-load-more
+        data-url="<%= moreUrl %>"
+        data-target="drivers-body"
+        data-page-size="<%= pageSize %>"
+        data-skip="<%= nextSkip %>"
+      >
+        Load more
+      </button>
+    <% } %>
   <% } %>
 </section>

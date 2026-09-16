@@ -1,0 +1,16 @@
+<% vehicles.forEach((vehicle) => { %>
+  <tr>
+    <td>
+      <%= vehicle.year ? vehicle.year + " " : "" %><%= vehicle.make %> <%= vehicle.model %>
+    </td>
+    <td><%= vehicle.licensePlate %></td>
+    <td><%= vehicle.keyCafeKeyId %></td>
+    <td><%= vehicle.currentMileage.toLocaleString() %> mi</td>
+    <td>
+      <%- include('../../partials/status-pill', { value: vehicle.status }) %>
+    </td>
+    <td class="admin-table__actions">
+      <a class="admin-table__btn admin-table__btn--edit" href="/admin/vehicles/<%= vehicle._id %>">Manage</a>
+    </td>
+  </tr>
+<% }) %>

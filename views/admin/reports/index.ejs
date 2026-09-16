@@ -48,7 +48,7 @@
 
   <div class="vehicle-detail__card admin-history-card">
     <h2 class="vehicle-detail__section-title">KeyCafe access log</h2>
-    <p class="vehicle-detail__empty admin-hint">Most recent 100 access events — grants, revokes, pickups, and drop-offs.</p>
+    <p class="vehicle-detail__empty admin-hint">Grants, revokes, pickups, and drop-offs, newest first.</p>
     <% if (!accessLogs.length) { %>
       <p class="vehicle-detail__empty">No access events recorded yet.</p>
     <% } else { %>
@@ -63,31 +63,25 @@
               <th>Booking code</th>
             </tr>
           </thead>
-          <tbody>
-            <% accessLogs.forEach((log) => { %>
-              <tr>
-                <td><%= new Date(log.createdAt).toLocaleString() %></td>
-                <td><%= log.action %></td>
-                <td>
-                  <% if (log.userId) { %>
-                    <%= log.userId.firstName %> <%= log.userId.lastName %>
-                  <% } else { %>
-                    —
-                  <% } %>
-                </td>
-                <td>
-                  <% if (log.vehicleId) { %>
-                    <%= log.vehicleId.make %> <%= log.vehicleId.model %>
-                  <% } else { %>
-                    —
-                  <% } %>
-                </td>
-                <td><%= log.bookingCode || "—" %></td>
-              </tr>
-            <% }) %>
+          <tbody id="access-log-body">
+            <%- include('_access-log-rows', { accessLogs }) %>
           </tbody>
         </table>
       </div>
+
+      <% if (hasMore) { %>
+        <button
+          class="admin-table__btn admin-table__btn--edit load-more-btn"
+          type="button"
+          data-load-more
+          data-url="/admin/reports/more"
+          data-target="access-log-body"
+          data-page-size="<%= pageSize %>"
+          data-skip="<%= nextSkip %>"
+        >
+          Load more
+        </button>
+      <% } %>
     <% } %>
   </div>
 </section>

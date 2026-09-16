@@ -1,12 +1,13 @@
 const User = require("../models/user");
+const { fetchPage, PAGE_SIZE } = require("../utils/pagination");
 
 function escapeRegex(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-exports.index = async (req, res) => {
-  const q = (req.query.q || "").trim();
-  const role = req.query.role || "";
+function buildUserFilter(query) {
+  const q = (query.q || "").trim();
+  const role = query.role || "";
   const filter = {};
 
   if (role) {
@@ -18,15 +19,52 @@ exports.index = async (req, res) => {
     filter.$or = [{ firstName: regex }, { lastName: regex }, { email: regex }];
   }
 
-  const users = await User.find(filter).sort({ firstName: 1, lastName: 1 });
+  return filter;
+}
+
+function filterQueryString(query) {
+  const params = new URLSearchParams();
+  if (query.q) params.set("q", query.q);
+  if (query.role) params.set("role", query.role);
+  const qs = params.toString();
+  return qs ? `?${qs}` : "";
+}
+
+exports.index = async (req, res) => {
+  const q = (req.query.q || "").trim();
+  const role = req.query.role || "";
+  const filter = buildUserFilter(req.query);
+
+  const { items: users, hasMore, nextSkip } = await fetchPage(
+    (skip, limit) =>
+      User.find(filter).sort({ firstName: 1, lastName: 1 }).skip(skip).limit(limit),
+    0,
+  );
 
   res.render("it/users/index", {
     title: "Manage Users",
     users,
     q,
     role,
+    hasMore,
+    nextSkip,
+    pageSize: PAGE_SIZE,
+    moreUrl: `/it/users/more${filterQueryString(req.query)}`,
     activeNav: "it-users",
   });
+};
+
+exports.more = async (req, res) => {
+  const filter = buildUserFilter(req.query);
+  const skip = Math.max(0, Number(req.query.skip) || 0);
+
+  const { items: users, hasMore } = await fetchPage(
+    (s, limit) => User.find(filter).sort({ firstName: 1, lastName: 1 }).skip(s).limit(limit),
+    skip,
+  );
+
+  res.set("X-Has-More", hasMore ? "1" : "0");
+  res.render("it/users/_rows", { users });
 };
 
 exports.edit = async (req, res) => {

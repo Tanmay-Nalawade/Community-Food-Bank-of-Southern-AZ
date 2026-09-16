@@ -51,7 +51,21 @@
         <p>You don't have any past bookings yet.</p>
       </div>
     <% } else { %>
-      <%- include('../partials/booking-list', { reservations: pastBookings, muted: true }) %>
+      <%- include('../partials/booking-list', { reservations: pastBookings, muted: true, id: 'past-bookings-list' }) %>
+
+      <% if (pastHasMore) { %>
+        <button
+          class="admin-table__btn admin-table__btn--edit load-more-btn"
+          type="button"
+          data-load-more
+          data-url="/reservations/mine/past/more"
+          data-target="past-bookings-list"
+          data-page-size="<%= pageSize %>"
+          data-skip="<%= pastNextSkip %>"
+        >
+          Load more
+        </button>
+      <% } %>
     <% } %>
   </section>
 </section>

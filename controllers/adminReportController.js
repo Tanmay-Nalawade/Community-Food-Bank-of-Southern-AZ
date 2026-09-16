@@ -1,8 +1,18 @@
 const Vehicle = require("../models/vehicle");
 const Reservation = require("../models/reservation");
 const AccessLog = require("../models/accessLog");
+const { fetchPage, PAGE_SIZE } = require("../utils/pagination");
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+
+function fetchAccessLogs(skip, limit) {
+  return AccessLog.find({})
+    .populate("userId", "firstName lastName email")
+    .populate("vehicleId", "make model licensePlate")
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
+}
 
 exports.index = async (req, res) => {
   const vehicles = await Vehicle.find({}).sort({ make: 1, model: 1 });
@@ -45,16 +55,23 @@ exports.index = async (req, res) => {
     })
     .sort((a, b) => b.bookingCount - a.bookingCount);
 
-  const accessLogs = await AccessLog.find({})
-    .populate("userId", "firstName lastName email")
-    .populate("vehicleId", "make model licensePlate")
-    .sort({ createdAt: -1 })
-    .limit(100);
+  const { items: accessLogs, hasMore, nextSkip } = await fetchPage(fetchAccessLogs, 0);
 
   res.render("admin/reports/index", {
     title: "Reports",
     vehicleReport,
     accessLogs,
+    hasMore,
+    nextSkip,
+    pageSize: PAGE_SIZE,
     activeNav: "admin-reports",
   });
+};
+
+exports.more = async (req, res) => {
+  const skip = Math.max(0, Number(req.query.skip) || 0);
+  const { items: accessLogs, hasMore } = await fetchPage(fetchAccessLogs, skip);
+
+  res.set("X-Has-More", hasMore ? "1" : "0");
+  res.render("admin/reports/_access-log-rows", { accessLogs });
 };

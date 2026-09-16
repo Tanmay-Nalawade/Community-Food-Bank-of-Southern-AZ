@@ -53,25 +53,24 @@
             <th>Actions</th>
           </tr>
         </thead>
-        <tbody>
-          <% vehicles.forEach((vehicle) => { %>
-            <tr>
-              <td>
-                <%= vehicle.year ? vehicle.year + " " : "" %><%= vehicle.make %> <%= vehicle.model %>
-              </td>
-              <td><%= vehicle.licensePlate %></td>
-              <td><%= vehicle.keyCafeKeyId %></td>
-              <td><%= vehicle.currentMileage.toLocaleString() %> mi</td>
-              <td>
-                <%- include('../../partials/status-pill', { value: vehicle.status }) %>
-              </td>
-              <td class="admin-table__actions">
-                <a class="admin-table__btn admin-table__btn--edit" href="/admin/vehicles/<%= vehicle._id %>">Manage</a>
-              </td>
-            </tr>
-          <% }) %>
+        <tbody id="vehicles-body">
+          <%- include('_rows', { vehicles }) %>
         </tbody>
       </table>
     </div>
+
+    <% if (hasMore) { %>
+      <button
+        class="admin-table__btn admin-table__btn--edit load-more-btn"
+        type="button"
+        data-load-more
+        data-url="<%= moreUrl %>"
+        data-target="vehicles-body"
+        data-page-size="<%= pageSize %>"
+        data-skip="<%= nextSkip %>"
+      >
+        Load more
+      </button>
+    <% } %>
   <% } %>
 </section>

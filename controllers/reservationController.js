@@ -6,9 +6,36 @@ const {
   revokeReservationAccess,
 } = require("../services/reservationKeycafe");
 const { sendBookingConfirmation } = require("../services/reservationNotifications");
+const { fetchPage, PAGE_SIZE } = require("../utils/pagination");
 
 const CANCELABLE_STATUSES = ["Pending", "Reserved"];
 const REPORTABLE_STATUSES = ["Active", "Completed"];
+const CURRENT_STATUSES = ["Reserved", "Active"];
+const UPCOMING_STATUSES = ["Pending", "Reserved", "Active"];
+
+// A driver's current/upcoming bookings are naturally small (bounded by how
+// many trips one person can have going on or scheduled at once), so those
+// are fetched in full. Past bookings accumulate for as long as someone's
+// been on staff, so that bucket is the one that needs pagination.
+function buildPastFilter(userId, now) {
+  return {
+    userId,
+    $or: [
+      { status: { $in: ["Completed", "Cancelled", "Denied"] } },
+      { status: "Pending", requestedStartTime: { $lte: now } },
+      { status: { $in: CURRENT_STATUSES }, requestedEndTime: { $lte: now } },
+    ],
+  };
+}
+
+function fetchPastBookings(userId, now) {
+  return (skip, limit) =>
+    Reservation.find(buildPastFilter(userId, now))
+      .populate("vehicleId")
+      .sort({ requestedStartTime: -1 })
+      .skip(skip)
+      .limit(limit);
+}
 
 exports.createRequest = async (req, res) => {
   const booking = parseBookingWindow(
@@ -77,40 +104,54 @@ exports.createRequest = async (req, res) => {
 };
 
 exports.mine = async (req, res) => {
+  const userId = res.locals.currentUser._id;
   const now = new Date();
-  const reservations = await Reservation.find({
-    userId: res.locals.currentUser._id,
-  })
-    .populate("vehicleId")
-    .sort({ requestedStartTime: 1 });
 
-  const currentBookings = reservations.filter(
-    (reservation) =>
-      ["Reserved", "Active"].includes(reservation.status) &&
-      reservation.requestedStartTime <= now &&
-      reservation.requestedEndTime > now,
-  );
+  const [currentBookings, upcomingBookings, pastPage] = await Promise.all([
+    Reservation.find({
+      userId,
+      status: { $in: CURRENT_STATUSES },
+      requestedStartTime: { $lte: now },
+      requestedEndTime: { $gt: now },
+    })
+      .populate("vehicleId")
+      .sort({ requestedStartTime: 1 }),
 
-  const upcomingBookings = reservations.filter(
-    (reservation) =>
-      ["Pending", "Reserved", "Active"].includes(reservation.status) &&
-      reservation.requestedStartTime > now,
-  );
+    Reservation.find({
+      userId,
+      status: { $in: UPCOMING_STATUSES },
+      requestedStartTime: { $gt: now },
+    })
+      .populate("vehicleId")
+      .sort({ requestedStartTime: 1 }),
 
-  const pastBookings = reservations
-    .filter(
-      (reservation) =>
-        !currentBookings.includes(reservation) && !upcomingBookings.includes(reservation),
-    )
-    .reverse();
+    fetchPage(fetchPastBookings(userId, now), 0),
+  ]);
 
   res.render("reservations/mine", {
     title: "My Dashboard",
     currentBookings,
     upcomingBookings,
-    pastBookings,
+    pastBookings: pastPage.items,
+    pastHasMore: pastPage.hasMore,
+    pastNextSkip: pastPage.nextSkip,
+    pageSize: PAGE_SIZE,
     activeNav: "dashboard",
   });
+};
+
+exports.morePast = async (req, res) => {
+  const userId = res.locals.currentUser._id;
+  const now = new Date();
+  const skip = Math.max(0, Number(req.query.skip) || 0);
+
+  const { items: reservations, hasMore } = await fetchPage(
+    fetchPastBookings(userId, now),
+    skip,
+  );
+
+  res.set("X-Has-More", hasMore ? "1" : "0");
+  res.render("partials/_booking-cards", { reservations, muted: true });
 };
 
 exports.editForm = async (req, res) => {
