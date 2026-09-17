@@ -4,10 +4,19 @@ function isConfigured() {
   return Boolean(process.env.KEYCAFE_EMAIL && process.env.KEYCAFE_TOKEN);
 }
 
+// KeyCafe supports two non-interchangeable Basic Auth schemes for the same
+// KEYCAFE_TOKEN value: the newer "API Token" (username "{email}/token") and
+// the older, still-commonly-issued "API Key" (username "{email}/key", per
+// KeyCafe's dashboard — despite their docs calling it deprecated in favor of
+// tokens). Sending the wrong suffix for what you actually have fails with a
+// 401 even though the credential itself is valid. Default to "token" (the
+// recommended scheme) but let KEYCAFE_AUTH_TYPE=key override it for accounts
+// that only have a Key.
 function getAuthHeader() {
   const email = process.env.KEYCAFE_EMAIL;
   const token = process.env.KEYCAFE_TOKEN;
-  const credentials = Buffer.from(`${email}/token:${token}`).toString("base64");
+  const authType = (process.env.KEYCAFE_AUTH_TYPE || "token").toLowerCase();
+  const credentials = Buffer.from(`${email}/${authType}:${token}`).toString("base64");
   return `Basic ${credentials}`;
 }
 
