@@ -81,7 +81,7 @@ exports.postAddVehicle = async (req, res) => {
 
   await newVehicle.save();
   req.flash("success", `${newVehicle.make} ${newVehicle.model} added to the fleet.`);
-  res.redirect("/vehicles");
+  res.redirect(`/admin/vehicles/${newVehicle._id}`);
 };
 
 exports.index = async (req, res) => {
