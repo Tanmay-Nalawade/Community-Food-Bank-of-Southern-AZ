@@ -29,32 +29,34 @@
             <%- include('../partials/status-pill', { value: vehicle.status }) %>
           </header>
 
-          <dl class="vehicle-detail__card">
-            <div>
-              <dt>Make</dt>
-              <dd><%= vehicle.make %></dd>
-            </div>
-            <div>
-              <dt>Model</dt>
-              <dd><%= vehicle.model %></dd>
-            </div>
-            <div>
-              <dt>Year</dt>
-              <dd><%= vehicle.year || "—" %></dd>
-            </div>
-            <div>
-              <dt>License plate</dt>
-              <dd><%= vehicle.licensePlate %></dd>
-            </div>
-            <div>
-              <dt>Current mileage</dt>
-              <dd><%= vehicle.currentMileage.toLocaleString() %> mi</dd>
-            </div>
-            <div>
-              <dt>KeyCafe key ID</dt>
-              <dd><%= vehicle.keyCafeKeyId %></dd>
-            </div>
-          </dl>
+          <div class="vehicle-detail__card">
+            <dl>
+              <div>
+                <dt>Make</dt>
+                <dd><%= vehicle.make %></dd>
+              </div>
+              <div>
+                <dt>Model</dt>
+                <dd><%= vehicle.model %></dd>
+              </div>
+              <div>
+                <dt>Year</dt>
+                <dd><%= vehicle.year || "—" %></dd>
+              </div>
+              <div>
+                <dt>License plate</dt>
+                <dd><%= vehicle.licensePlate %></dd>
+              </div>
+              <div>
+                <dt>Current mileage</dt>
+                <dd><%= vehicle.currentMileage.toLocaleString() %> mi</dd>
+              </div>
+              <div>
+                <dt>KeyCafe key ID</dt>
+                <dd><%= vehicle.keyCafeKeyId %></dd>
+              </div>
+            </dl>
+          </div>
         </div>
       </div>
 

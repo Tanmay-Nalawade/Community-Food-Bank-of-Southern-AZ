@@ -7,26 +7,35 @@
   <div class="vehicle-detail__card">
     <h2 class="vehicle-detail__section-title">Configuration</h2>
 
-    <p>
-      KeyCafe API credentials:
-      <%- include('../../partials/status-pill', {
-        slug: keycafeConfigured ? 'active-account' : 'inactive-account',
-        label: keycafeConfigured ? 'Configured' : 'Not configured (using mock access codes)',
-      }) %>
-    </p>
-    <p>
-      Webhook credentials:
-      <%- include('../../partials/status-pill', {
-        slug: webhookConfigured ? 'active-account' : 'inactive-account',
-        label: webhookConfigured ? 'Configured' : 'Not configured',
-      }) %>
-    </p>
-    <p>Timezone: <strong><%= keycafeTimezone %></strong></p>
+    <dl>
+      <div>
+        <dt>KeyCafe API credentials</dt>
+        <dd>
+          <%- include('../../partials/status-pill', {
+            slug: keycafeConfigured ? 'active-account' : 'inactive-account',
+            label: keycafeConfigured ? 'Configured' : 'Not configured (using mock access codes)',
+          }) %>
+        </dd>
+      </div>
+      <div>
+        <dt>Webhook credentials</dt>
+        <dd>
+          <%- include('../../partials/status-pill', {
+            slug: webhookConfigured ? 'active-account' : 'inactive-account',
+            label: webhookConfigured ? 'Configured' : 'Not configured',
+          }) %>
+        </dd>
+      </div>
+      <div>
+        <dt>Timezone</dt>
+        <dd><strong><%= keycafeTimezone %></strong></dd>
+      </div>
+    </dl>
 
-    <form action="/it/api-status/test" method="POST">
+    <form class="admin-issue-form" action="/it/api-status/test" method="POST">
       <button class="auth-form__submit" type="submit">Test KeyCafe Connection</button>
     </form>
-    <p class="vehicle-detail__empty">
+    <p class="vehicle-detail__empty admin-hint">
       Runs a live, read-only request to KeyCafe to confirm the configured credentials work. No data is changed.
     </p>
   </div>
