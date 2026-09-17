@@ -30,6 +30,11 @@ router.post(
 );
 router.get("/vehicles/:id", requireAdmin, adminVehicleController.show);
 router.put("/vehicles/:id", requireAdmin, adminVehicleController.update);
+router.post(
+  "/vehicles/:id/keycafe-key",
+  requireAdmin,
+  adminVehicleController.createKeyCafeKey,
+);
 router.get(
   "/vehicles/:id/reservations/more",
   requireAdmin,

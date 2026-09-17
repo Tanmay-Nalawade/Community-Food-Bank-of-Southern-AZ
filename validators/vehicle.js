@@ -18,10 +18,6 @@ const addVehicleSchema = Joi.object({
     "string.empty": "License plate is required.",
     "any.required": "License plate is required.",
   }),
-  keyCafeKeyId: Joi.string().trim().min(1).max(100).required().messages({
-    "string.empty": "KeyCafe key ID is required.",
-    "any.required": "KeyCafe key ID is required.",
-  }),
   photoUrl: Joi.string()
     .trim()
     .uri({ scheme: ["https"] })

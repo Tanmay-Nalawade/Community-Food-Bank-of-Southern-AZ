@@ -41,11 +41,6 @@
           </div>
         </div>
 
-        <div class="auth-form__group">
-          <label class="auth-form__label" for="keyCafeKeyId">KeyCafe key ID</label>
-          <input class="auth-form__input" type="text" id="keyCafeKeyId" name="keyCafeKeyId" value="<%= vehicle.keyCafeKeyId %>" required />
-        </div>
-
         <div class="auth-form__row">
           <div class="auth-form__group">
             <label class="auth-form__label" for="currentMileage">Current mileage</label>
@@ -87,6 +82,18 @@
 
         <button class="auth-form__submit" type="submit">Save changes</button>
       </form>
+
+      <div class="vehicle-detail__keycafe admin-hint">
+        <% if (hasRealKeyCafeKey) { %>
+          <p>KeyCafe Key: <strong><%= vehicle.keyCafeKeyId %></strong> (kept in sync automatically)</p>
+        <% } else { %>
+          <p>KeyCafe Key: <strong><%= vehicle.keyCafeKeyId %></strong> (placeholder — not yet linked to a real KeyCafe key)</p>
+          <form method="POST" action="/admin/vehicles/<%= vehicle._id %>/keycafe-key">
+            <button class="admin-table__btn admin-table__btn--edit" type="submit">Create KeyCafe Key</button>
+          </form>
+        <% } %>
+      </div>
+
       <p class="vehicle-detail__empty admin-hint">
         To retire a vehicle permanently, set its status to "Out of Service" — deleting vehicles isn't supported because it would break the reservation history below.
       </p>

@@ -2,6 +2,11 @@ const Vehicle = require("../../models/vehicle");
 const Reservation = require("../../models/reservation");
 const { renderError } = require("../../utils/httpError");
 const { fetchPage, PAGE_SIZE } = require("../../utils/pagination");
+const {
+  isRealKeyCafeId,
+  ensureVehicleKey,
+  syncVehicleKeyName,
+} = require("../../services/keycafe/vehicleKeySync");
 
 function escapeRegex(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -46,17 +51,34 @@ exports.getAddVehicle = (req, res) => {
 };
 
 exports.postAddVehicle = async (req, res) => {
-  const { make, model, year, licensePlate, keyCafeKeyId, photoUrl, currentMileage } =
-    req.body;
+  const { make, model, year, licensePlate, photoUrl, currentMileage } = req.body;
   const newVehicle = new Vehicle({
     make,
     model,
     year: year ? Number(year) : undefined,
     licensePlate,
-    keyCafeKeyId,
     photoUrl: (photoUrl || "").trim(),
     currentMileage: Number(currentMileage) || 0,
   });
+
+  try {
+    newVehicle.keyCafeKeyId = await ensureVehicleKey(newVehicle);
+  } catch (error) {
+    console.error("Failed to create KeyCafe key for new vehicle:", error);
+    req.flash(
+      "error",
+      "Vehicle was not added: could not create its KeyCafe key. Check API Status and try again.",
+    );
+    return res.redirect("/admin/vehicles/add");
+  }
+
+  // KeyCafe not configured (dev/mock mode) — a placeholder keeps the
+  // required schema field satisfied, the same spirit as this app's other
+  // mock fallbacks (e.g. mock KeyCafe booking codes) when unconfigured.
+  if (!newVehicle.keyCafeKeyId) {
+    newVehicle.keyCafeKeyId = `PENDING-${Date.now()}`;
+  }
+
   await newVehicle.save();
   req.flash("success", `${newVehicle.make} ${newVehicle.model} added to the fleet.`);
   res.redirect("/vehicles");
@@ -121,6 +143,7 @@ exports.show = async (req, res) => {
     hasMore,
     nextSkip,
     pageSize: PAGE_SIZE,
+    hasRealKeyCafeKey: isRealKeyCafeId(vehicle.keyCafeKeyId),
     activeNav: "admin-vehicles",
   });
 };
@@ -159,7 +182,6 @@ exports.update = async (req, res) => {
     model,
     year,
     licensePlate,
-    keyCafeKeyId,
     currentMileage,
     status,
     nextMaintenanceDueMileage,
@@ -170,7 +192,6 @@ exports.update = async (req, res) => {
   vehicle.model = model;
   vehicle.year = year ? Number(year) : undefined;
   vehicle.licensePlate = licensePlate;
-  vehicle.keyCafeKeyId = keyCafeKeyId;
   vehicle.currentMileage = Number(currentMileage) || 0;
   vehicle.status = status;
   vehicle.nextMaintenanceDueMileage = nextMaintenanceDueMileage
@@ -181,8 +202,38 @@ exports.update = async (req, res) => {
     : undefined;
 
   await vehicle.save();
+  await syncVehicleKeyName(vehicle);
 
   req.flash("success", "Vehicle updated.");
+  res.redirect(`/admin/vehicles/${vehicle._id}`);
+};
+
+exports.createKeyCafeKey = async (req, res) => {
+  const vehicle = await Vehicle.findById(req.params.id);
+
+  if (!vehicle) {
+    return renderError(res, 404, "Vehicle not found.");
+  }
+
+  if (isRealKeyCafeId(vehicle.keyCafeKeyId)) {
+    req.flash("error", "This vehicle already has a real KeyCafe key.");
+    return res.redirect(`/admin/vehicles/${vehicle._id}`);
+  }
+
+  try {
+    const keyId = await ensureVehicleKey(vehicle);
+    if (!keyId) {
+      req.flash("error", "KeyCafe isn't configured — set KEYCAFE_EMAIL/KEYCAFE_TOKEN first.");
+      return res.redirect(`/admin/vehicles/${vehicle._id}`);
+    }
+    vehicle.keyCafeKeyId = keyId;
+    await vehicle.save();
+    req.flash("success", "KeyCafe key created and linked to this vehicle.");
+  } catch (error) {
+    console.error("Failed to create KeyCafe key:", error);
+    req.flash("error", "Could not create a KeyCafe key. Check API Status and try again.");
+  }
+
   res.redirect(`/admin/vehicles/${vehicle._id}`);
 };
 
