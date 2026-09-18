@@ -29,6 +29,13 @@
           </label>
         </div>
 
+        <div class="auth-form__group">
+          <label class="auth-form__label">
+            <input type="checkbox" name="emailVerified" <%= editUser.emailVerified ? "checked" : "" %> />
+            Email verified
+          </label>
+        </div>
+
         <button class="auth-form__submit" type="submit">Save changes</button>
       </form>
     <% } %>

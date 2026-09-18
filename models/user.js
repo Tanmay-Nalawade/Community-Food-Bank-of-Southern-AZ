@@ -13,6 +13,19 @@ const userSchema = new Schema(
       default: "Staff",
     },
     isActive: { type: Boolean, default: true },
+
+    emailVerified: { type: Boolean, default: false },
+    // select: false keeps these out of normal User.find() results, same
+    // spirit as never exposing password-adjacent secrets by default —
+    // callers that need to check a token explicitly .select() it back in.
+    emailVerification: {
+      tokenHash: { type: String, select: false },
+      expiresAt: { type: Date, select: false },
+    },
+    passwordReset: {
+      tokenHash: { type: String, select: false },
+      expiresAt: { type: Date, select: false },
+    },
   },
   { timestamps: true },
 );

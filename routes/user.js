@@ -3,7 +3,13 @@ const router = express.Router();
 const { requireLogin } = require("../middleware/auth");
 const { wrapControllerAsync } = require("../utils/asyncHandler");
 const { validateBody } = require("../middleware/validate");
-const { loginSchema, registerSchema } = require("../validators/user");
+const {
+  loginSchema,
+  registerSchema,
+  forgotPasswordSchema,
+  resendVerificationSchema,
+  resetPasswordSchema,
+} = require("../validators/user");
 const users = wrapControllerAsync(require("../controllers/user"));
 
 router.get("/", requireLogin, users.home);
@@ -16,5 +22,26 @@ router.post(
   users.register,
 );
 router.post("/logout", users.logout);
+
+router.get("/forgot-password", users.forgotPasswordForm);
+router.post(
+  "/forgot-password",
+  validateBody(forgotPasswordSchema, { redirect: "/forgot-password" }),
+  users.forgotPasswordSubmit,
+);
+router.get("/reset-password/:token", users.resetPasswordForm);
+router.post(
+  "/reset-password/:token",
+  validateBody(resetPasswordSchema, { redirect: (req) => `/reset-password/${req.params.token}` }),
+  users.resetPasswordSubmit,
+);
+
+router.get("/verify-email/pending", users.verifyEmailPendingForm);
+router.post(
+  "/verify-email/resend",
+  validateBody(resendVerificationSchema, { redirect: "/verify-email/pending" }),
+  users.resendVerification,
+);
+router.get("/verify-email/:token", users.verifyEmail);
 
 module.exports = router;

@@ -1,0 +1,38 @@
+<% layout('layouts/boilerplate') %>
+
+<section class="auth-page">
+  <div class="auth-card">
+    <h1 class="auth-card__title">Verify Your Email</h1>
+
+    <% if (typeof invalidToken !== "undefined" && invalidToken) { %>
+      <p class="auth-card__subtitle">
+        That verification link is invalid or has expired. Enter your email below to get a new one.
+      </p>
+    <% } else { %>
+      <p class="auth-card__subtitle">
+        We've sent a verification link to your email. Click it to finish setting up your account before logging in.
+      </p>
+    <% } %>
+
+    <form class="auth-form" action="/verify-email/resend" method="POST">
+      <div class="auth-form__group">
+        <label class="auth-form__label" for="email">Email</label>
+        <input
+          class="auth-form__input"
+          type="email"
+          id="email"
+          name="email"
+          value="<%= email %>"
+          autocomplete="email"
+          required
+        />
+      </div>
+
+      <button class="auth-form__submit" type="submit">Resend Verification Email</button>
+    </form>
+
+    <p class="auth-card__footer">
+      <a href="/login">Back to log in</a>
+    </p>
+  </div>
+</section>

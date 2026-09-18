@@ -97,6 +97,7 @@ exports.update = async (req, res) => {
 
   user.role = req.body.role;
   user.isActive = req.body.isActive === "on";
+  user.emailVerified = req.body.emailVerified === "on";
   await user.save();
 
   req.flash("success", "User updated.");
