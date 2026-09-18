@@ -11,33 +11,35 @@
   </div>
 
   <div class="vehicle-detail__card admin-history-card mileage-log-card">
-    <table class="admin-table mileage-log-header-table">
-      <tbody>
-        <tr>
-          <th>Vehicle</th>
-          <td>
-            <%= vehicle.year ? vehicle.year + " " : "" %><%= vehicle.make %> <%= vehicle.model %>
-            (<%= vehicle.licensePlate %>)
-          </td>
-        </tr>
-        <tr>
-          <th>Month</th>
-          <td><%= log.monthLabel %></td>
-        </tr>
-        <tr>
-          <th>Next Maintenance Due Mileage</th>
-          <td>
-            <%= vehicle.nextMaintenanceDueMileage != null ? vehicle.nextMaintenanceDueMileage.toLocaleString() + " mi" : "—" %>
-          </td>
-        </tr>
-        <tr>
-          <th>Next Maintenance Due Date</th>
-          <td>
-            <%= vehicle.nextMaintenanceDueDate ? new Date(vehicle.nextMaintenanceDueDate).toLocaleDateString() : "—" %>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="admin-table-wrap">
+      <table class="admin-table mileage-log-header-table">
+        <tbody>
+          <tr>
+            <th>Vehicle</th>
+            <td>
+              <%= vehicle.year ? vehicle.year + " " : "" %><%= vehicle.make %> <%= vehicle.model %>
+              (<%= vehicle.licensePlate %>)
+            </td>
+          </tr>
+          <tr>
+            <th>Month</th>
+            <td><%= log.monthLabel %></td>
+          </tr>
+          <tr>
+            <th>Next Maintenance Due Mileage</th>
+            <td>
+              <%= vehicle.nextMaintenanceDueMileage != null ? vehicle.nextMaintenanceDueMileage.toLocaleString() + " mi" : "—" %>
+            </td>
+          </tr>
+          <tr>
+            <th>Next Maintenance Due Date</th>
+            <td>
+              <%= vehicle.nextMaintenanceDueDate ? new Date(vehicle.nextMaintenanceDueDate).toLocaleDateString() : "—" %>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
     <div class="mileage-log-page__month-nav no-print">
       <a class="admin-table__btn admin-table__btn--edit" href="?year=<%= prev.year %>&month=<%= prev.month %>">
@@ -71,17 +73,17 @@
           <tbody>
             <% log.rows.forEach((row) => { %>
               <tr>
-                <td><%= new Date(row.date).toLocaleDateString() %></td>
-                <td><%= row.driverInitials %></td>
-                <td><%= row.startMileage != null ? row.startMileage.toLocaleString() : "—" %></td>
-                <td><%= row.endMileage != null ? row.endMileage.toLocaleString() : "—" %></td>
-                <td><%= row.distanceTravelled != null ? row.distanceTravelled.toLocaleString() : "—" %></td>
-                <td><%= row.preTripInspectionPassed === null ? "—" : (row.preTripInspectionPassed ? "Y" : "N") %></td>
-                <td><%= row.fuelLevelEndPercent != null ? row.fuelLevelEndPercent + "%" : "—" %></td>
-                <td><%= row.droppedOffFood ? "Y" : "N" %></td>
-                <td><%= row.pickedUpFood ? "Y" : "N" %></td>
-                <td><%= row.other ? (row.otherNote || "Y") : "N" %></td>
-                <td><%= row.washed ? "Y" : "N" %></td>
+                <td data-label="Date"><%= new Date(row.date).toLocaleDateString() %></td>
+                <td data-label="Driver Initials"><%= row.driverInitials %></td>
+                <td data-label="Start Odometer"><%= row.startMileage != null ? row.startMileage.toLocaleString() : "—" %></td>
+                <td data-label="End Odometer"><%= row.endMileage != null ? row.endMileage.toLocaleString() : "—" %></td>
+                <td data-label="Distance Travelled"><%= row.distanceTravelled != null ? row.distanceTravelled.toLocaleString() : "—" %></td>
+                <td data-label="Pre-Trip Inspection"><%= row.preTripInspectionPassed === null ? "—" : (row.preTripInspectionPassed ? "Y" : "N") %></td>
+                <td data-label="Fuel Level (End) %"><%= row.fuelLevelEndPercent != null ? row.fuelLevelEndPercent + "%" : "—" %></td>
+                <td data-label="Drop off Food"><%= row.droppedOffFood ? "Y" : "N" %></td>
+                <td data-label="Pick up Food"><%= row.pickedUpFood ? "Y" : "N" %></td>
+                <td data-label="Other"><%= row.other ? (row.otherNote || "Y") : "N" %></td>
+                <td data-label="Washed"><%= row.washed ? "Y" : "N" %></td>
               </tr>
             <% }) %>
           </tbody>

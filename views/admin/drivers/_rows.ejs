@@ -1,10 +1,10 @@
 <% drivers.forEach((driver) => { %>
   <tr>
-    <td><%= driver.firstName %> <%= driver.lastName %></td>
-    <td><%= driver.email %></td>
-    <td><%= driver.role %></td>
-    <td><%= driver.isActive ? "Active" : "Inactive" %></td>
-    <td class="admin-table__actions">
+    <td data-label="Name"><%= driver.firstName %> <%= driver.lastName %></td>
+    <td data-label="Email"><%= driver.email %></td>
+    <td data-label="Role"><%= driver.role %></td>
+    <td data-label="Status"><%= driver.isActive ? "Active" : "Inactive" %></td>
+    <td class="admin-table__actions" data-label="Actions">
       <a class="admin-table__btn admin-table__btn--edit" href="/admin/drivers/<%= driver._id %>">View</a>
     </td>
   </tr>

@@ -1,23 +1,23 @@
 <% reservations.forEach((reservation) => { %>
   <tr>
-    <td>
+    <td data-label="Staff">
       <%= reservation.userId.firstName %> <%= reservation.userId.lastName %><br />
       <span class="admin-table__subtext"><%= reservation.userId.email %></span>
     </td>
-    <td>
+    <td data-label="Vehicle">
       <%= reservation.vehicleId.year ? reservation.vehicleId.year + " " : "" %>
       <%= reservation.vehicleId.make %> <%= reservation.vehicleId.model %><br />
       <span class="admin-table__subtext"><%= reservation.vehicleId.licensePlate %></span>
     </td>
-    <td>
+    <td data-label="When">
       <%= new Date(reservation.requestedStartTime).toLocaleString() %>
       &ndash;
       <%= new Date(reservation.requestedEndTime).toLocaleString() %>
     </td>
-    <td>
+    <td data-label="Status">
       <%- include('../../partials/status-pill', { value: reservation.status }) %>
     </td>
-    <td class="admin-table__actions">
+    <td class="admin-table__actions" data-label="Actions">
       <a class="admin-table__btn admin-table__btn--edit" href="/admin/reservations/<%= reservation._id %>">View</a>
     </td>
   </tr>

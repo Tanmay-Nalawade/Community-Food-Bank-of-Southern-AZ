@@ -21,18 +21,18 @@
         <tbody>
           <% vehicleReport.forEach((row) => { %>
             <tr>
-              <td>
+              <td data-label="Vehicle">
                 <a href="/admin/vehicles/<%= row.vehicle._id %>">
                   <%= row.vehicle.year ? row.vehicle.year + " " : "" %><%= row.vehicle.make %> <%= row.vehicle.model %>
                 </a>
                 <br />
                 <span class="admin-table__subtext"><%= row.vehicle.licensePlate %></span>
               </td>
-              <td><%= row.vehicle.currentMileage.toLocaleString() %> mi</td>
-              <td><%= row.bookingCount %></td>
-              <td><%= row.totalHours %></td>
-              <td><%= row.lastBookedAt ? new Date(row.lastBookedAt).toLocaleDateString() : "Never" %></td>
-              <td>
+              <td data-label="Current mileage"><%= row.vehicle.currentMileage.toLocaleString() %> mi</td>
+              <td data-label="Bookings"><%= row.bookingCount %></td>
+              <td data-label="Total hours booked"><%= row.totalHours %></td>
+              <td data-label="Last booked"><%= row.lastBookedAt ? new Date(row.lastBookedAt).toLocaleDateString() : "Never" %></td>
+              <td data-label="Idle 30+ days">
                 <% if (row.idle) { %>
                   <%- include('../../partials/status-pill', { slug: 'maintenance', label: 'Idle' }) %>
                 <% } else { %>

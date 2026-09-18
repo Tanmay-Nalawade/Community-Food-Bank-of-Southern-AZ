@@ -1,7 +1,7 @@
 <% logs.forEach((log) => { %>
   <tr>
-    <td><%= new Date(log.createdAt).toLocaleString() %></td>
-    <td>
+    <td data-label="When"><%= new Date(log.createdAt).toLocaleString() %></td>
+    <td data-label="User">
       <% if (log.userId) { %>
         <%= log.userId.firstName %> <%= log.userId.lastName %>
         <br />
@@ -10,7 +10,7 @@
         —
       <% } %>
     </td>
-    <td><%= log.action %></td>
-    <td><%= log.detail || "—" %></td>
+    <td data-label="Action"><%= log.action %></td>
+    <td data-label="Detail"><%= log.detail || "—" %></td>
   </tr>
 <% }) %>

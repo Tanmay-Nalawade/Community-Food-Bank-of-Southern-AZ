@@ -1,15 +1,15 @@
 <% vehicles.forEach((vehicle) => { %>
   <tr>
-    <td>
+    <td data-label="Vehicle">
       <%= vehicle.year ? vehicle.year + " " : "" %><%= vehicle.make %> <%= vehicle.model %>
     </td>
-    <td><%= vehicle.licensePlate %></td>
-    <td><%= vehicle.keyCafeKeyId %></td>
-    <td><%= vehicle.currentMileage.toLocaleString() %> mi</td>
-    <td>
+    <td data-label="Plate"><%= vehicle.licensePlate %></td>
+    <td data-label="KeyCafe key ID"><%= vehicle.keyCafeKeyId %></td>
+    <td data-label="Mileage"><%= vehicle.currentMileage.toLocaleString() %> mi</td>
+    <td data-label="Status">
       <%- include('../../partials/status-pill', { value: vehicle.status }) %>
     </td>
-    <td class="admin-table__actions">
+    <td class="admin-table__actions" data-label="Actions">
       <a class="admin-table__btn admin-table__btn--edit" href="/admin/vehicles/<%= vehicle._id %>">Manage</a>
     </td>
   </tr>

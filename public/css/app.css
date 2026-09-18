@@ -1,3 +1,9 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 @font-face {
   font-family: "Oswald";
   src: url("/fonts/oswald-400.woff2") format("woff2");
@@ -133,7 +139,7 @@ textarea {
 
 .page-content h1 {
   font-family: var(--font-display);
-  font-size: 2.5rem;
+  font-size: clamp(1.75rem, 1.35rem + 2vw, 2.5rem);
   font-weight: 600;
   letter-spacing: 0.01em;
   color: var(--cfb-ink);
@@ -356,7 +362,7 @@ textarea {
 }
 
 .vehicle-detail__header h1 {
-  font-size: 2rem;
+  font-size: clamp(1.5rem, 1.2rem + 1.5vw, 2rem);
 }
 
 .vehicle-detail__overview {
@@ -424,9 +430,10 @@ textarea {
 
 .vehicle-detail__card dl > div {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
-  gap: 1.25rem;
+  gap: 0.35rem 1.25rem;
   padding: 0.7rem 0;
   border-bottom: 1px solid var(--cfb-line);
 }
@@ -583,6 +590,84 @@ textarea {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+}
+
+@media (max-width: 720px) {
+  .admin-table-wrap {
+    overflow-x: visible;
+    border: none;
+    background: none;
+  }
+
+  .admin-table:not(.mileage-log-header-table) {
+    display: block;
+    border-collapse: separate;
+  }
+
+  .admin-table:not(.mileage-log-header-table) thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+    padding: 0;
+    margin: -1px;
+  }
+
+  .admin-table:not(.mileage-log-header-table) tbody,
+  .admin-table:not(.mileage-log-header-table) tr {
+    display: block;
+    width: 100%;
+  }
+
+  .admin-table:not(.mileage-log-header-table) tr {
+    background: #fff;
+    border: 1px solid var(--cfb-line);
+    border-radius: 2px;
+    padding: 0 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .admin-table:not(.mileage-log-header-table) tbody tr:last-child {
+    margin-bottom: 0;
+  }
+
+  .admin-table:not(.mileage-log-header-table) td {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    text-align: right;
+    gap: 1rem;
+    padding: 0.65rem 0;
+  }
+
+  .admin-table:not(.mileage-log-header-table) td:not(:last-child) {
+    border-bottom: 1px solid var(--cfb-line);
+  }
+
+  .admin-table:not(.mileage-log-header-table) td::before {
+    content: attr(data-label);
+    flex-shrink: 0;
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--cfb-maroon);
+    text-align: left;
+  }
+
+  .admin-table:not(.mileage-log-header-table) td.admin-table__actions {
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .admin-table:not(.mileage-log-header-table) td.admin-table__actions::before {
+    flex-basis: 100%;
+    margin-bottom: 0.25rem;
+  }
 }
 
 .admin-table__btn {
@@ -1078,7 +1163,7 @@ textarea {
 
 .stat-tile__value {
   font-family: var(--font-display);
-  font-size: 2.75rem;
+  font-size: clamp(2rem, 1.5rem + 2.5vw, 2.75rem);
   font-weight: 600;
   color: var(--cfb-ink);
   line-height: 1;
@@ -1165,8 +1250,16 @@ textarea {
   white-space: nowrap;
 }
 
+@media (max-width: 640px) {
+  .mileage-log-header-table th {
+    width: auto;
+    white-space: normal;
+  }
+}
+
 .mileage-log-page__month-nav {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.75rem;
   margin-bottom: 1.25rem;
 }

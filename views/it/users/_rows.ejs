@@ -1,17 +1,17 @@
 <% users.forEach((user) => { %>
   <tr>
-    <td><%= user.firstName %> <%= user.lastName %></td>
-    <td><%= user.email %></td>
-    <td>
+    <td data-label="Name"><%= user.firstName %> <%= user.lastName %></td>
+    <td data-label="Email"><%= user.email %></td>
+    <td data-label="Role">
       <%- include('../../partials/status-pill', { value: user.role }) %>
     </td>
-    <td>
+    <td data-label="Status">
       <%- include('../../partials/status-pill', {
         slug: user.isActive ? 'active-account' : 'inactive-account',
         label: user.isActive ? 'Active' : 'Inactive',
       }) %>
     </td>
-    <td class="admin-table__actions">
+    <td class="admin-table__actions" data-label="Actions">
       <a class="admin-table__btn admin-table__btn--edit" href="/it/users/<%= user._id %>/edit">Edit</a>
     </td>
   </tr>

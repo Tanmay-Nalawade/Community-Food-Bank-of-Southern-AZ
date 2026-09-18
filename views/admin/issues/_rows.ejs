@@ -1,26 +1,26 @@
 <% issues.forEach(({ vehicle, issue }) => { %>
   <tr>
-    <td>
+    <td data-label="Status">
       <% if (issue.reviewed) { %>
         <%- include('../../partials/status-pill', { slug: 'completed', label: 'Reviewed' }) %>
       <% } else { %>
         <%- include('../../partials/status-pill', { slug: 'pending', label: 'New' }) %>
       <% } %>
     </td>
-    <td>
+    <td data-label="Vehicle">
       <%= vehicle.year ? vehicle.year + " " : "" %><%= vehicle.make %> <%= vehicle.model %><br />
       <span class="admin-table__subtext"><%= vehicle.licensePlate %></span>
     </td>
-    <td><%= issue.description %></td>
-    <td>
+    <td data-label="Issue"><%= issue.description %></td>
+    <td data-label="Reported by">
       <% if (issue.reportedBy) { %>
         <%= issue.reportedBy.firstName %> <%= issue.reportedBy.lastName %>
       <% } else { %>
         —
       <% } %>
     </td>
-    <td><%= new Date(issue.reportedAt).toLocaleString() %></td>
-    <td class="admin-table__actions">
+    <td data-label="Reported"><%= new Date(issue.reportedAt).toLocaleString() %></td>
+    <td class="admin-table__actions" data-label="Actions">
       <% if (!issue.reviewed) { %>
         <form action="/admin/issues/<%= vehicle._id %>/<%= issue._id %>/review" method="POST">
           <button class="admin-table__btn admin-table__btn--approve" type="submit">Mark Reviewed</button>

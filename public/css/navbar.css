@@ -121,6 +121,7 @@
 
 .site-navbar__account {
   position: relative;
+  margin-left: auto;
 }
 
 .site-navbar__account-toggle {
@@ -247,26 +248,79 @@
   font-style: italic;
 }
 
-@media (max-width: 640px) {
+.site-navbar__menu-toggle-wrap {
+  display: none;
+}
+
+.site-navbar__menu-toggle {
+  list-style: none;
+  cursor: pointer;
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--cfb-line);
+  border-radius: 2px;
+  background: none;
+}
+
+.site-navbar__menu-toggle::-webkit-details-marker {
+  display: none;
+}
+
+.site-navbar__menu-bar {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: var(--cfb-ink);
+}
+
+@media (max-width: 900px) {
   .site-navbar__inner {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
+    flex-wrap: wrap;
+    row-gap: 1rem;
   }
 
   .site-navbar__brand {
-    max-width: 100%;
+    width: auto;
+    max-width: min(280px, 60vw);
   }
 
   .site-navbar__logo {
-    height: 64px;
+    height: auto;
+    width: 100%;
+    min-width: 0;
     max-width: 100%;
   }
 
+  .site-navbar__menu-toggle-wrap {
+    display: block;
+    margin-left: auto;
+  }
+
   .site-navbar__nav {
+    display: none;
     width: 100%;
-    justify-content: flex-start;
-    flex-wrap: wrap;
+    order: 1;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.25rem;
+  }
+
+  .site-navbar__menu-toggle-wrap[open] ~ .site-navbar__nav {
+    display: flex;
+  }
+
+  .site-navbar__link {
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--cfb-line);
+  }
+
+  .site-navbar__btn {
+    align-self: flex-start;
   }
 
   .site-navbar__account {

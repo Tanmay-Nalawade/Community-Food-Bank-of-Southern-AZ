@@ -61,7 +61,7 @@
 
 .auth-card__title {
   font-family: var(--font-display);
-  font-size: 1.9rem;
+  font-size: clamp(1.5rem, 1.2rem + 1.5vw, 1.9rem);
   font-weight: 600;
   color: var(--cfb-ink);
   margin: 0 0 0.35rem;
@@ -69,7 +69,7 @@
 }
 
 .auth-card--booking .auth-card__title {
-  font-size: 2.4rem;
+  font-size: clamp(1.85rem, 1.3rem + 2.5vw, 2.4rem);
 }
 
 .auth-card__subtitle {
@@ -246,9 +246,5 @@
 
   .auth-card--booking {
     padding: 2rem 1.5rem 2.25rem;
-  }
-
-  .auth-card--booking .auth-card__title {
-    font-size: 1.85rem;
   }
 }
