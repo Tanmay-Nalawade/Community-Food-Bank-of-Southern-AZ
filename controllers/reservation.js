@@ -67,14 +67,40 @@ exports.createRequest = async (req, res) => {
     requestedEndTime: { $gt: booking.start },
   });
 
-  const reservation = await Reservation.create({
+  // A double-click or a retried request would otherwise create a second
+  // Reservation document for the same driver/vehicle/window (the conflict
+  // check above only decides Pending vs. Reserved — it doesn't stop the
+  // same person's own duplicate submission from being created at all).
+  const ownDuplicate = await Reservation.exists({
     userId: res.locals.currentUser._id,
     vehicleId: vehicle._id,
-    requestedStartTime: booking.start,
-    requestedEndTime: booking.end,
-    staffNotes: req.body.staffNotes || "",
-    status: hasConflict ? "Pending" : "Reserved",
+    status: { $in: ["Pending", "Reserved", "Active"] },
+    requestedStartTime: { $lt: booking.end },
+    requestedEndTime: { $gt: booking.start },
   });
+
+  if (ownDuplicate) {
+    req.flash("error", "You already have a booking request for this vehicle in that time window.");
+    return res.redirect("/reservations/mine");
+  }
+
+  let reservation;
+  try {
+    reservation = await Reservation.create({
+      userId: res.locals.currentUser._id,
+      vehicleId: vehicle._id,
+      requestedStartTime: booking.start,
+      requestedEndTime: booking.end,
+      staffNotes: req.body.staffNotes || "",
+      status: hasConflict ? "Pending" : "Reserved",
+    });
+  } catch (error) {
+    if (error.code === 11000) {
+      req.flash("error", "You already have a booking request for this vehicle in that time window.");
+      return res.redirect("/reservations/mine");
+    }
+    throw error;
+  }
 
   if (hasConflict) {
     await sendBookingConfirmation(reservation, res.locals.currentUser, vehicle);

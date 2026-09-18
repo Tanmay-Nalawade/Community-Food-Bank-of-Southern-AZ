@@ -79,7 +79,16 @@ exports.postAddVehicle = async (req, res) => {
     newVehicle.keyCafeKeyId = `PENDING-${Date.now()}`;
   }
 
-  await newVehicle.save();
+  try {
+    await newVehicle.save();
+  } catch (error) {
+    if (error.code === 11000) {
+      req.flash("error", "A vehicle with that license plate already exists.");
+      return res.redirect("/admin/vehicles/add");
+    }
+    throw error;
+  }
+
   req.flash("success", `${newVehicle.make} ${newVehicle.model} added to the fleet.`);
   res.redirect(`/admin/vehicles/${newVehicle._id}`);
 };
@@ -201,7 +210,15 @@ exports.update = async (req, res) => {
     ? new Date(nextMaintenanceDueDate)
     : undefined;
 
-  await vehicle.save();
+  try {
+    await vehicle.save();
+  } catch (error) {
+    if (error.code === 11000) {
+      req.flash("error", "Another vehicle already uses that license plate.");
+      return res.redirect(`/admin/vehicles/${vehicle._id}`);
+    }
+    throw error;
+  }
   await syncVehicleKeyName(vehicle);
 
   req.flash("success", "Vehicle updated.");

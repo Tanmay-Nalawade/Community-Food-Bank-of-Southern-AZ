@@ -98,7 +98,8 @@ exports.register = (req, res, next) => {
     });
   }
 
-  const { firstName, lastName, email, password } = req.body;
+  const { firstName, lastName, password } = req.body;
+  const email = (req.body.email || "").trim();
 
   User.register(new User({ firstName, lastName, email, role: "Staff" }), password, (err, user) => {
     if (err) {

@@ -148,3 +148,21 @@ document.addEventListener("click", async (event) => {
     button.textContent = originalLabel;
   }
 });
+
+// Disable a form's submit button(s) right after a real submission goes
+// through, so a double-click (or an impatient second tap while the page is
+// still loading) can't fire the same request twice — e.g. adding a vehicle
+// or booking a reservation twice. Runs after any other submit listener
+// (inline validation, etc.) since the event bubbles from the form up to
+// document, so a prevented/invalid submission is correctly left alone.
+document.addEventListener("submit", (event) => {
+  if (event.defaultPrevented) {
+    return;
+  }
+
+  event.target
+    .querySelectorAll('button[type="submit"], input[type="submit"]')
+    .forEach((button) => {
+      button.disabled = true;
+    });
+});

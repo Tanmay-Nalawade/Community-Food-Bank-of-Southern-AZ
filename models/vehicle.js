@@ -6,7 +6,9 @@ const vehicleSchema = new Schema(
     make: { type: String, required: true },
     model: { type: String, required: true },
     year: { type: Number },
-    licensePlate: { type: String, required: true, unique: true },
+    // uppercase+trim so "abc-1234" and "ABC-1234" collide as the same plate
+    // instead of slipping past the unique index as two "different" vehicles.
+    licensePlate: { type: String, required: true, unique: true, uppercase: true, trim: true },
 
     keyCafeKeyId: { type: String, required: true },
 

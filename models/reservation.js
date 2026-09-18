@@ -65,4 +65,17 @@ reservationSchema.index({
   requestedEndTime: 1,
 });
 
+// Backstop against the same user creating two identical bookings (a
+// double-click, a retried request) racing past the app-level check in
+// controllers/reservation.js#createRequest. Scoped to non-terminal statuses
+// via a partial index so a driver can rebook the exact same vehicle/window
+// again later, once the earlier reservation is Completed/Cancelled/Denied.
+reservationSchema.index(
+  { userId: 1, vehicleId: 1, requestedStartTime: 1, requestedEndTime: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { status: { $in: ["Pending", "Reserved", "Active"] } },
+  },
+);
+
 module.exports = mongoose.model("Reservation", reservationSchema);

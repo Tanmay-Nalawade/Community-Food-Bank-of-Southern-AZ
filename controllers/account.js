@@ -7,7 +7,8 @@ exports.editForm = (req, res) => {
 };
 
 exports.updateProfile = async (req, res) => {
-  const { firstName, lastName, email } = req.body;
+  const { firstName, lastName } = req.body;
+  const email = (req.body.email || "").trim().toLowerCase();
   const currentUser = res.locals.currentUser;
 
   const existing = await User.findOne({ email, _id: { $ne: currentUser._id } });
@@ -20,7 +21,16 @@ exports.updateProfile = async (req, res) => {
   user.firstName = firstName;
   user.lastName = lastName;
   user.email = email;
-  await user.save();
+
+  try {
+    await user.save();
+  } catch (error) {
+    if (error.code === 11000) {
+      req.flash("error", "That email is already in use by another account.");
+      return res.redirect("/account/edit");
+    }
+    throw error;
+  }
 
   req.flash("success", "Your account details have been updated.");
   res.redirect("/account/edit");
