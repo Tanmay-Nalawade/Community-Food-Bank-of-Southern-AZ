@@ -46,6 +46,7 @@
           name="email"
           value="<%= currentUser.email %>"
           autocomplete="email"
+          data-require-domain="@communityfoodbank.org"
           aria-describedby="email-error"
           required
         />
@@ -81,7 +82,7 @@
           <button type="button" class="auth-form__toggle-password" data-target="newPassword">Show</button>
         </div>
         <input
-          class="auth-form__input"
+          class="auth-form__input js-password-strength"
           type="password"
           id="newPassword"
           name="newPassword"
@@ -89,6 +90,13 @@
           aria-describedby="newPassword-error"
           required
         />
+        <ul class="password-checklist">
+          <li class="password-checklist__item" data-rule="length">At least 8 characters</li>
+          <li class="password-checklist__item" data-rule="lowercase">One lowercase letter</li>
+          <li class="password-checklist__item" data-rule="uppercase">One uppercase letter</li>
+          <li class="password-checklist__item" data-rule="number">One number</li>
+          <li class="password-checklist__item" data-rule="special">One special character</li>
+        </ul>
         <p class="auth-form__field-error" id="newPassword-error" aria-live="polite"></p>
       </div>
 

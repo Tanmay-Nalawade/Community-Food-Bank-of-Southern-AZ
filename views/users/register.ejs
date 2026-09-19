@@ -5,7 +5,7 @@
     <h1 class="auth-card__title">Sign Up</h1>
     <p class="auth-card__subtitle">Create an account to access the motor pool.</p>
 
-    <form class="auth-form" action="/register" method="POST">
+    <form class="auth-form" action="/register" method="POST" novalidate>
       <div class="auth-form__row">
         <div class="auth-form__group">
           <label class="auth-form__label" for="firstName">First name</label>
@@ -15,8 +15,10 @@
             id="firstName"
             name="firstName"
             autocomplete="given-name"
+            aria-describedby="firstName-error"
             required
           />
+          <p class="auth-form__field-error" id="firstName-error" aria-live="polite"></p>
         </div>
         <div class="auth-form__group">
           <label class="auth-form__label" for="lastName">Last name</label>
@@ -26,8 +28,10 @@
             id="lastName"
             name="lastName"
             autocomplete="family-name"
+            aria-describedby="lastName-error"
             required
           />
+          <p class="auth-form__field-error" id="lastName-error" aria-live="polite"></p>
         </div>
       </div>
 
@@ -39,8 +43,11 @@
           id="email"
           name="email"
           autocomplete="email"
+          data-require-domain="@communityfoodbank.org"
+          aria-describedby="email-error"
           required
         />
+        <p class="auth-form__field-error" id="email-error" aria-live="polite"></p>
       </div>
 
       <div class="auth-form__group">
@@ -49,13 +56,22 @@
           <button type="button" class="auth-form__toggle-password" data-target="password">Show</button>
         </div>
         <input
-          class="auth-form__input"
+          class="auth-form__input js-password-strength"
           type="password"
           id="password"
           name="password"
           autocomplete="new-password"
+          aria-describedby="password-error"
           required
         />
+        <ul class="password-checklist">
+          <li class="password-checklist__item" data-rule="length">At least 8 characters</li>
+          <li class="password-checklist__item" data-rule="lowercase">One lowercase letter</li>
+          <li class="password-checklist__item" data-rule="uppercase">One uppercase letter</li>
+          <li class="password-checklist__item" data-rule="number">One number</li>
+          <li class="password-checklist__item" data-rule="special">One special character</li>
+        </ul>
+        <p class="auth-form__field-error" id="password-error" aria-live="polite"></p>
       </div>
 
       <div class="auth-form__group">
@@ -69,8 +85,10 @@
           id="confirmPassword"
           name="confirmPassword"
           autocomplete="new-password"
+          aria-describedby="confirmPassword-error"
           required
         />
+        <p class="auth-form__field-error" id="confirmPassword-error" aria-live="polite"></p>
       </div>
 
       <button class="auth-form__submit" type="submit">Create Account</button>

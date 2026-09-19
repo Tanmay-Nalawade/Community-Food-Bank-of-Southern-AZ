@@ -42,17 +42,50 @@ document.addEventListener("click", (event) => {
 (() => {
   const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+  // Mirrors strongPasswordSchema() in validators/user.js — kept in sync
+  // manually since there's no shared config between server and client JS.
+  const PASSWORD_RULES = [
+    { key: "length", label: "At least 8 characters", test: (v) => v.length >= 8 },
+    { key: "lowercase", label: "One lowercase letter", test: (v) => /[a-z]/.test(v) },
+    { key: "uppercase", label: "One uppercase letter", test: (v) => /[A-Z]/.test(v) },
+    { key: "number", label: "One number", test: (v) => /[0-9]/.test(v) },
+    { key: "special", label: "One special character", test: (v) => /[^A-Za-z0-9]/.test(v) },
+  ];
+
   const VALIDATORS = {
     firstName: (value) => (value.trim() ? "" : "First name is required."),
     lastName: (value) => (value.trim() ? "" : "Last name is required."),
-    email: (value) => {
-      if (!value.trim()) return "Email is required.";
-      return EMAIL_PATTERN.test(value.trim()) ? "" : "Please enter a valid email address.";
+    email: (value, form, input) => {
+      const trimmed = value.trim();
+      if (!trimmed) return "Email is required.";
+      if (!EMAIL_PATTERN.test(trimmed)) return "Please enter a valid email address.";
+
+      // Only set on the register/account-edit email fields (see
+      // data-require-domain in those views) — login/forgot-password/resend
+      // just look an existing account up, so they don't enforce this.
+      const requiredDomain = input && input.dataset.requireDomain;
+      if (requiredDomain && !trimmed.toLowerCase().endsWith(requiredDomain.toLowerCase())) {
+        return `You need to use an email address given to you by the Food Bank (ends in ${requiredDomain}).`;
+      }
+      return "";
     },
     currentPassword: (value) => (value ? "" : "Your current password is required."),
+    password: (value) => {
+      if (!value) return "Password is required.";
+      return PASSWORD_RULES.every((rule) => rule.test(value))
+        ? ""
+        : "Password doesn't meet all the requirements above.";
+    },
+    confirmPassword: (value, form) => {
+      if (!value) return "Please confirm your password.";
+      const passwordInput = form.querySelector("#password");
+      return passwordInput && value === passwordInput.value ? "" : "Passwords do not match.";
+    },
     newPassword: (value) => {
       if (!value) return "New password is required.";
-      return value.length >= 8 ? "" : "New password must be at least 8 characters.";
+      return PASSWORD_RULES.every((rule) => rule.test(value))
+        ? ""
+        : "Password doesn't meet all the requirements above.";
     },
     confirmNewPassword: (value, form) => {
       if (!value) return "Please confirm your new password.";
@@ -60,6 +93,8 @@ document.addEventListener("click", (event) => {
       return newPasswordInput && value === newPasswordInput.value ? "" : "Passwords do not match.";
     },
   };
+
+  const CONFIRM_FIELD_FOR = { password: "confirmPassword", newPassword: "confirmNewPassword" };
 
   function setFieldError(input, message) {
     const group = input.closest(".auth-form__group");
@@ -71,7 +106,7 @@ document.addEventListener("click", (event) => {
   function validateField(input) {
     const validator = VALIDATORS[input.id];
     if (!validator) return true;
-    const message = validator(input.value, input.form);
+    const message = validator(input.value, input.form, input);
     setFieldError(input, message);
     return !message;
   }
@@ -82,10 +117,9 @@ document.addEventListener("click", (event) => {
     fields.forEach((input) => {
       input.addEventListener("input", () => {
         validateField(input);
-        if (input.id === "newPassword") {
-          const confirmInput = form.querySelector("#confirmNewPassword");
-          if (confirmInput && confirmInput.value) validateField(confirmInput);
-        }
+        const confirmFieldId = CONFIRM_FIELD_FOR[input.id];
+        const confirmInput = confirmFieldId && form.querySelector(`#${confirmFieldId}`);
+        if (confirmInput && confirmInput.value) validateField(confirmInput);
       });
     });
 
@@ -99,6 +133,30 @@ document.addEventListener("click", (event) => {
         firstInvalid.focus();
       }
     });
+  });
+
+  // Live password strength checklist: any input marked .js-password-strength
+  // gets its sibling .password-checklist items lit up green as each rule is
+  // satisfied while typing (checked against the same PASSWORD_RULES used
+  // above for the pass/fail message).
+  document.querySelectorAll(".js-password-strength").forEach((input) => {
+    const group = input.closest(".auth-form__group");
+    const checklist = group && group.querySelector(".password-checklist");
+    if (!checklist) return;
+
+    const items = PASSWORD_RULES.map((rule) => ({
+      rule,
+      el: checklist.querySelector(`[data-rule="${rule.key}"]`),
+    }));
+
+    function updateChecklist() {
+      items.forEach(({ rule, el }) => {
+        if (el) el.classList.toggle("password-checklist__item--met", rule.test(input.value));
+      });
+    }
+
+    input.addEventListener("input", updateChecklist);
+    updateChecklist();
   });
 })();
 
