@@ -99,6 +99,7 @@
 .auth-form__group {
   display: grid;
   gap: 0.35rem;
+  min-width: 0;
 }
 
 .auth-form__label {
@@ -143,6 +144,8 @@
   border-radius: 2px;
   color: var(--cfb-ink);
   background: #fff;
+  width: 100%;
+  min-width: 0;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -167,6 +170,40 @@
   color: #b3261e;
   margin: 0;
   min-height: 1.1em;
+}
+
+.password-checklist {
+  list-style: none;
+  margin: 0.35rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.25rem;
+}
+
+.password-checklist__item {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  color: var(--cfb-grey);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: color 0.15s ease;
+}
+
+.password-checklist__item::before {
+  content: "○";
+  font-size: 0.65rem;
+  color: var(--cfb-line);
+}
+
+.password-checklist__item--met {
+  color: #2e7d32;
+}
+
+.password-checklist__item--met::before {
+  content: "✓";
+  font-weight: 700;
+  color: #2e7d32;
 }
 
 .auth-form__submit {

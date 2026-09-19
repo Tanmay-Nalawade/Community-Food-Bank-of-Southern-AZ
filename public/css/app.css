@@ -605,15 +605,7 @@ textarea {
   }
 
   .admin-table:not(.mileage-log-header-table) thead {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-    padding: 0;
-    margin: -1px;
+    display: none;
   }
 
   .admin-table:not(.mileage-log-header-table) tbody,
@@ -641,6 +633,8 @@ textarea {
     text-align: right;
     gap: 1rem;
     padding: 0.65rem 0;
+    overflow-wrap: anywhere;
+    min-width: 0;
   }
 
   .admin-table:not(.mileage-log-header-table) td:not(:last-child) {
