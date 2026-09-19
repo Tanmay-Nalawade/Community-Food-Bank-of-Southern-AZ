@@ -52,6 +52,19 @@ exports.getAddVehicle = (req, res) => {
 
 exports.postAddVehicle = async (req, res) => {
   const { make, model, year, licensePlate, photoUrl, currentMileage } = req.body;
+
+  // Check for a duplicate plate BEFORE calling ensureVehicleKey — that call
+  // can create a real, permanent KeyCafe key (no retire/delete feature
+  // exists in this app), so failing fast here avoids leaving an orphaned
+  // real key behind every time this save would fail on the unique index
+  // anyway. Normalized the same way the schema does (uppercase/trim).
+  const normalizedPlate = (licensePlate || "").trim().toUpperCase();
+  const duplicate = await Vehicle.findOne({ licensePlate: normalizedPlate });
+  if (duplicate) {
+    req.flash("error", "A vehicle with that license plate already exists.");
+    return res.redirect("/admin/vehicles/add");
+  }
+
   const newVehicle = new Vehicle({
     make,
     model,
