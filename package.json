@@ -32,6 +32,7 @@
     "ejs-mate": "^4.0.0",
     "express": "^4.21.2",
     "express-mongo-sanitize": "^2.2.0",
+    "express-rate-limit": "^8.7.0",
     "express-session": "^1.19.0",
     "helmet": "^8.3.0",
     "joi": "^18.2.5",
