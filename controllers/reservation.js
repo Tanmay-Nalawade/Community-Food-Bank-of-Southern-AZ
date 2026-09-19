@@ -42,6 +42,25 @@ function fetchPastBookings(userId, now) {
       .limit(limit);
 }
 
+// Same "past" definition as fetchPastBookings, additionally bounded to the
+// last 365 days — the dedicated Booking History page (linked from the
+// account dropdown) is deliberately scoped shorter than the dashboard's
+// unbounded Past Bookings section.
+function fetchHistory(userId, now) {
+  const oneYearAgo = new Date(now);
+  oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+
+  return (skip, limit) =>
+    Reservation.find({
+      ...buildPastFilter(userId, now),
+      requestedStartTime: { $gte: oneYearAgo },
+    })
+      .populate("vehicleId")
+      .sort({ requestedStartTime: -1 })
+      .skip(skip)
+      .limit(limit);
+}
+
 exports.createRequest = async (req, res) => {
   const booking = parseBookingWindow(
     req.body.date,
@@ -180,6 +199,33 @@ exports.morePast = async (req, res) => {
     fetchPastBookings(userId, now),
     skip,
   );
+
+  res.set("X-Has-More", hasMore ? "1" : "0");
+  res.render("partials/_booking-cards", { reservations, muted: true });
+};
+
+exports.history = async (req, res) => {
+  const userId = res.locals.currentUser._id;
+  const now = new Date();
+
+  const { items: reservations, hasMore, nextSkip } = await fetchPage(fetchHistory(userId, now), 0);
+
+  res.render("reservations/history", {
+    title: "Booking History",
+    reservations,
+    hasMore,
+    nextSkip,
+    pageSize: PAGE_SIZE,
+    activeNav: "account",
+  });
+};
+
+exports.moreHistory = async (req, res) => {
+  const userId = res.locals.currentUser._id;
+  const now = new Date();
+  const skip = Math.max(0, Number(req.query.skip) || 0);
+
+  const { items: reservations, hasMore } = await fetchPage(fetchHistory(userId, now), skip);
 
   res.set("X-Has-More", hasMore ? "1" : "0");
   res.render("partials/_booking-cards", { reservations, muted: true });

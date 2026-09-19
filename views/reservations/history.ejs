@@ -1,0 +1,30 @@
+<% layout('layouts/boilerplate') %>
+
+<section class="reservations-page">
+  <h1>Booking History</h1>
+  <p class="reservations-page__lead">Vehicles you've booked in the past year.</p>
+
+  <section class="dashboard-section">
+    <% if (!reservations.length) { %>
+      <div class="dashboard-empty">
+        <p>You don't have any bookings from the past year.</p>
+      </div>
+    <% } else { %>
+      <%- include('../partials/booking-list', { reservations, muted: true, id: 'history-bookings-list' }) %>
+
+      <% if (hasMore) { %>
+        <button
+          class="admin-table__btn admin-table__btn--edit load-more-btn"
+          type="button"
+          data-load-more
+          data-url="/reservations/history/more"
+          data-target="history-bookings-list"
+          data-page-size="<%= pageSize %>"
+          data-skip="<%= nextSkip %>"
+        >
+          Load more
+        </button>
+      <% } %>
+    <% } %>
+  </section>
+</section>

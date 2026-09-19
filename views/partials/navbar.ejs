@@ -114,6 +114,10 @@
               <span><%= currentUser.role %></span>
             </a>
 
+            <% if (showStaffNav) { %>
+              <a class="site-navbar__dropdown-link" href="/reservations/history">Booking History</a>
+            <% } %>
+
             <% if (viewAsRole) { %>
               <p class="site-navbar__viewing-as">
                 Viewing as <%= viewAsRole %> — your account is <%= currentUser.role %>

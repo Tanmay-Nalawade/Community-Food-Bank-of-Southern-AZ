@@ -13,6 +13,8 @@ const reservationController = wrapControllerAsync(require("../controllers/reserv
 
 router.get("/mine", requireLogin, reservationController.mine);
 router.get("/mine/past/more", requireLogin, reservationController.morePast);
+router.get("/history", requireLogin, reservationController.history);
+router.get("/history/more", requireLogin, reservationController.moreHistory);
 router.post(
   "/vehicles/:vehicleId",
   requireLogin,
