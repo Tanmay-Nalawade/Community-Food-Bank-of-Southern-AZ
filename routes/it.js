@@ -16,5 +16,10 @@ router.get("/activity/more", requireITAdmin, itActivityController.more);
 
 router.get("/api-status", requireITAdmin, itApiStatusController.index);
 router.post("/api-status/test", requireITAdmin, itApiStatusController.testConnection);
+router.post(
+  "/api-status/vehicles/check",
+  requireITAdmin,
+  itApiStatusController.checkVehicleAccess,
+);
 
 module.exports = router;

@@ -39,4 +39,65 @@
       Runs a live, read-only request to KeyCafe to confirm the configured credentials work. No data is changed.
     </p>
   </div>
+
+  <div class="vehicle-detail__card">
+    <h2 class="vehicle-detail__section-title">Vehicle KeyCafe Access</h2>
+    <p class="vehicles-page__lead">
+      <% if (missingCount > 0) { %>
+        <strong><%= missingCount %></strong> of <%= vehicleKeyStatuses.length %>
+        vehicle<%= vehicleKeyStatuses.length === 1 ? '' : 's' %> need attention.
+      <% } else { %>
+        Every vehicle has a KeyCafe key.
+      <% } %>
+      <% if (lastCheckedAt) { %>
+        Last checked <%= new Date(lastCheckedAt).toLocaleString() %>.
+      <% } %>
+    </p>
+
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Vehicle</th>
+          <th>Plate</th>
+          <th>KeyCafe access</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% vehicleKeyStatuses.forEach((v) => { %>
+          <tr>
+            <td><%= v.label %></td>
+            <td><%= v.licensePlate %></td>
+            <td>
+              <%- include('../../partials/status-pill', {
+                slug: v.slug,
+                label: v.statusLabel,
+              }) %>
+            </td>
+            <td>
+              <% if (v.needsAttention) { %>
+                <a href="/admin/vehicles/<%= v.id %>">Fix &rarr;</a>
+              <% } %>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+
+    <form class="admin-issue-form" action="/it/api-status/vehicles/check" method="POST">
+      <button class="auth-form__submit" type="submit">Check KeyCafe Access</button>
+    </form>
+    <p class="vehicle-detail__empty admin-hint">
+      Looks up every vehicle's KeyCafe key against KeyCafe's own account to confirm it still
+      exists there (a locally-stored key ID can go stale if it's later deleted or changes
+      account in KeyCafe). Only runs when you click this button.
+    </p>
+
+    <% if (missingCount > 0) { %>
+      <p class="vehicle-detail__empty admin-hint">
+        To fix a vehicle: make sure KeyCafe API credentials are configured above, open the
+        vehicle's detail page (linked above), then click "Create KeyCafe Key."
+      </p>
+    <% } %>
+  </div>
 </section>

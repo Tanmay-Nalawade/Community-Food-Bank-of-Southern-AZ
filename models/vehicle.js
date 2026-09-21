@@ -12,6 +12,13 @@ const vehicleSchema = new Schema(
 
     keyCafeKeyId: { type: String, required: true },
 
+    // Only set when an admin runs "Check KeyCafe Access" on the API Status
+    // page — a live lookup against KeyCafe's own key list. Never refreshed
+    // automatically (that would mean an external API call on every page
+    // load), so this can go stale if the key is later deleted in KeyCafe.
+    keyCafeAccessValid: { type: Boolean },
+    keyCafeAccessCheckedAt: { type: Date },
+
     photoUrl: { type: String, default: "" },
 
     currentMileage: { type: Number, required: true, default: 0 },
