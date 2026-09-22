@@ -79,6 +79,11 @@ exports.createRequest = async (req, res) => {
     return res.redirect("/vehicles");
   }
 
+  // Checks ANY overlapping reservation for this vehicle, including one the
+  // same user already holds — a conflict is rejected outright below, so a
+  // duplicate self-booking is already caught here too (no separate check
+  // needed). The unique index on Reservation is still the last-resort
+  // guard against two simultaneous requests racing past this check.
   const hasConflict = await Reservation.exists({
     vehicleId: vehicle._id,
     status: { $in: ["Pending", "Reserved", "Active"] },
@@ -86,21 +91,12 @@ exports.createRequest = async (req, res) => {
     requestedEndTime: { $gt: booking.start },
   });
 
-  // A double-click or a retried request would otherwise create a second
-  // Reservation document for the same driver/vehicle/window (the conflict
-  // check above only decides Pending vs. Reserved — it doesn't stop the
-  // same person's own duplicate submission from being created at all).
-  const ownDuplicate = await Reservation.exists({
-    userId: res.locals.currentUser._id,
-    vehicleId: vehicle._id,
-    status: { $in: ["Pending", "Reserved", "Active"] },
-    requestedStartTime: { $lt: booking.end },
-    requestedEndTime: { $gt: booking.start },
-  });
-
-  if (ownDuplicate) {
-    req.flash("error", "You already have a booking request for this vehicle in that time window.");
-    return res.redirect("/reservations/mine");
+  if (hasConflict) {
+    req.flash(
+      "error",
+      "That vehicle isn't available for the time you selected. Please choose a different time or vehicle.",
+    );
+    return res.redirect(`/vehicles/${vehicle._id}`);
   }
 
   let reservation;
@@ -111,23 +107,17 @@ exports.createRequest = async (req, res) => {
       requestedStartTime: booking.start,
       requestedEndTime: booking.end,
       staffNotes: req.body.staffNotes || "",
-      status: hasConflict ? "Pending" : "Reserved",
+      status: "Reserved",
     });
   } catch (error) {
     if (error.code === 11000) {
-      req.flash("error", "You already have a booking request for this vehicle in that time window.");
-      return res.redirect("/reservations/mine");
+      req.flash(
+        "error",
+        "That vehicle isn't available for the time you selected. Please choose a different time or vehicle.",
+      );
+      return res.redirect(`/vehicles/${vehicle._id}`);
     }
     throw error;
-  }
-
-  if (hasConflict) {
-    await sendBookingConfirmation(reservation, res.locals.currentUser, vehicle);
-    req.flash(
-      "error",
-      "That vehicle was just booked for an overlapping time. Your request has been sent to Transportation to sort out.",
-    );
-    return res.redirect("/reservations/mine");
   }
 
   try {
