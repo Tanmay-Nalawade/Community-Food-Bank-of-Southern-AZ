@@ -19,6 +19,7 @@
     "dev": "nodemon app.js",
     "seed": "node seeds/index.js",
     "register-webhook": "node scripts/register-keycafe-webhook.js",
+    "promote-user": "node scripts/promote-user.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
