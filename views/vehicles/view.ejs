@@ -64,7 +64,7 @@
             <% vehicle.activeIssues.forEach((issue) => { %>
               <li>
                 <span class="vehicle-detail__issue-date">
-                  <%= new Date(issue.reportedAt).toLocaleDateString() %>
+                  <%= fmt.date(issue.reportedAt) %>
                 </span>
                 <%= issue.description %>
               </li>

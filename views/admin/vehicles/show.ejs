@@ -6,12 +6,10 @@
   <div class="vehicles-page__header">
     <div>
       <h1><%= vehicle.year ? vehicle.year + " " : "" %><%= vehicle.make %> <%= vehicle.model %></h1>
-      <p class="vehicles-page__lead"><%= vehicle.licensePlate %></p>
+      <span class="vehicle-detail__plate admin-page__plate"><%= vehicle.licensePlate %></span>
     </div>
     <div class="admin-page__header-actions">
-      <a class="admin-table__btn admin-table__btn--edit" href="/admin/vehicles/<%= vehicle._id %>/mileage-log">
-        View mileage log
-      </a>
+      <a class="action-btn action-btn--edit" href="/admin/vehicles/<%= vehicle._id %>/mileage-log">View mileage log</a>
     </div>
   </div>
 
@@ -118,7 +116,7 @@
             <li class="admin-issue">
               <div>
                 <span class="vehicle-detail__issue-date">
-                  <%= new Date(issue.reportedAt).toLocaleDateString() %>
+                  <%= fmt.date(issue.reportedAt) %>
                 </span>
                 <%= issue.description %>
               </div>

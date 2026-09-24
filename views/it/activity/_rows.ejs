@@ -1,6 +1,6 @@
 <% logs.forEach((log) => { %>
   <tr>
-    <td data-label="When"><%= new Date(log.createdAt).toLocaleString() %></td>
+    <td data-label="When"><%= fmt.dateTime(log.createdAt) %></td>
     <td data-label="User">
       <% if (log.userId) { %>
         <%= log.userId.firstName %> <%= log.userId.lastName %>

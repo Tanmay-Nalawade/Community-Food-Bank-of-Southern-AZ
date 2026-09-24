@@ -6,9 +6,7 @@
       </a>
     </td>
     <td data-label="When">
-      <%= new Date(reservation.requestedStartTime).toLocaleString() %>
-      &ndash;
-      <%= new Date(reservation.requestedEndTime).toLocaleString() %>
+      <%= fmt.range(reservation.requestedStartTime, reservation.requestedEndTime) %>
     </td>
     <td data-label="Status">
       <%- include('../../partials/status-pill', { value: reservation.status }) %>

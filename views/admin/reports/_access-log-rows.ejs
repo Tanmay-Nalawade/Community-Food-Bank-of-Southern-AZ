@@ -1,6 +1,6 @@
 <% accessLogs.forEach((log) => { %>
   <tr>
-    <td data-label="When"><%= new Date(log.createdAt).toLocaleString() %></td>
+    <td data-label="When"><%= fmt.dateTime(log.createdAt) %></td>
     <td data-label="Action"><%= log.action %></td>
     <td data-label="Driver">
       <% if (log.userId) { %>

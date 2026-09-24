@@ -37,6 +37,7 @@ app.set("trust proxy", 1);
 app.engine("ejs", engine);
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
+app.locals.fmt = require("./utils/formatDate");
 
 app.use(
   helmet({

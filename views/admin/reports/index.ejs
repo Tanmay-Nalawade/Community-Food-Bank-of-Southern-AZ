@@ -31,7 +31,7 @@
               <td data-label="Current mileage"><%= row.vehicle.currentMileage.toLocaleString() %> mi</td>
               <td data-label="Bookings"><%= row.bookingCount %></td>
               <td data-label="Total hours booked"><%= row.totalHours %></td>
-              <td data-label="Last booked"><%= row.lastBookedAt ? new Date(row.lastBookedAt).toLocaleDateString() : "Never" %></td>
+              <td data-label="Last booked"><%= row.lastBookedAt ? fmt.date(row.lastBookedAt) : "Never" %></td>
               <td data-label="Idle 30+ days">
                 <% if (row.idle) { %>
                   <%- include('../../partials/status-pill', { slug: 'maintenance', label: 'Idle' }) %>
