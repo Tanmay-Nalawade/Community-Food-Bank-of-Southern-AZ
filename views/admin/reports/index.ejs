@@ -2,7 +2,51 @@
 
 <section class="admin-page">
   <h1>Reports</h1>
-  <p class="vehicles-page__lead">Fleet utilization and KeyCafe access history.</p>
+  <p class="vehicles-page__lead">Trip log, fleet utilization, and KeyCafe access history.</p>
+
+  <div class="vehicle-detail__card admin-history-card">
+    <h2 class="vehicle-detail__section-title">Trip log</h2>
+    <p class="vehicle-detail__empty admin-hint">
+      Every trip across the fleet, newest first. Click a vehicle to see that trip's full
+      detailed monthly mileage log (inspection, fuel level, and more).
+    </p>
+    <% if (!tripLog.length) { %>
+      <p class="vehicle-detail__empty">No trips recorded yet.</p>
+    <% } else { %>
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Vehicle</th>
+              <th>Driver</th>
+              <th>Start Odometer</th>
+              <th>End Odometer</th>
+              <th>Distance Travelled</th>
+              <th>Food Related</th>
+            </tr>
+          </thead>
+          <tbody id="trip-log-body">
+            <%- include('_trip-log-rows', { tripLog }) %>
+          </tbody>
+        </table>
+      </div>
+
+      <% if (tripHasMore) { %>
+        <button
+          class="admin-table__btn admin-table__btn--edit load-more-btn"
+          type="button"
+          data-load-more
+          data-url="/admin/reports/trips/more"
+          data-target="trip-log-body"
+          data-page-size="<%= pageSize %>"
+          data-skip="<%= tripNextSkip %>"
+        >
+          Load more
+        </button>
+      <% } %>
+    <% } %>
+  </div>
 
   <div class="vehicle-detail__card admin-history-card">
     <h2 class="vehicle-detail__section-title">Vehicle utilization</h2>

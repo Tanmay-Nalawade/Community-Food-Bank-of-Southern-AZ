@@ -19,6 +19,7 @@ const reminderScheduler = require("./jobs/reminderScheduler");
 const mileageLogScheduler = require("./jobs/mileageLogScheduler");
 const passport = require("./config/passport");
 const { computeEffectiveRole } = require("./middleware/auth");
+const Reservation = require("./models/reservation");
 
 const app = express();
 
@@ -110,6 +111,51 @@ app.use((req, res, next) => {
   next();
 });
 app.use(computeEffectiveRole);
+
+// Global, unmissable prompts for a compulsory odometer reading — start
+// (nagged from 30 min before the booking, through pickup, until filled) and
+// end (a safety net for a trip completed via KeyCafe's own hardware without
+// ever visiting the "Return Vehicle" page). See
+// views/layouts/boilerplate.ejs for the dialog this feeds.
+app.use(async (req, res, next) => {
+  res.locals.mandatoryOdometerPrompt = null;
+  if (!res.locals.currentUser) {
+    return next();
+  }
+
+  try {
+    const soon = new Date(Date.now() + 30 * 60 * 1000);
+
+    const needsStart = await Reservation.findOne({
+      userId: res.locals.currentUser._id,
+      status: { $in: ["Reserved", "Active"] },
+      "tripLog.startMileage": { $exists: false },
+      requestedStartTime: { $lte: soon },
+    })
+      .sort({ requestedStartTime: 1 })
+      .populate("vehicleId", "make model year licensePlate");
+
+    if (needsStart) {
+      res.locals.mandatoryOdometerPrompt = { type: "start", reservation: needsStart };
+    } else {
+      const needsEnd = await Reservation.findOne({
+        userId: res.locals.currentUser._id,
+        status: "Completed",
+        "tripLog.endMileage": { $exists: false },
+      })
+        .sort({ "tripLog.tripEndedAt": -1 })
+        .populate("vehicleId", "make model year licensePlate");
+
+      if (needsEnd) {
+        res.locals.mandatoryOdometerPrompt = { type: "end", reservation: needsEnd };
+      }
+    }
+  } catch (error) {
+    console.error("Failed to check mandatory odometer prompt:", error);
+  }
+
+  next();
+});
 
 app.use((req, res, next) => {
   res.locals.successMessages = req.flash("success");

@@ -18,6 +18,7 @@
               <th style="text-align:left; color:#632c4f; border-bottom:1px solid #e0e0e0;">Start</th>
               <th style="text-align:left; color:#632c4f; border-bottom:1px solid #e0e0e0;">End</th>
               <th style="text-align:left; color:#632c4f; border-bottom:1px solid #e0e0e0;">Distance</th>
+              <th style="text-align:left; color:#632c4f; border-bottom:1px solid #e0e0e0;">Food Related</th>
               <th style="text-align:left; color:#632c4f; border-bottom:1px solid #e0e0e0;">Pre-Trip</th>
               <th style="text-align:left; color:#632c4f; border-bottom:1px solid #e0e0e0;">Fuel %</th>
               <th style="text-align:left; color:#632c4f; border-bottom:1px solid #e0e0e0;">Drop off</th>
@@ -30,10 +31,11 @@
             <% rows.forEach((row) => { %>
               <tr>
                 <td style="border-bottom:1px solid #f0f0f0; color:#333;"><%= new Date(row.date).toLocaleDateString() %></td>
-                <td style="border-bottom:1px solid #f0f0f0; color:#333;"><%= row.driverInitials %></td>
+                <td style="border-bottom:1px solid #f0f0f0; color:#333;"><%= row.driverName %></td>
                 <td style="border-bottom:1px solid #f0f0f0; color:#333;"><%= row.startMileage != null ? row.startMileage.toLocaleString() : "—" %></td>
                 <td style="border-bottom:1px solid #f0f0f0; color:#333;"><%= row.endMileage != null ? row.endMileage.toLocaleString() : "—" %></td>
                 <td style="border-bottom:1px solid #f0f0f0; color:#333;"><%= row.distanceTravelled != null ? row.distanceTravelled.toLocaleString() : "—" %></td>
+                <td style="border-bottom:1px solid #f0f0f0; color:#333;"><%= row.foodRelated ? "Y" : "N" %></td>
                 <td style="border-bottom:1px solid #f0f0f0; color:#333;"><%= row.preTripInspectionPassed === null ? "—" : (row.preTripInspectionPassed ? "Y" : "N") %></td>
                 <td style="border-bottom:1px solid #f0f0f0; color:#333;"><%= row.fuelLevelEndPercent != null ? row.fuelLevelEndPercent + "%" : "—" %></td>
                 <td style="border-bottom:1px solid #f0f0f0; color:#333;"><%= row.droppedOffFood ? "Y" : "N" %></td>

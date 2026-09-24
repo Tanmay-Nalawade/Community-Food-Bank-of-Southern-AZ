@@ -53,6 +53,12 @@ document.querySelectorAll("dialog[data-autoshow]").forEach((dialog) => {
   if (typeof dialog.showModal === "function") {
     dialog.showModal();
   }
+
+  // A compulsory prompt (e.g. the mandatory odometer dialog) can't be
+  // dismissed with the Escape key — only its own buttons can close it.
+  if (dialog.hasAttribute("data-no-cancel")) {
+    dialog.addEventListener("cancel", (event) => event.preventDefault());
+  }
 });
 
 // A form marked data-confirm asks for an explicit yes before submitting —

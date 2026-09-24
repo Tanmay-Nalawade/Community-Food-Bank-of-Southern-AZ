@@ -11,11 +11,11 @@ function effectiveTripDate(reservation) {
   return reservation.tripLog?.tripStartedAt || reservation.requestedStartTime;
 }
 
-function driverInitials(user) {
+function driverFullName(user) {
   if (!user) {
     return "";
   }
-  return `${(user.firstName || "")[0] || ""}${(user.lastName || "")[0] || ""}`.toUpperCase();
+  return `${user.firstName || ""} ${user.lastName || ""}`.trim();
 }
 
 // Single source of truth for "what does vehicle X's mileage log look like
@@ -52,10 +52,13 @@ async function buildMonthlyLog(vehicleId, year, month) {
     return {
       reservationId: reservation._id,
       date: effectiveTripDate(reservation),
-      driverInitials: driverInitials(reservation.userId),
+      driverName: driverFullName(reservation.userId),
       startMileage: start ?? null,
       endMileage: end ?? null,
       distanceTravelled: start != null && end != null ? end - start : null,
+      // Simplified to a plain boolean for reporting — "Other" doesn't
+      // confirm the trip was actually for food, so only "Yes" counts.
+      foodRelated: reservation.tripFoodRelated === "Yes",
       preTripInspectionPassed:
         trip.preTripInspectionPassed === undefined ? null : trip.preTripInspectionPassed,
       fuelLevelEndPercent: trip.fuelLevelEndPercent ?? null,
@@ -77,4 +80,4 @@ async function buildMonthlyLog(vehicleId, year, month) {
   };
 }
 
-module.exports = { buildMonthlyLog };
+module.exports = { buildMonthlyLog, effectiveTripDate, driverFullName };

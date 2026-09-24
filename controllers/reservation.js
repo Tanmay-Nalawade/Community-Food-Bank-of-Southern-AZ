@@ -19,6 +19,12 @@ const {
 
 const CANCELABLE_STATUSES = ["Pending", "Reserved"];
 const REPORTABLE_STATUSES = ["Active", "Completed"];
+// Mileage specifically also allows "Reserved" — the mandatory Start
+// Odometer prompt (app.js) can fire up to 30 minutes before pickup, before
+// the trip has actually gone Active, so this needs to be its own broader
+// list rather than reusing REPORTABLE_STATUSES (which Report Issue and
+// Return Vehicle correctly keep restricted to Active/Completed).
+const MILEAGE_REPORTABLE_STATUSES = ["Reserved", "Active", "Completed"];
 const CURRENT_STATUSES = ["Reserved", "Active"];
 const UPCOMING_STATUSES = ["Pending", "Reserved", "Active"];
 
@@ -499,8 +505,8 @@ exports.mileageForm = async (req, res) => {
     return renderError(res, 404, "Reservation not found.");
   }
 
-  if (!REPORTABLE_STATUSES.includes(reservation.status)) {
-    req.flash("error", "Mileage can only be reported for a trip that has started.");
+  if (!MILEAGE_REPORTABLE_STATUSES.includes(reservation.status)) {
+    req.flash("error", "Mileage can only be reported for a confirmed, active, or completed trip.");
     return res.redirect("/reservations/mine");
   }
 
@@ -521,8 +527,8 @@ exports.submitMileage = async (req, res) => {
     return renderError(res, 404, "Reservation not found.");
   }
 
-  if (!REPORTABLE_STATUSES.includes(reservation.status)) {
-    req.flash("error", "Mileage can only be reported for a trip that has started.");
+  if (!MILEAGE_REPORTABLE_STATUSES.includes(reservation.status)) {
+    req.flash("error", "Mileage can only be reported for a confirmed, active, or completed trip.");
     return res.redirect("/reservations/mine");
   }
 
@@ -653,6 +659,20 @@ exports.submitInspection = async (req, res) => {
     req.flash("error", "The vehicle can only be returned for a trip that has started.");
     return res.redirect("/reservations/mine");
   }
+
+  // Ordering/data-integrity backstop — the global mandatory-odometer dialog
+  // should already have forced this before the driver could reach this
+  // page, but a direct POST could otherwise skip straight to an end reading
+  // with no start reading to compare it against.
+  if (reservation.tripLog?.startMileage == null) {
+    req.flash(
+      "error",
+      "Start odometer is missing for this trip — it needs to be added before you can log the end odometer.",
+    );
+    return res.redirect(`/reservations/${reservation._id}/inspection`);
+  }
+
+  reservation.tripLog.endMileage = Number(req.body.endMileage);
 
   const skipped = req.body.action === "skip";
 

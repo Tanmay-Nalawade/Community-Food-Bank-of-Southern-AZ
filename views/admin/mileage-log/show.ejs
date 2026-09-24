@@ -58,10 +58,11 @@
           <thead>
             <tr>
               <th>Date</th>
-              <th>Driver Initials</th>
+              <th>Driver</th>
               <th>Start Odometer</th>
               <th>End Odometer</th>
               <th>Distance Travelled</th>
+              <th>Food Related</th>
               <th>Pre-Trip Inspection</th>
               <th>Fuel Level (End) %</th>
               <th>Drop off Food</th>
@@ -74,10 +75,11 @@
             <% log.rows.forEach((row) => { %>
               <tr>
                 <td data-label="Date"><%= fmt.date(row.date) %></td>
-                <td data-label="Driver Initials"><%= row.driverInitials %></td>
+                <td data-label="Driver"><%= row.driverName %></td>
                 <td data-label="Start Odometer"><%= row.startMileage != null ? row.startMileage.toLocaleString() : "—" %></td>
                 <td data-label="End Odometer"><%= row.endMileage != null ? row.endMileage.toLocaleString() : "—" %></td>
                 <td data-label="Distance Travelled"><%= row.distanceTravelled != null ? row.distanceTravelled.toLocaleString() : "—" %></td>
+                <td data-label="Food Related"><%= row.foodRelated ? "Y" : "N" %></td>
                 <td data-label="Pre-Trip Inspection"><%= row.preTripInspectionPassed === null ? "—" : (row.preTripInspectionPassed ? "Y" : "N") %></td>
                 <td data-label="Fuel Level (End) %"><%= row.fuelLevelEndPercent != null ? row.fuelLevelEndPercent + "%" : "—" %></td>
                 <td data-label="Drop off Food"><%= row.droppedOffFood ? "Y" : "N" %></td>

@@ -17,6 +17,18 @@
     </p>
 
     <form class="auth-form" action="/reservations/<%= reservation._id %>/inspection" method="POST">
+      <div class="auth-form__group">
+        <label class="auth-form__label" for="endMileage">Ending odometer (mi)</label>
+        <input
+          class="auth-form__input"
+          type="number"
+          id="endMileage"
+          name="endMileage"
+          min="0"
+          required
+        />
+      </div>
+
       <% groups.forEach((group) => { %>
         <div class="inspection-group">
           <h2 class="inspection-group__title"><%= group.label %></h2>
@@ -55,8 +67,8 @@
         <button class="auth-form__submit" type="submit" name="action" value="submit">
           Submit Inspection
         </button>
-        <button class="inspection-skip" type="submit" name="action" value="skip" formnovalidate>
-          Skip for now
+        <button class="inspection-skip" type="submit" name="action" value="skip">
+          Skip inspection for now
         </button>
       </div>
     </form>

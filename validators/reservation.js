@@ -97,6 +97,13 @@ const inspectionSchema = Joi.object({
     .single()
     .empty(Joi.array().length(0))
     .optional(),
+  // Required regardless of action — skipping the defects/condition
+  // checklist is fine, but the end odometer reading is compulsory either way.
+  endMileage: Joi.number().integer().min(0).required().messages({
+    "number.base": "Please enter the ending odometer reading.",
+    "any.required": "Please enter the ending odometer reading.",
+    "number.min": "End mileage can't be negative.",
+  }),
 });
 
 module.exports = { bookingWindowSchema, mileageSchema, issueSchema, inspectionSchema };

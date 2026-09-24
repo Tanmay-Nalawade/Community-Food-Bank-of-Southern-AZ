@@ -1,0 +1,21 @@
+<% tripLog.forEach((row) => { %>
+  <tr>
+    <td data-label="Date"><%= fmt.date(row.date) %></td>
+    <td data-label="Vehicle">
+      <% if (row.vehicle) { %>
+        <a href="<%= row.mileageLogUrl %>">
+          <%= row.vehicle.year ? row.vehicle.year + " " : "" %><%= row.vehicle.make %> <%= row.vehicle.model %>
+        </a>
+        <br />
+        <span class="admin-table__subtext"><%= row.vehicle.licensePlate %></span>
+      <% } else { %>
+        —
+      <% } %>
+    </td>
+    <td data-label="Driver"><%= row.driverName %></td>
+    <td data-label="Start Odometer"><%= row.startMileage != null ? row.startMileage.toLocaleString() : "—" %></td>
+    <td data-label="End Odometer"><%= row.endMileage != null ? row.endMileage.toLocaleString() : "—" %></td>
+    <td data-label="Distance Travelled"><%= row.distanceTravelled != null ? row.distanceTravelled.toLocaleString() : "—" %></td>
+    <td data-label="Food Related"><%= row.foodRelated ? "Y" : "N" %></td>
+  </tr>
+<% }) %>

@@ -72,6 +72,7 @@ router.get(
 
 router.get("/reports", requireAdmin, adminReportController.index);
 router.get("/reports/more", requireAdmin, adminReportController.more);
+router.get("/reports/trips/more", requireAdmin, adminReportController.moreTrips);
 
 router.get("/issues", requireAdmin, adminIssueController.index);
 router.get("/issues/more", requireAdmin, adminIssueController.more);
