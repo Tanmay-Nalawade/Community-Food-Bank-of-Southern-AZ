@@ -1,103 +1,135 @@
 <% layout('layouts/boilerplate') %>
 
-<section class="admin-page">
+<%
+  // The page's first job is answering "is anything broken?", so collect the
+  // problems up front and lead with them.
+  const problems = [];
+  if (!keycafeConfigured) {
+    problems.push("KeyCafe API credentials aren't set, so bookings get mock pickup codes instead of real ones.");
+  }
+  if (!webhookConfigured) {
+    problems.push("The KeyCafe webhook isn't set up, so key pickups and returns won't update bookings.");
+  }
+  if (missingCount > 0) {
+    problems.push(`${missingCount} of ${vehicleKeyStatuses.length} vehicle${vehicleKeyStatuses.length === 1 ? "" : "s"} can't be picked up through KeyCafe until their key is fixed.`);
+  }
+  const when = (d) => new Date(d).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
+%>
+
+<section class="admin-page api-status">
   <h1>API Status</h1>
-  <p class="vehicles-page__lead">KeyCafe integration configuration and connectivity.</p>
+  <p class="vehicles-page__lead admin-page__lead">How the KeyCafe lockbox integration is set up, and whether every vehicle&rsquo;s key works.</p>
 
-  <div class="vehicle-detail__card">
-    <h2 class="vehicle-detail__section-title">Configuration</h2>
+  <div class="api-status__summary<%= problems.length ? ' api-status__summary--warn' : '' %>" role="status">
+    <% if (!problems.length) { %>
+      <h2 class="api-status__summary-title">Everything is working</h2>
+      <p>KeyCafe is connected and every vehicle has a working key.</p>
+    <% } else { %>
+      <h2 class="api-status__summary-title">
+        <%= problems.length === 1 ? "1 thing needs attention" : `${problems.length} things need attention` %>
+      </h2>
+      <ul class="api-status__problems">
+        <% problems.forEach((problem) => { %>
+          <li><%= problem %></li>
+        <% }) %>
+      </ul>
+    <% } %>
+  </div>
 
-    <dl>
-      <div>
-        <dt>KeyCafe API credentials</dt>
-        <dd>
+  <div class="api-status__layout">
+    <div class="vehicle-detail__card api-status__card">
+      <h2 class="vehicle-detail__section-title">Connection settings</h2>
+
+      <ul class="api-status__checks">
+        <li class="api-status__check">
+          <div>
+            <h3 class="api-status__check-title">KeyCafe API credentials</h3>
+            <p class="api-status__check-detail">Creates pickup codes for bookings.</p>
+          </div>
           <%- include('../../partials/status-pill', {
             slug: keycafeConfigured ? 'active-account' : 'inactive-account',
-            label: keycafeConfigured ? 'Configured' : 'Not configured (using mock access codes)',
+            label: keycafeConfigured ? 'Configured' : 'Not configured',
           }) %>
-        </dd>
-      </div>
-      <div>
-        <dt>Webhook credentials</dt>
-        <dd>
+        </li>
+        <li class="api-status__check">
+          <div>
+            <h3 class="api-status__check-title">Webhook credentials</h3>
+            <p class="api-status__check-detail">Lets KeyCafe report key pickups and returns.</p>
+          </div>
           <%- include('../../partials/status-pill', {
             slug: webhookConfigured ? 'active-account' : 'inactive-account',
             label: webhookConfigured ? 'Configured' : 'Not configured',
           }) %>
-        </dd>
-      </div>
-      <div>
-        <dt>Timezone</dt>
-        <dd><strong><%= keycafeTimezone %></strong></dd>
-      </div>
-    </dl>
+        </li>
+        <li class="api-status__check">
+          <div>
+            <h3 class="api-status__check-title">Timezone</h3>
+            <p class="api-status__check-detail">Used for booking times sent to KeyCafe.</p>
+          </div>
+          <span class="api-status__value"><%= keycafeTimezone %></span>
+        </li>
+      </ul>
 
-    <form class="admin-issue-form" action="/it/api-status/test" method="POST">
-      <button class="auth-form__submit" type="submit">Test KeyCafe Connection</button>
-    </form>
-    <p class="vehicle-detail__empty admin-hint">
-      Runs a live, read-only request to KeyCafe to confirm the configured credentials work. No data is changed.
-    </p>
-  </div>
+      <form class="api-status__action" action="/it/api-status/test" method="POST">
+        <button class="action-btn action-btn--edit" type="submit">Test connection</button>
+        <p class="api-status__hint">Sends one read-only request to KeyCafe. Nothing is changed.</p>
+      </form>
+    </div>
 
-  <div class="vehicle-detail__card">
-    <h2 class="vehicle-detail__section-title">Vehicle KeyCafe Access</h2>
-    <p class="vehicles-page__lead">
-      <% if (missingCount > 0) { %>
-        <strong><%= missingCount %></strong> of <%= vehicleKeyStatuses.length %>
-        vehicle<%= vehicleKeyStatuses.length === 1 ? '' : 's' %> need attention.
-      <% } else { %>
-        Every vehicle has a KeyCafe key.
-      <% } %>
-      <% if (lastCheckedAt) { %>
-        Last checked <%= new Date(lastCheckedAt).toLocaleString() %>.
-      <% } %>
-    </p>
-
-    <table class="admin-table">
-      <thead>
-        <tr>
-          <th>Vehicle</th>
-          <th>Plate</th>
-          <th>KeyCafe access</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        <% vehicleKeyStatuses.forEach((v) => { %>
-          <tr>
-            <td><%= v.label %></td>
-            <td><%= v.licensePlate %></td>
-            <td>
-              <%- include('../../partials/status-pill', {
-                slug: v.slug,
-                label: v.statusLabel,
-              }) %>
-            </td>
-            <td>
-              <% if (v.needsAttention) { %>
-                <a href="/admin/vehicles/<%= v.id %>">Fix &rarr;</a>
-              <% } %>
-            </td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
-
-    <form class="admin-issue-form" action="/it/api-status/vehicles/check" method="POST">
-      <button class="auth-form__submit" type="submit">Check KeyCafe Access</button>
-    </form>
-    <p class="vehicle-detail__empty admin-hint">
-      Looks up every vehicle's KeyCafe key against KeyCafe's own account to confirm it still
-      exists there (a locally-stored key ID can go stale if it's later deleted or changes
-      account in KeyCafe). Only runs when you click this button.
-    </p>
-
-    <% if (missingCount > 0) { %>
-      <p class="vehicle-detail__empty admin-hint">
-        To fix a vehicle: make sure KeyCafe API credentials are configured above, open the
-        vehicle's detail page (linked above), then click "Create KeyCafe Key."
+    <div class="vehicle-detail__card api-status__card">
+      <h2 class="vehicle-detail__section-title">Vehicle keys</h2>
+      <p class="api-status__hint api-status__hint--top">
+        <%= lastCheckedAt ? `Last checked against KeyCafe ${when(lastCheckedAt)}.` : "Not checked against KeyCafe yet." %>
       </p>
-    <% } %>
+
+      <% if (!vehicleKeyStatuses.length) { %>
+        <p class="api-status__hint">There are no vehicles in the fleet yet.</p>
+      <% } else { %>
+        <div class="admin-table-wrap api-status__table">
+          <table class="admin-table admin-table--detailed">
+            <thead>
+              <tr>
+                <th>Vehicle</th>
+                <th>KeyCafe key</th>
+                <th><span class="visually-hidden">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <% vehicleKeyStatuses.forEach((v) => { %>
+                <tr class="<%= v.needsAttention ? 'admin-table__row--attention' : '' %>">
+                  <td class="admin-table__vehicle" data-label="Vehicle">
+                    <a class="admin-table__primary-link" href="/admin/vehicles/<%= v.id %>"><%= v.label %></a>
+                    <span class="admin-table__subtext admin-table__subtext--block"><%= v.licensePlate %></span>
+                  </td>
+                  <td data-label="Key">
+                    <%- include('../../partials/status-pill', { slug: v.slug, label: v.statusLabel }) %>
+                  </td>
+                  <td class="admin-table__actions<%= v.needsAttention ? '' : ' admin-table__actions--empty' %>" data-label="Actions">
+                    <% if (v.needsAttention) { %>
+                      <a class="action-btn action-btn--sm action-btn--edit" href="/admin/vehicles/<%= v.id %>">Fix key</a>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+
+      <form class="api-status__action" action="/it/api-status/vehicles/check" method="POST">
+        <button class="action-btn action-btn--edit" type="submit">Check all keys</button>
+        <p class="api-status__hint">
+          Confirms each vehicle&rsquo;s key still exists in KeyCafe. A key deleted or moved in
+          KeyCafe shows up here as missing.
+        </p>
+      </form>
+
+      <% if (missingCount > 0) { %>
+        <p class="api-status__hint">
+          To fix a key, open the vehicle&rsquo;s page and choose &ldquo;Create KeyCafe Key.&rdquo;
+          KeyCafe API credentials need to be configured first.
+        </p>
+      <% } %>
+    </div>
   </div>
 </section>
