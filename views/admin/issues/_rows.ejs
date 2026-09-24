@@ -1,34 +1,45 @@
+<%
+  const _when = (d) => new Date(d).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
+%>
 <% issues.forEach(({ vehicle, issue }) => { %>
-  <tr>
+  <tr class="<%= issue.reviewed ? 'admin-table__row--muted' : 'admin-table__row--attention' %>">
+    <td class="admin-table__issue" data-label="Issue">
+      <p class="admin-issue__text"><%= issue.description || "No description given." %></p>
+      <% if (issue.reservationId) { %>
+        <a class="admin-table__subtext admin-table__subtext--block admin-issue__source" href="/admin/reservations/<%= issue.reservationId %>">From this booking</a>
+      <% } %>
+    </td>
+    <td class="admin-table__vehicle" data-label="Vehicle">
+      <a class="admin-table__primary-link" href="/admin/vehicles/<%= vehicle._id %>"><%= vehicle.year ? vehicle.year + " " : "" %><%= vehicle.make %> <%= vehicle.model %></a>
+      <span class="admin-table__subtext admin-table__subtext--block"><%= vehicle.licensePlate %></span>
+    </td>
+    <td data-label="Reported">
+      <span class="admin-issue__date"><%= _when(issue.reportedAt) %></span>
+      <span class="admin-table__subtext admin-table__subtext--block">
+        <%= issue.reportedBy ? `by ${issue.reportedBy.firstName} ${issue.reportedBy.lastName}` : "Reporter unknown" %>
+      </span>
+    </td>
     <td data-label="Status">
       <% if (issue.reviewed) { %>
         <%- include('../../partials/status-pill', { slug: 'completed', label: 'Reviewed' }) %>
+        <% if (issue.reviewedAt) { %>
+          <span class="admin-table__subtext admin-table__subtext--block"><%= new Date(issue.reviewedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" }) %></span>
+        <% } %>
       <% } else { %>
         <%- include('../../partials/status-pill', { slug: 'pending', label: 'New' }) %>
       <% } %>
     </td>
-    <td data-label="Vehicle">
-      <%= vehicle.year ? vehicle.year + " " : "" %><%= vehicle.make %> <%= vehicle.model %><br />
-      <span class="admin-table__subtext"><%= vehicle.licensePlate %></span>
-    </td>
-    <td data-label="Issue"><%= issue.description %></td>
-    <td data-label="Reported by">
-      <% if (issue.reportedBy) { %>
-        <%= issue.reportedBy.firstName %> <%= issue.reportedBy.lastName %>
-      <% } else { %>
-        —
-      <% } %>
-    </td>
-    <td data-label="Reported"><%= new Date(issue.reportedAt).toLocaleString() %></td>
     <td class="admin-table__actions" data-label="Actions">
-      <% if (!issue.reviewed) { %>
-        <form action="/admin/issues/<%= vehicle._id %>/<%= issue._id %>/review" method="POST">
-          <button class="admin-table__btn admin-table__btn--approve" type="submit">Mark Reviewed</button>
+      <div class="action-bar action-bar--row">
+        <% if (!issue.reviewed) { %>
+          <form action="/admin/issues/<%= vehicle._id %>/<%= issue._id %>/review" method="POST">
+            <button class="action-btn action-btn--sm action-btn--approve" type="submit">Mark reviewed</button>
+          </form>
+        <% } %>
+        <form action="/admin/issues/<%= vehicle._id %>/<%= issue._id %>/dismiss" method="POST">
+          <button class="action-btn action-btn--sm action-btn--delete" type="submit">Dismiss</button>
         </form>
-      <% } %>
-      <form action="/admin/issues/<%= vehicle._id %>/<%= issue._id %>/dismiss" method="POST">
-        <button class="admin-table__btn admin-table__btn--delete" type="submit">Dismiss</button>
-      </form>
+      </div>
     </td>
   </tr>
 <% }) %>
