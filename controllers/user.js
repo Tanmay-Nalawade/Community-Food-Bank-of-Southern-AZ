@@ -275,7 +275,11 @@ exports.logout = (req, res, next) => {
 
     req.session.regenerate(() => {
       req.flash("success", "You have been logged out.");
-      res.redirect("/");
+      // "/" requires login (it's the Staff dashboard entry point), so
+      // redirecting there right after destroying the session immediately
+      // bounced through requireLogin and stacked "Please log in first." on
+      // top of this flash, for every role. Send straight to /login instead.
+      res.redirect("/login");
     });
   });
 };
