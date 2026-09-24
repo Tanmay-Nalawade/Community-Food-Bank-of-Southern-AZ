@@ -6,6 +6,8 @@ const {
   getBookedVehicleIds,
   formatBookingLabel,
   toQueryString,
+  findTightPrecedingBooking,
+  formatTimeLabel,
 } = require("../utils/availability");
 
 function escapeRegex(value) {
@@ -101,6 +103,26 @@ exports.viewVehicle = async (req, res) => {
   const today = new Date();
   const minDate = today.toISOString().split("T")[0];
 
+  // "confirm=gap" only ever arrives via createRequest's redirect after it
+  // found a tight same-day turnaround and the driver hadn't confirmed yet —
+  // a plain visit to this page (even with a booking window in the query
+  // string) never shows this dialog. Re-checking here (rather than trusting
+  // a query-string claim) also means a stale/hand-edited URL can't fake a
+  // warning that no longer applies.
+  let gapWarning = null;
+  const formValues = { staffNotes: "", tripFoodRelated: "", tripFoodRelatedDetail: "" };
+
+  if (booking && req.query.confirm === "gap") {
+    formValues.staffNotes = req.query.staffNotes || "";
+    formValues.tripFoodRelated = req.query.tripFoodRelated || "";
+    formValues.tripFoodRelatedDetail = req.query.tripFoodRelatedDetail || "";
+
+    const tightPrevious = await findTightPrecedingBooking(vehicle._id, booking);
+    if (tightPrevious) {
+      gapWarning = { previousEndLabel: formatTimeLabel(tightPrevious.requestedEndTime) };
+    }
+  }
+
   res.render("vehicles/view", {
     title: `${vehicle.make} ${vehicle.model}`,
     vehicle,
@@ -109,5 +131,7 @@ exports.viewVehicle = async (req, res) => {
     backHref,
     backLabel,
     minDate,
+    gapWarning,
+    formValues,
   });
 };

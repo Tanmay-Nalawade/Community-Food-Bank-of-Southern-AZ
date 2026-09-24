@@ -1,7 +1,11 @@
 const Reservation = require("../models/reservation");
 const Vehicle = require("../models/vehicle");
 const { renderError } = require("../utils/httpError");
-const { parseBookingWindow } = require("../utils/availability");
+const {
+  parseBookingWindow,
+  findTightPrecedingBooking,
+  formatTimeLabel,
+} = require("../utils/availability");
 const {
   grantReservationAccess,
   revokeReservationAccess,
@@ -97,6 +101,26 @@ exports.createRequest = async (req, res) => {
       "That vehicle isn't available for the time you selected. Please choose a different time or vehicle.",
     );
     return res.redirect(`/vehicles/${vehicle._id}`);
+  }
+
+  // Not a hard block — just a heads-up before committing, so bounce back to
+  // the vehicle page (carrying the submitted answers along) instead of
+  // creating the reservation, unless the driver already clicked through the
+  // warning ("Yes, book anyway" posts confirmTightGap=true).
+  if (req.body.confirmTightGap !== "true") {
+    const tightPrevious = await findTightPrecedingBooking(vehicle._id, booking);
+    if (tightPrevious) {
+      const qs = new URLSearchParams({
+        date: req.body.date,
+        startTime: req.body.startTime,
+        endTime: req.body.endTime,
+        staffNotes: req.body.staffNotes || "",
+        tripFoodRelated: req.body.tripFoodRelated || "",
+        tripFoodRelatedDetail: req.body.tripFoodRelatedDetail || "",
+        confirm: "gap",
+      });
+      return res.redirect(`/vehicles/${vehicle._id}?${qs.toString()}`);
+    }
   }
 
   let reservation;
@@ -239,9 +263,43 @@ exports.editForm = async (req, res) => {
     return res.redirect("/reservations/mine");
   }
 
+  const formValues = {
+    date: new Date(reservation.requestedStartTime).toISOString().split("T")[0],
+    startTime: new Date(reservation.requestedStartTime).toTimeString().slice(0, 5),
+    endTime: new Date(reservation.requestedEndTime).toTimeString().slice(0, 5),
+    staffNotes: reservation.staffNotes || "",
+    tripFoodRelated: reservation.tripFoodRelated || "",
+    tripFoodRelatedDetail: reservation.tripFoodRelatedDetail || "",
+  };
+
+  // Same "confirm=gap" bounce-back as the new-booking flow — see
+  // createRequest/updateRequest.
+  let gapWarning = null;
+
+  if (req.query.confirm === "gap") {
+    const booking = parseBookingWindow(req.query.date, req.query.startTime, req.query.endTime);
+    if (booking) {
+      formValues.date = req.query.date;
+      formValues.startTime = req.query.startTime;
+      formValues.endTime = req.query.endTime;
+      formValues.staffNotes = req.query.staffNotes || "";
+      formValues.tripFoodRelated = req.query.tripFoodRelated || "";
+      formValues.tripFoodRelatedDetail = req.query.tripFoodRelatedDetail || "";
+
+      const tightPrevious = await findTightPrecedingBooking(reservation.vehicleId._id, booking, {
+        excludeReservationId: reservation._id,
+      });
+      if (tightPrevious) {
+        gapWarning = { previousEndLabel: formatTimeLabel(tightPrevious.requestedEndTime) };
+      }
+    }
+  }
+
   res.render("reservations/edit", {
     title: "Edit Booking Request",
     reservation,
+    formValues,
+    gapWarning,
     activeNav: "dashboard",
   });
 };
@@ -283,6 +341,24 @@ exports.updateRequest = async (req, res) => {
   if (conflictExists) {
     req.flash("error", "That vehicle is already booked during that window.");
     return res.redirect(`/reservations/${reservation._id}/edit`);
+  }
+
+  if (req.body.confirmTightGap !== "true") {
+    const tightPrevious = await findTightPrecedingBooking(reservation.vehicleId, booking, {
+      excludeReservationId: reservation._id,
+    });
+    if (tightPrevious) {
+      const qs = new URLSearchParams({
+        date: req.body.date,
+        startTime: req.body.startTime,
+        endTime: req.body.endTime,
+        staffNotes: req.body.staffNotes || "",
+        tripFoodRelated: req.body.tripFoodRelated || "",
+        tripFoodRelatedDetail: req.body.tripFoodRelatedDetail || "",
+        confirm: "gap",
+      });
+      return res.redirect(`/reservations/${reservation._id}/edit?${qs.toString()}`);
+    }
   }
 
   reservation.requestedStartTime = booking.start;

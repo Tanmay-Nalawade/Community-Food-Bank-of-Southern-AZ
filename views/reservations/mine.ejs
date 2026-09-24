@@ -1,55 +1,75 @@
 <% layout('layouts/boilerplate') %>
 
-<section class="reservations-page">
-  <h1>My Dashboard</h1>
-  <p class="reservations-page__lead">Your current, upcoming, and past vehicle bookings.</p>
+<%
+  // The booking that matters most right now gets the hero: the vehicle you
+  // have out, otherwise your next trip. It's left out of the lists below so
+  // it isn't shown twice.
+  const featured = currentBookings[0] || upcomingBookings[0] || null;
+  const isOut = Boolean(featured && currentBookings[0] === featured);
+  const otherCurrent = currentBookings.filter((r) => r !== featured);
+  const otherUpcoming = upcomingBookings.filter((r) => r !== featured);
+%>
+
+<section class="reservations-page staff-dashboard">
+  <div class="staff-dashboard__hero">
+    <div class="staff-dashboard__hero-top">
+      <div>
+        <h1 class="staff-dashboard__greeting">Hi, <%= currentUser.firstName %></h1>
+        <p class="staff-dashboard__hero-label">
+          <% if (!featured) { %>
+            You don&rsquo;t have any trips booked.
+          <% } else if (isOut) { %>
+            You have a vehicle checked out.
+          <% } else { %>
+            Your next trip
+          <% } %>
+        </p>
+      </div>
+      <a class="staff-dashboard__book" href="/">Book a vehicle</a>
+    </div>
+
+    <% if (featured) { %>
+      <%- include('../partials/booking-list', { reservations: [featured], featured: true }) %>
+    <% } else { %>
+      <p class="staff-dashboard__hero-empty">
+        Pick a date and time and we&rsquo;ll show you which vehicles are free.
+      </p>
+    <% } %>
+  </div>
+
+  <% if (otherCurrent.length) { %>
+    <section class="dashboard-section">
+      <div class="dashboard-section__header">
+        <h2 class="dashboard-section__title">Also checked out</h2>
+        <span class="dashboard-section__count"><%= otherCurrent.length %></span>
+      </div>
+      <%- include('../partials/booking-list', { reservations: otherCurrent }) %>
+    </section>
+  <% } %>
 
   <section class="dashboard-section">
     <div class="dashboard-section__header">
-      <h2 class="dashboard-section__title">Current Bookings</h2>
-      <% if (currentBookings.length) { %>
-        <span class="dashboard-section__count"><%= currentBookings.length %></span>
+      <h2 class="dashboard-section__title"><%= isOut || !featured ? "Upcoming trips" : "Later trips" %></h2>
+      <% if (otherUpcoming.length) { %>
+        <span class="dashboard-section__count"><%= otherUpcoming.length %></span>
       <% } %>
     </div>
 
-    <% if (!currentBookings.length) { %>
-      <div class="dashboard-empty">
-        <p>No vehicle checked out right now. <a href="/">Book a vehicle</a> when you're ready to head out.</p>
-      </div>
+    <% if (!otherUpcoming.length) { %>
+      <p class="dashboard-empty"><%= featured ? "No other trips on the calendar." : "Nothing on the calendar yet." %></p>
     <% } else { %>
-      <%- include('../partials/booking-list', { reservations: currentBookings }) %>
+      <%- include('../partials/booking-list', { reservations: otherUpcoming }) %>
     <% } %>
   </section>
 
   <section class="dashboard-section">
     <div class="dashboard-section__header">
-      <h2 class="dashboard-section__title">Upcoming Bookings</h2>
-      <% if (upcomingBookings.length) { %>
-        <span class="dashboard-section__count"><%= upcomingBookings.length %></span>
-      <% } %>
-    </div>
-
-    <% if (!upcomingBookings.length) { %>
-      <div class="dashboard-empty">
-        <p>Nothing on the calendar yet. <a href="/">Make a booking</a> if you want.</p>
-      </div>
-    <% } else { %>
-      <%- include('../partials/booking-list', { reservations: upcomingBookings }) %>
-    <% } %>
-  </section>
-
-  <section class="dashboard-section">
-    <div class="dashboard-section__header">
-      <h2 class="dashboard-section__title">Past Bookings</h2>
-      <% if (pastBookings.length) { %>
-        <span class="dashboard-section__count"><%= pastBookings.length %></span>
-      <% } %>
+      <h2 class="dashboard-section__title">Past trips</h2>
+      <a class="dashboard-section__link" href="/reservations/history">Booking history</a>
     </div>
 
     <% if (!pastBookings.length) { %>
-      <div class="dashboard-empty">
-        <p>You don't have any past bookings yet.</p>
-      </div>
+      <p class="dashboard-empty">Trips you finish will show up here.</p>
     <% } else { %>
       <%- include('../partials/booking-list', { reservations: pastBookings, muted: true, id: 'past-bookings-list' }) %>
 

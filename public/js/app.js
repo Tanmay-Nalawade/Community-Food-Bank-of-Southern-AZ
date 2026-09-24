@@ -34,6 +34,25 @@ document.addEventListener("click", (event) => {
     event.preventDefault();
     window.history.back();
   }
+
+  const dialogCloser = event.target.closest("[data-close-dialog]");
+  if (dialogCloser) {
+    const dialog = document.getElementById(dialogCloser.dataset.closeDialog);
+    if (dialog && typeof dialog.close === "function") {
+      dialog.close();
+    }
+  }
+});
+
+// The server renders a <dialog data-autoshow> only when it decided a
+// confirmation is actually needed (e.g. the tight-booking-gap warning) — so
+// any dialog marked this way opens itself as soon as the page loads.
+// .showModal() (rather than the "open" attribute) gets us the backdrop and
+// Escape-to-close for free.
+document.querySelectorAll("dialog[data-autoshow]").forEach((dialog) => {
+  if (typeof dialog.showModal === "function") {
+    dialog.showModal();
+  }
 });
 
 // Booking forms ask "is this trip food related?" — picking "Other" reveals

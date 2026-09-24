@@ -38,6 +38,10 @@ const bookingWindowSchema = Joi.object({
       "string.empty": "Please briefly describe the purpose of this trip.",
       "any.required": "Please briefly describe the purpose of this trip.",
     }),
+  // Only ever sent by the "Yes, book anyway" button on the tight-booking-gap
+  // warning dialog — stripUnknown would otherwise silently drop this before
+  // it reaches the controller, since it's not a real form field.
+  confirmTightGap: Joi.string().valid("true").empty("").optional(),
 });
 
 const mileageSchema = Joi.object({

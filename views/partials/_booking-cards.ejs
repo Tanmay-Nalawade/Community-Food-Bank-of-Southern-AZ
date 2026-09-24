@@ -1,6 +1,26 @@
+<%
+  const _muted = typeof muted !== "undefined" && muted;
+  const _featured = typeof featured !== "undefined" && featured;
+  const _thisYear = new Date().getFullYear();
+  const _time = (date) => date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  const _day = (date) => date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+%>
 <% reservations.forEach((reservation) => { %>
-  <article class="booking-card<%= typeof muted !== "undefined" && muted ? " booking-card--muted" : "" %>">
+  <%
+    const start = new Date(reservation.requestedStartTime);
+    const end = new Date(reservation.requestedEndTime);
+    const sameDay = start.toDateString() === end.toDateString();
+  %>
+  <article class="booking-card<%= _muted ? " booking-card--muted" : "" %><%= _featured ? " booking-card--featured" : "" %>">
     <div class="booking-card__layout">
+      <div class="booking-card__date" aria-hidden="true">
+        <span class="booking-card__date-weekday"><%= start.toLocaleDateString("en-US", { weekday: "short" }) %></span>
+        <span class="booking-card__date-day"><%= start.getDate() %></span>
+        <span class="booking-card__date-month">
+          <%= start.toLocaleDateString("en-US", { month: "short" }) %><%= start.getFullYear() !== _thisYear ? " " + start.getFullYear() : "" %>
+        </span>
+      </div>
+
       <% if (reservation.vehicleId.photoUrl) { %>
         <img
           class="booking-card__photo"
@@ -18,9 +38,14 @@
               <%= reservation.vehicleId.year ? reservation.vehicleId.year + " " : "" %><%= reservation.vehicleId.make %> <%= reservation.vehicleId.model %>
             </h3>
             <p class="booking-card__window">
-              <%= new Date(reservation.requestedStartTime).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" }) %>
-              &ndash;
-              <%= new Date(reservation.requestedEndTime).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" }) %>
+              <% if (sameDay) { %>
+                <%= start.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" }) %>,
+                <strong><%= _time(start) %> to <%= _time(end) %></strong>
+              <% } else { %>
+                <strong><%= _day(start) %>, <%= _time(start) %></strong>
+                to
+                <strong><%= _day(end) %>, <%= _time(end) %></strong>
+              <% } %>
             </p>
           </div>
           <%- include('./status-pill', { value: reservation.status }) %>
@@ -40,23 +65,19 @@
             <% } %>
           </div>
         <% } else if (reservation.status === "Pending") { %>
-          <p class="booking-card__pending">Awaiting Transportation review.</p>
+          <p class="booking-card__pending">Awaiting Transportation review.<%= end > new Date() ? " Your pickup code appears here once it’s approved." : "" %></p>
         <% } %>
 
         <% if (reservation.staffNotes) { %>
           <p class="booking-card__notes">&ldquo;<%= reservation.staffNotes %>&rdquo;</p>
         <% } %>
 
-        <% if (
-          reservation.status === "Pending" ||
-          ["Pending", "Reserved"].includes(reservation.status) ||
-          ["Active", "Completed"].includes(reservation.status)
-        ) { %>
+        <% if (["Pending", "Reserved", "Active", "Completed"].includes(reservation.status)) { %>
           <div class="booking-card__actions">
             <% if (reservation.status === "Pending") { %>
               <a class="admin-table__btn admin-table__btn--edit" href="/reservations/<%= reservation._id %>/edit">Edit</a>
             <% } %>
-            <% if (["Pending", "Reserved"].includes(reservation.status) && new Date(reservation.requestedEndTime) > new Date()) { %>
+            <% if (["Pending", "Reserved"].includes(reservation.status) && end > new Date()) { %>
               <form action="/reservations/<%= reservation._id %>/cancel" method="POST">
                 <button class="admin-table__btn admin-table__btn--delete" type="submit">Cancel</button>
               </form>
