@@ -147,6 +147,32 @@ exports.createRequest = async (req, res) => {
     throw error;
   }
 
+  // The hasConflict check above and this insert aren't atomic — two people
+  // submitting an overlapping request for the same vehicle within
+  // milliseconds of each other could both pass that check and both get
+  // inserted. MongoDB serializes all writes through a single primary, so
+  // immediately after our own insert commits, every reservation that was
+  // truly created before it is guaranteed to already be visible — comparing
+  // ObjectIds (not wall-clock time) is what makes this race-safe: whichever
+  // insert has the smaller _id is unambiguously the one that landed first,
+  // and both concurrent requests will agree on that same answer.
+  const earlierConflict = await Reservation.findOne({
+    _id: { $lt: reservation._id },
+    vehicleId: vehicle._id,
+    status: { $in: ["Pending", "Reserved", "Active"] },
+    requestedStartTime: { $lt: booking.end },
+    requestedEndTime: { $gt: booking.start },
+  });
+
+  if (earlierConflict) {
+    await Reservation.deleteOne({ _id: reservation._id });
+    req.flash(
+      "error",
+      "That vehicle was just booked by someone else for an overlapping time. Please choose a different time or vehicle.",
+    );
+    return res.redirect(`/vehicles/${vehicle._id}`);
+  }
+
   try {
     await reservation.populate("userId", "firstName lastName email");
     await reservation.populate("vehicleId", "make model keyCafeKeyId");
@@ -361,6 +387,9 @@ exports.updateRequest = async (req, res) => {
     }
   }
 
+  const previousStart = reservation.requestedStartTime;
+  const previousEnd = reservation.requestedEndTime;
+
   reservation.requestedStartTime = booking.start;
   reservation.requestedEndTime = booking.end;
   reservation.staffNotes = req.body.staffNotes || "";
@@ -368,6 +397,30 @@ exports.updateRequest = async (req, res) => {
   reservation.tripFoodRelatedDetail =
     req.body.tripFoodRelated === "Other" ? req.body.tripFoodRelatedDetail || "" : "";
   await reservation.save();
+
+  // Same race as createRequest (see its comment), but there's no fresh _id
+  // to compare here since this reservation already existed — updatedAt (set
+  // on every save, including at creation) plays the same "who landed first"
+  // role instead.
+  const earlierConflict = await Reservation.findOne({
+    _id: { $ne: reservation._id },
+    vehicleId: reservation.vehicleId,
+    status: { $in: ["Pending", "Reserved", "Active"] },
+    requestedStartTime: { $lt: booking.end },
+    requestedEndTime: { $gt: booking.start },
+    updatedAt: { $lt: reservation.updatedAt },
+  });
+
+  if (earlierConflict) {
+    reservation.requestedStartTime = previousStart;
+    reservation.requestedEndTime = previousEnd;
+    await reservation.save();
+    req.flash(
+      "error",
+      "That vehicle was just booked by someone else for that time. Please choose a different time.",
+    );
+    return res.redirect(`/reservations/${reservation._id}/edit`);
+  }
 
   req.flash("success", "Booking request updated.");
   res.redirect("/reservations/mine");
