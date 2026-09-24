@@ -55,6 +55,18 @@ document.querySelectorAll("dialog[data-autoshow]").forEach((dialog) => {
   }
 });
 
+// A form marked data-confirm asks for an explicit yes before submitting —
+// for destructive actions with no undo (e.g. permanently deleting a
+// booking), so a stray/accidental click can't fire it silently. Must run
+// before the "disable submit buttons" listener below so a cancel leaves the
+// button usable.
+document.addEventListener("submit", (event) => {
+  const message = event.target.dataset && event.target.dataset.confirm;
+  if (message && !window.confirm(message)) {
+    event.preventDefault();
+  }
+});
+
 // Booking forms ask "is this trip food related?" — picking "Other" reveals
 // a required detail textarea. Neither field carries a native `required`
 // attribute on purpose: this app shows its own red message below the field
@@ -78,9 +90,13 @@ document.querySelectorAll("dialog[data-autoshow]").forEach((dialog) => {
     const detailInput = detailGroup.querySelector("textarea");
     const showDetail = radio.value === "Other";
 
+    // Hide, but don't clear, the typed text when switching away from
+    // "Other" — the server already discards this field's value whenever
+    // tripFoodRelated isn't "Other" (see createRequest/updateRequest), so
+    // nothing stale can be saved. Clearing it here used to silently lose
+    // what someone typed if they clicked another option and then came back.
     detailGroup.hidden = !showDetail;
     if (detailInput && !showDetail) {
-      detailInput.value = "";
       setTripFoodError(detailGroup, "");
     }
   });

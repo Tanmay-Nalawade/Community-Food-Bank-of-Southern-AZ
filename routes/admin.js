@@ -132,7 +132,12 @@ router.post(
 router.post(
   "/reservations/:id/deny",
   requireAdmin,
-  validateBody(adminNotesSchema, { redirect: "/admin/reservations" }),
+  validateBody(adminNotesSchema, {
+    redirect: (req) =>
+      req.body.returnTo === "detail"
+        ? `/admin/reservations/${req.params.id}`
+        : "/admin/reservations",
+  }),
   adminReservationController.denyReservation,
 );
 router.post(

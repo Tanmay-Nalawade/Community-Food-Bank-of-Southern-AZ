@@ -86,8 +86,12 @@ exports.createRequest = async (req, res) => {
   // Checks ANY overlapping reservation for this vehicle, including one the
   // same user already holds — a conflict is rejected outright below, so a
   // duplicate self-booking is already caught here too (no separate check
-  // needed). The unique index on Reservation is still the last-resort
-  // guard against two simultaneous requests racing past this check.
+  // needed). This is a plain read, not atomic with the insert below — the
+  // real backstop against two different people racing past it is the
+  // insert-then-verify check further down, not the DB's unique index (that
+  // index only rejects an exact same-user/vehicle/start/end duplicate, so it
+  // can't catch two different users, or merely-overlapping non-identical
+  // windows).
   const hasConflict = await Reservation.exists({
     vehicleId: vehicle._id,
     status: { $in: ["Pending", "Reserved", "Active"] },
@@ -397,8 +401,17 @@ exports.updateRequest = async (req, res) => {
     }
   }
 
-  const previousStart = reservation.requestedStartTime;
-  const previousEnd = reservation.requestedEndTime;
+  // Captured whole so a race-loss rollback below can restore every field
+  // this request touched, not just the time window — reverting only the
+  // time while leaving the new staffNotes/tripFoodRelated values in place
+  // would silently mix an old time slot with new, unrelated field values.
+  const previous = {
+    requestedStartTime: reservation.requestedStartTime,
+    requestedEndTime: reservation.requestedEndTime,
+    staffNotes: reservation.staffNotes,
+    tripFoodRelated: reservation.tripFoodRelated,
+    tripFoodRelatedDetail: reservation.tripFoodRelatedDetail,
+  };
 
   reservation.requestedStartTime = booking.start;
   reservation.requestedEndTime = booking.end;
@@ -422,8 +435,7 @@ exports.updateRequest = async (req, res) => {
   });
 
   if (earlierConflict) {
-    reservation.requestedStartTime = previousStart;
-    reservation.requestedEndTime = previousEnd;
+    Object.assign(reservation, previous);
     await reservation.save();
     req.flash(
       "error",

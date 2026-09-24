@@ -41,7 +41,9 @@ const bookingWindowSchema = Joi.object({
   // Only ever sent by the "Yes, book anyway" button on the tight-booking-gap
   // warning dialog — stripUnknown would otherwise silently drop this before
   // it reaches the controller, since it's not a real form field.
-  confirmTightGap: Joi.string().valid("true").empty("").optional(),
+  confirmTightGap: Joi.string().valid("true").empty("").optional().messages({
+    "any.only": "Invalid request.",
+  }),
 });
 
 const mileageSchema = Joi.object({

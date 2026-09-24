@@ -142,7 +142,12 @@
       <% } %>
       <div class="action-group">
         <a class="action-btn action-btn--edit" href="/admin/reservations/<%= r._id %>/edit">Edit booking</a>
-        <form class="action-group__divider" action="/admin/reservations/<%= r._id %>?_method=DELETE" method="POST">
+        <form
+          class="action-group__divider"
+          action="/admin/reservations/<%= r._id %>?_method=DELETE"
+          method="POST"
+          data-confirm="Permanently delete this booking? This can't be undone."
+        >
           <button class="action-btn action-btn--delete" type="submit">Delete</button>
         </form>
       </div>
