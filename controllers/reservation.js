@@ -289,6 +289,11 @@ exports.editForm = async (req, res) => {
     return res.redirect("/reservations/mine");
   }
 
+  if (reservation.requestedEndTime <= new Date()) {
+    req.flash("error", "This request's time has already passed and can no longer be edited. Contact an admin.");
+    return res.redirect("/reservations/mine");
+  }
+
   const formValues = {
     date: new Date(reservation.requestedStartTime).toISOString().split("T")[0],
     startTime: new Date(reservation.requestedStartTime).toTimeString().slice(0, 5),
@@ -342,6 +347,11 @@ exports.updateRequest = async (req, res) => {
 
   if (reservation.status !== "Pending") {
     req.flash("error", "Only pending requests can be edited.");
+    return res.redirect("/reservations/mine");
+  }
+
+  if (reservation.requestedEndTime <= new Date()) {
+    req.flash("error", "This request's time has already passed and can no longer be edited. Contact an admin.");
     return res.redirect("/reservations/mine");
   }
 

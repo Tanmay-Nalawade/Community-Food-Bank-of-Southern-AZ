@@ -74,7 +74,7 @@
 
         <% if (["Pending", "Reserved", "Active", "Completed"].includes(reservation.status)) { %>
           <div class="booking-card__actions">
-            <% if (reservation.status === "Pending") { %>
+            <% if (reservation.status === "Pending" && end > new Date()) { %>
               <a class="admin-table__btn admin-table__btn--edit" href="/reservations/<%= reservation._id %>/edit">Edit</a>
             <% } %>
             <% if (["Pending", "Reserved"].includes(reservation.status) && end > new Date()) { %>
