@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="<%= asset('/css/navbar.css') %>" />
     <link rel="stylesheet" href="<%= asset('/css/app.css') %>" />
     <link rel="stylesheet" href="<%= asset('/css/auth.css') %>" />
-    <% if (isAdminSection) { %>
+    <% if (typeof isAdminSection !== 'undefined' && isAdminSection) { %>
       <link rel="stylesheet" href="<%= asset('/css/admin.css') %>" />
     <% } else { %>
       <link rel="stylesheet" href="<%= asset('/css/staff.css') %>" />

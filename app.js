@@ -39,6 +39,15 @@ app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 app.locals.fmt = require("./utils/formatDate");
 
+// Which page-specific CSS bundle to load (see views/layouts/boilerplate.ejs).
+// Set this before anything that can fail (sessions, passport, DB lookups) —
+// it only depends on req.path, so it must never be the reason an error page
+// itself fails to render.
+app.use((req, res, next) => {
+  res.locals.isAdminSection = req.path.startsWith("/admin") || req.path.startsWith("/it");
+  next();
+});
+
 app.use(
   helmet({
     contentSecurityPolicy: {
@@ -105,14 +114,6 @@ app.use(computeEffectiveRole);
 app.use((req, res, next) => {
   res.locals.successMessages = req.flash("success");
   res.locals.errorMessages = req.flash("error");
-  next();
-});
-
-// Which page-specific CSS bundle to load (see views/layouts/boilerplate.ejs)
-// — admin.css and it.js's own pages share one "admin" bundle since they use
-// the same table/action-bar primitives; every other page gets staff.css.
-app.use((req, res, next) => {
-  res.locals.isAdminSection = req.path.startsWith("/admin") || req.path.startsWith("/it");
   next();
 });
 
