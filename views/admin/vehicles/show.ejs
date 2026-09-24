@@ -86,6 +86,15 @@
       <div class="vehicle-detail__keycafe admin-hint">
         <% if (hasRealKeyCafeKey) { %>
           <p>KeyCafe Key: <strong><%= vehicle.keyCafeKeyId %></strong> (kept in sync automatically)</p>
+          <p class="admin-hint">
+            If this key was created under the wrong KeyCafe account (e.g. after
+            rotating KEYCAFE_TOKEN), reset it here, then use "Create KeyCafe Key"
+            to link a correct one. This does not remove the old key from KeyCafe's
+            dashboard — do that there manually if needed.
+          </p>
+          <form method="POST" action="/admin/vehicles/<%= vehicle._id %>/keycafe-key/reset">
+            <button class="admin-table__btn admin-table__btn--delete" type="submit">Reset KeyCafe Key</button>
+          </form>
         <% } else { %>
           <p>KeyCafe Key: <strong><%= vehicle.keyCafeKeyId %></strong> (placeholder — not yet linked to a real KeyCafe key)</p>
           <form method="POST" action="/admin/vehicles/<%= vehicle._id %>/keycafe-key">

@@ -35,6 +35,11 @@ router.post(
   requireAdmin,
   adminVehicleController.createKeyCafeKey,
 );
+router.post(
+  "/vehicles/:id/keycafe-key/reset",
+  requireAdmin,
+  adminVehicleController.resetKeyCafeKey,
+);
 router.get(
   "/vehicles/:id/reservations/more",
   requireAdmin,

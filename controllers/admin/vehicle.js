@@ -267,6 +267,33 @@ exports.createKeyCafeKey = async (req, res) => {
   res.redirect(`/admin/vehicles/${vehicle._id}`);
 };
 
+exports.resetKeyCafeKey = async (req, res) => {
+  const vehicle = await Vehicle.findById(req.params.id);
+
+  if (!vehicle) {
+    return renderError(res, 404, "Vehicle not found.");
+  }
+
+  if (!isRealKeyCafeId(vehicle.keyCafeKeyId)) {
+    req.flash("error", "This vehicle doesn't have a real KeyCafe key to reset.");
+    return res.redirect(`/admin/vehicles/${vehicle._id}`);
+  }
+
+  // Does not affect any Reservation.keyCafeAccess snapshots already granted
+  // under the old key id — those are independent of Vehicle.keyCafeKeyId.
+  vehicle.keyCafeKeyId = `PENDING-${Date.now()}`;
+  vehicle.keyCafeAccessValid = undefined;
+  vehicle.keyCafeAccessCheckedAt = undefined;
+  await vehicle.save();
+
+  req.flash(
+    "success",
+    "KeyCafe key cleared. Use \"Create KeyCafe Key\" to link a new one. " +
+      "The old key still exists in KeyCafe — remove it there manually if it's no longer valid.",
+  );
+  res.redirect(`/admin/vehicles/${vehicle._id}`);
+};
+
 exports.addIssue = async (req, res) => {
   const vehicle = await Vehicle.findById(req.params.id);
 
