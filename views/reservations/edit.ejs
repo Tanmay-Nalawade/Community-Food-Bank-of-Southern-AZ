@@ -63,15 +63,16 @@
         <span class="auth-form__label">Is this trip food related?</span>
         <div class="auth-form__radio-row">
           <label class="auth-form__radio">
-            <input type="radio" name="tripFoodRelated" value="Yes" <%= reservation.tripFoodRelated === "Yes" ? "checked" : "" %> required /> Yes
+            <input type="radio" name="tripFoodRelated" value="Yes" <%= reservation.tripFoodRelated === "Yes" ? "checked" : "" %> /> Yes
           </label>
           <label class="auth-form__radio">
-            <input type="radio" name="tripFoodRelated" value="No" <%= reservation.tripFoodRelated === "No" ? "checked" : "" %> required /> No
+            <input type="radio" name="tripFoodRelated" value="No" <%= reservation.tripFoodRelated === "No" ? "checked" : "" %> /> No
           </label>
           <label class="auth-form__radio">
-            <input type="radio" name="tripFoodRelated" value="Other" <%= reservation.tripFoodRelated === "Other" ? "checked" : "" %> required /> Other
+            <input type="radio" name="tripFoodRelated" value="Other" <%= reservation.tripFoodRelated === "Other" ? "checked" : "" %> /> Other
           </label>
         </div>
+        <p class="auth-form__field-error"></p>
       </div>
 
       <div class="auth-form__group js-trip-food-other" <%= reservation.tripFoodRelated === "Other" ? "" : "hidden" %>>
@@ -81,8 +82,8 @@
           id="tripFoodRelatedDetail"
           name="tripFoodRelatedDetail"
           rows="2"
-          <%= reservation.tripFoodRelated === "Other" ? "required" : "" %>
         ><%= reservation.tripFoodRelatedDetail || "" %></textarea>
+        <p class="auth-form__field-error"></p>
       </div>
 
       <button class="auth-form__submit" type="submit">Save changes</button>

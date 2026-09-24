@@ -37,24 +37,70 @@ document.addEventListener("click", (event) => {
 });
 
 // Booking forms ask "is this trip food related?" — picking "Other" reveals
-// a required detail textarea; switching away from "Other" hides and clears
-// it so a stale answer can't be submitted silently.
-document.addEventListener("change", (event) => {
-  const radio = event.target.closest('input[name="tripFoodRelated"]');
-  if (!radio) return;
-
-  const detailGroup = radio.form && radio.form.querySelector(".js-trip-food-other");
-  if (!detailGroup) return;
-
-  const detailInput = detailGroup.querySelector("textarea");
-  const showDetail = radio.value === "Other";
-
-  detailGroup.hidden = !showDetail;
-  if (detailInput) {
-    detailInput.required = showDetail;
-    if (!showDetail) detailInput.value = "";
+// a required detail textarea. Neither field carries a native `required`
+// attribute on purpose: this app shows its own red message below the field
+// instead of the browser's default validation tooltip, so validation for
+// both is handled entirely here.
+(() => {
+  function setTripFoodError(group, message) {
+    const errorEl = group && group.querySelector(".auth-form__field-error");
+    if (errorEl) errorEl.textContent = message || "";
   }
-});
+
+  document.addEventListener("change", (event) => {
+    const radio = event.target.closest('input[name="tripFoodRelated"]');
+    if (!radio) return;
+
+    setTripFoodError(radio.closest(".auth-form__group"), "");
+
+    const detailGroup = radio.form && radio.form.querySelector(".js-trip-food-other");
+    if (!detailGroup) return;
+
+    const detailInput = detailGroup.querySelector("textarea");
+    const showDetail = radio.value === "Other";
+
+    detailGroup.hidden = !showDetail;
+    if (detailInput && !showDetail) {
+      detailInput.value = "";
+      setTripFoodError(detailGroup, "");
+    }
+  });
+
+  document.addEventListener("input", (event) => {
+    const detailInput = event.target.closest(".js-trip-food-other textarea");
+    if (detailInput && detailInput.value.trim()) {
+      setTripFoodError(detailInput.closest(".auth-form__group"), "");
+    }
+  });
+
+  document.addEventListener("submit", (event) => {
+    const form = event.target;
+    const radios = form.querySelectorAll('input[name="tripFoodRelated"]');
+    if (!radios.length) return;
+
+    let firstInvalid = null;
+    const checked = form.querySelector('input[name="tripFoodRelated"]:checked');
+
+    if (!checked) {
+      setTripFoodError(radios[0].closest(".auth-form__group"), "Please fill out this field before proceeding.");
+      firstInvalid = radios[0];
+    }
+
+    if (checked && checked.value === "Other") {
+      const detailGroup = form.querySelector(".js-trip-food-other");
+      const detailInput = detailGroup && detailGroup.querySelector("textarea");
+      if (detailInput && !detailInput.value.trim()) {
+        setTripFoodError(detailGroup, "Please fill out this field before proceeding.");
+        firstInvalid = firstInvalid || detailInput;
+      }
+    }
+
+    if (firstInvalid) {
+      event.preventDefault();
+      firstInvalid.focus();
+    }
+  });
+})();
 
 // Inline field validation for forms opted out of native browser validation
 // (novalidate) so errors render inside our own card instead of the browser's
