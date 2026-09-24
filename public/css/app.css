@@ -1667,3 +1667,256 @@ textarea {
   border-color: var(--cfb-maroon);
   color: var(--cfb-maroon);
 }
+
+/* Admin booking detail: header answers who / what / when, the timeline
+   answers "where is this trip at". */
+.booking-detail__header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 1.25rem 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.booking-detail__date {
+  width: 5rem;
+}
+
+.booking-detail__title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.9rem;
+}
+
+.booking-detail__title-row h1 {
+  font-size: clamp(1.75rem, 1.3rem + 1.8vw, 2.5rem);
+  line-height: 1.1;
+  margin: 0;
+}
+
+.page-content .booking-detail__window {
+  font-size: 1.05rem;
+  color: var(--cfb-grey);
+  margin: 0.45rem 0 0;
+}
+
+.booking-detail__window strong {
+  color: var(--cfb-ink);
+}
+
+.booking-detail__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  margin-top: 0.75rem;
+  font-size: 0.95rem;
+  color: var(--cfb-grey);
+}
+
+.booking-detail__link {
+  font-weight: 700;
+  color: var(--cfb-maroon);
+  text-underline-offset: 3px;
+}
+
+.booking-detail__link:hover,
+.booking-detail__link:focus {
+  color: var(--cfb-maroon-hover);
+}
+
+@media (max-width: 720px) {
+  .booking-detail__header {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .booking-detail__date {
+    width: 4rem;
+  }
+
+  .booking-detail__edit {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+}
+
+.booking-detail__admin-note {
+  background: var(--cfb-gold-wash);
+  border-left: 4px solid var(--cfb-orange);
+  border-radius: 2px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.booking-detail__admin-note-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--cfb-orange-dark);
+  margin: 0 0 0.25rem;
+}
+
+.page-content .booking-detail__admin-note p {
+  font-size: 1rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.booking-detail__progress {
+  padding: 1.5rem 1.75rem;
+}
+
+.booking-detail__sidebar {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.vehicle-detail__card .booking-detail__list > div,
+.vehicle-detail__card .booking-detail__list > div:first-child,
+.vehicle-detail__card .booking-detail__list > div:last-child {
+  display: block;
+  padding: 0.75rem 0;
+  border-top: 1px solid var(--cfb-line);
+  border-bottom: none;
+}
+
+.vehicle-detail__card .booking-detail__list > div:last-child {
+  padding-bottom: 0;
+}
+
+.vehicle-detail__card .booking-detail__list dt {
+  font-size: 0.85rem;
+  margin-bottom: 0.2rem;
+}
+
+.vehicle-detail__card .booking-detail__list dd {
+  text-align: left;
+  font-size: 1rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.booking-detail__subtext {
+  display: block;
+  font-weight: 400;
+  color: var(--cfb-grey);
+  margin-top: 0.2rem;
+}
+
+/* The booking's lifecycle is a real sequence, so it reads as one: a rail
+   with a marker per step. Filled = happened, orange ring = next up. */
+.booking-timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.booking-timeline__step {
+  position: relative;
+  padding: 0 0 1.5rem 2.25rem;
+}
+
+.booking-timeline__step:last-child {
+  padding-bottom: 0;
+}
+
+.booking-timeline__step::before {
+  content: "";
+  position: absolute;
+  left: 0.45rem;
+  top: 1.1rem;
+  bottom: -0.2rem;
+  width: 2px;
+  background: var(--cfb-line);
+}
+
+.booking-timeline__step--done::before {
+  background: var(--cfb-maroon);
+}
+
+.booking-timeline__step:last-child::before {
+  display: none;
+}
+
+.booking-timeline__step::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.2rem;
+  width: 1rem;
+  height: 1rem;
+  box-sizing: border-box;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid var(--cfb-line);
+}
+
+.booking-timeline__step--done::after {
+  background: var(--cfb-maroon);
+  border-color: var(--cfb-maroon);
+}
+
+.booking-timeline__step--next::after {
+  border: 4px solid var(--cfb-orange);
+}
+
+.booking-timeline__title {
+  font-family: var(--font-sans);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--cfb-grey);
+  margin: 0;
+}
+
+.booking-timeline__step--done .booking-timeline__title,
+.booking-timeline__step--next .booking-timeline__title {
+  color: var(--cfb-ink);
+}
+
+.booking-timeline__step--final .booking-timeline__title {
+  color: #c62828;
+}
+
+.page-content .booking-timeline__detail {
+  font-size: 0.95rem;
+  color: var(--cfb-grey);
+  margin: 0.2rem 0 0;
+}
+
+.booking-timeline .booking-code {
+  margin-top: 0.5rem;
+}
+
+.vehicle-detail__card .booking-detail__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 2rem;
+  margin: 0.6rem 0 0;
+}
+
+.vehicle-detail__card .booking-detail__facts > div,
+.vehicle-detail__card .booking-detail__facts > div:first-child,
+.vehicle-detail__card .booking-detail__facts > div:last-child {
+  display: block;
+  padding: 0;
+  border: none;
+}
+
+.vehicle-detail__card .booking-detail__facts dt {
+  font-size: 0.8rem;
+}
+
+.vehicle-detail__card .booking-detail__facts dd {
+  text-align: left;
+  font-size: 1rem;
+}
+
+.vehicle-detail__sidebar.booking-detail__sidebar {
+  position: static;
+}
+
+.page-content .booking-timeline__detail--hint {
+  font-size: 0.9rem;
+  margin-top: 0.6rem;
+}
