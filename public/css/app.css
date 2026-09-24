@@ -329,6 +329,7 @@ textarea {
 
 .vehicle-detail__main {
   min-width: 0;
+  container-type: inline-size;
 }
 
 .vehicle-detail__sidebar {
@@ -389,11 +390,14 @@ textarea {
   display: flex;
 }
 
+/* contain: size keeps the photo's own dimensions out of the row height, so
+   the details card sets the height and the photo crops to fill it. */
 .vehicle-detail__photo {
   display: block;
   width: 100%;
   height: 100%;
   min-height: 260px;
+  contain: size;
   object-fit: cover;
   border-radius: 2px;
   background: var(--cfb-line);
@@ -409,14 +413,15 @@ textarea {
   border: 1px dashed var(--cfb-line);
 }
 
-@media (max-width: 720px) {
+@container (max-width: 640px) {
   .vehicle-detail__overview {
     grid-template-columns: minmax(0, 1fr);
   }
 
   .vehicle-detail__photo {
-    height: 240px;
+    height: auto;
     min-height: 0;
+    aspect-ratio: 16 / 10;
   }
 }
 
@@ -929,7 +934,7 @@ textarea {
   margin: 0;
 }
 
-.reservations-page__lead,
+.page-content .reservations-page__lead,
 .admin-page .vehicles-page__lead {
   margin-bottom: 2rem;
 }
@@ -939,17 +944,89 @@ textarea {
 }
 
 .dashboard-empty {
-  border: 1px dashed var(--cfb-line);
-  border-radius: 2px;
-  background: var(--cfb-paper);
-  padding: 1.75rem 1.5rem;
-  text-align: center;
+  border-top: 1px solid var(--cfb-line);
+  padding-top: 1rem;
 }
 
-.dashboard-empty p {
+.page-content .dashboard-empty,
+.page-content .dashboard-empty p {
   margin: 0;
   color: var(--cfb-grey);
   font-style: normal;
+}
+
+.dashboard-section__link {
+  margin-left: auto;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--cfb-maroon);
+  text-underline-offset: 3px;
+}
+
+.dashboard-section__link:hover,
+.dashboard-section__link:focus {
+  color: var(--cfb-maroon-hover);
+}
+
+/* Staff dashboard hero: the one bold moment on the page. A maroon band
+   holding whichever booking matters right now. */
+.staff-dashboard__hero {
+  background: var(--cfb-maroon);
+  border-radius: 2px;
+  padding: clamp(1.25rem, 3vw, 2.25rem);
+  margin-bottom: 2.75rem;
+  border-bottom: 4px solid var(--cfb-orange);
+}
+
+.staff-dashboard__hero-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.staff-dashboard .staff-dashboard__greeting {
+  font-size: clamp(2rem, 1.4rem + 2.4vw, 3.25rem);
+  line-height: 1;
+  color: #ffffff;
+  margin: 0;
+}
+
+.page-content .staff-dashboard__hero-label,
+.page-content .staff-dashboard__hero-empty {
+  font-size: 1.05rem;
+  color: #eadde5;
+  margin: 0.5rem 0 0;
+}
+
+.page-content .staff-dashboard__hero-empty {
+  margin: 0;
+}
+
+.staff-dashboard__book {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--cfb-maroon);
+  background: #ffffff;
+  padding: 0.75rem 1.4rem;
+  border-radius: 2px;
+}
+
+.staff-dashboard__book:hover {
+  background: var(--cfb-gold-wash);
+}
+
+.staff-dashboard__book:focus-visible {
+  outline: 3px solid var(--cfb-orange);
+  outline-offset: 3px;
 }
 
 .dashboard-empty a {
@@ -1013,18 +1090,90 @@ textarea {
 }
 
 .booking-card__layout {
-  display: flex;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: 4.5rem 200px minmax(0, 1fr);
+  align-items: start;
   gap: 1.25rem;
 }
 
+/* Tear-off calendar leaf: the trip date is what staff scan the list for. */
+.booking-card__date {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  font-family: var(--font-display);
+  line-height: 1;
+  color: #ffffff;
+  background: var(--cfb-maroon);
+  border-radius: 2px;
+  padding: 0.55rem 0.25rem 0.6rem;
+}
+
+.booking-card__date-weekday,
+.booking-card__date-month {
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+}
+
+.booking-card__date-day {
+  font-size: 2rem;
+  font-weight: 600;
+  margin: 0.2rem 0;
+}
+
+/* Past trips are reference, not action: no photo, so the list stays compact. */
+.booking-card--muted .booking-card__layout {
+  grid-template-columns: 4.5rem minmax(0, 1fr);
+}
+
+.booking-card--muted .booking-card__photo {
+  display: none;
+}
+
+.booking-card--muted .booking-card__date {
+  color: var(--cfb-grey);
+  background: var(--cfb-line);
+}
+
 .booking-card__photo {
-  flex-shrink: 0;
-  width: 260px;
-  height: 175px;
+  width: 100%;
+  height: 135px;
   object-fit: cover;
   border-radius: 2px;
   background: var(--cfb-line);
+}
+
+.booking-card--featured {
+  padding: 1.5rem;
+  border: none;
+}
+
+.booking-card--featured .booking-card__layout {
+  grid-template-columns: 5.5rem 280px minmax(0, 1fr);
+  gap: 1.5rem;
+}
+
+.booking-card--featured .booking-card__date {
+  background: var(--cfb-orange);
+  color: var(--cfb-ink);
+}
+
+.booking-card--featured .booking-card__date-day {
+  font-size: 2.75rem;
+}
+
+.booking-card--featured .booking-card__photo {
+  height: 190px;
+}
+
+.booking-card--featured .booking-card__vehicle {
+  font-size: clamp(1.4rem, 1.1rem + 1vw, 1.9rem);
+}
+
+.booking-card--featured .booking-code {
+  font-size: 2rem;
 }
 
 .booking-card__photo--empty {
@@ -1043,14 +1192,42 @@ textarea {
   min-width: 0;
 }
 
-@media (max-width: 720px) {
-  .booking-card__layout {
-    flex-direction: column;
+@media (max-width: 1000px) {
+  .booking-card__layout,
+  .booking-card--featured .booking-card__layout {
+    grid-template-columns: 4.5rem minmax(0, 1fr);
   }
 
   .booking-card__photo {
-    width: 100%;
+    display: none;
+  }
+
+  .booking-card--featured .booking-card__photo {
+    display: block;
+    grid-column: 1 / -1;
+    grid-row: 1;
     height: 200px;
+  }
+}
+
+@media (max-width: 480px) {
+  .booking-card {
+    padding: 1rem;
+  }
+
+  .booking-card__layout,
+  .booking-card--featured .booking-card__layout {
+    grid-template-columns: 3.75rem minmax(0, 1fr);
+    gap: 0.9rem;
+  }
+
+  .booking-card__date-day,
+  .booking-card--featured .booking-card__date-day {
+    font-size: 1.6rem;
+  }
+
+  .booking-card--featured .booking-card__photo {
+    height: 160px;
   }
 }
 
@@ -1070,11 +1247,16 @@ textarea {
   margin: 0;
 }
 
-.booking-card__window {
+.page-content .booking-card__window {
   font-family: var(--font-sans);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+  line-height: 1.45;
   color: var(--cfb-grey);
   margin: 0.3rem 0 0;
+}
+
+.booking-card__window strong {
+  color: var(--cfb-ink);
 }
 
 .booking-card__access {
@@ -1173,12 +1355,12 @@ textarea {
   padding: 0.4rem 0.75rem;
 }
 
-.booking-card__notes {
+.page-content .booking-card__notes {
   font-family: var(--font-sans);
   font-size: 0.9rem;
   font-style: italic;
   color: var(--cfb-grey);
-  margin: 1rem 0 0;
+  margin: 1.25rem 0 0;
 }
 
 .booking-card__actions {

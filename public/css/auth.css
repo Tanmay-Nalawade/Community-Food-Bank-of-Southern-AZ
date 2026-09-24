@@ -184,9 +184,12 @@
   cursor: pointer;
 }
 
-.auth-form__field-error {
+/* Doubled class so it outranks `.page-content p`, which sets every paragraph
+   on the page to the ink color. */
+.auth-form .auth-form__field-error {
   font-family: var(--font-sans);
-  font-size: 0.8rem;
+  font-size: 0.85rem;
+  font-weight: 700;
   color: #b3261e;
   margin: 0;
   min-height: 1.1em;
