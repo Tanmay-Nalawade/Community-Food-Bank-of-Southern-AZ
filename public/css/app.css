@@ -906,13 +906,20 @@ textarea {
   border-color: var(--cfb-maroon-hover);
 }
 
+/* Matches the filter button's height and type so the two read as a pair. */
 .admin-filters__clear {
-  font-family: var(--font-sans);
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0 0.5rem;
+  font-family: var(--font-display);
   font-size: 0.9rem;
-  font-weight: 700;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   color: var(--cfb-maroon);
   text-decoration: none;
-  align-self: center;
+  align-self: end;
 }
 
 .admin-filters__clear:hover,
