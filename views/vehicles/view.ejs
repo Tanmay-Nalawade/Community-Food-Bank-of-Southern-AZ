@@ -3,11 +3,15 @@
 <section class="vehicle-detail">
   <a class="vehicle-detail__back" href="<%= backHref %>">&larr; <%= backLabel %></a>
 
-  <% if (bookingLabel) { %>
-    <p class="vehicle-detail__booking-window">
-      Selected time: <strong><%= bookingLabel %></strong>
-    </p>
-  <% } %>
+  <header class="vehicle-detail__header">
+    <h1>
+      <%= vehicle.year ? vehicle.year + " " : "" %><%= vehicle.make %> <%= vehicle.model %>
+    </h1>
+    <div class="vehicle-detail__header-meta">
+      <span class="vehicle-detail__plate"><%= vehicle.licensePlate %></span>
+      <%- include('../partials/status-pill', { value: vehicle.status }) %>
+    </div>
+  </header>
 
   <div class="vehicle-detail__layout">
     <div class="vehicle-detail__main">
@@ -19,17 +23,8 @@
         <% } %>
 
         <div class="vehicle-detail__overview-body">
-          <header class="vehicle-detail__header">
-            <div>
-              <h1>
-                <%= vehicle.year ? vehicle.year + " " : "" %><%= vehicle.make %> <%= vehicle.model %>
-              </h1>
-              <p class="vehicle-detail__plate"><%= vehicle.licensePlate %></p>
-            </div>
-            <%- include('../partials/status-pill', { value: vehicle.status }) %>
-          </header>
-
-          <div class="vehicle-detail__card">
+          <div class="vehicle-detail__card vehicle-detail__specs">
+            <h2 class="vehicle-detail__section-title">Vehicle details</h2>
             <dl>
               <div>
                 <dt>Make</dt>
@@ -83,6 +78,20 @@
       <div class="vehicle-detail__card booking-request-card">
         <h2 class="vehicle-detail__section-title">Book this vehicle</h2>
 
+        <% if (booking && !["Admin", "IT Admin"].includes(effectiveRole)) { %>
+          <div class="booking-request-card__trip">
+            <p class="booking-request-card__trip-date">
+              <%= booking.start.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }) %>
+            </p>
+            <p class="booking-request-card__trip-time">
+              <%= booking.start.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) %>
+              to
+              <%= booking.end.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) %>
+            </p>
+            <a class="booking-request-card__trip-change" href="/">Change time</a>
+          </div>
+        <% } %>
+
         <% if (effectiveRole === "Admin") { %>
           <p class="vehicle-detail__empty">
             Admins manage reservations from the
@@ -107,6 +116,25 @@
                 name="staffNotes"
                 rows="3"
                 placeholder="Purpose of trip, passengers, etc."
+              ></textarea>
+            </div>
+
+            <div class="auth-form__group">
+              <span class="auth-form__label">Is this trip food related?</span>
+              <div class="auth-form__radio-row">
+                <label class="auth-form__radio"><input type="radio" name="tripFoodRelated" value="Yes" required /> Yes</label>
+                <label class="auth-form__radio"><input type="radio" name="tripFoodRelated" value="No" required /> No</label>
+                <label class="auth-form__radio"><input type="radio" name="tripFoodRelated" value="Other" required /> Other</label>
+              </div>
+            </div>
+
+            <div class="auth-form__group js-trip-food-other" hidden>
+              <label class="auth-form__label" for="tripFoodRelatedDetail">Please describe the purpose of this trip</label>
+              <textarea
+                class="auth-form__input booking-request-card__textarea"
+                id="tripFoodRelatedDetail"
+                name="tripFoodRelatedDetail"
+                rows="2"
               ></textarea>
             </div>
 
@@ -160,6 +188,25 @@
                 name="staffNotes"
                 rows="3"
                 placeholder="Purpose of trip, passengers, etc."
+              ></textarea>
+            </div>
+
+            <div class="auth-form__group">
+              <span class="auth-form__label">Is this trip food related?</span>
+              <div class="auth-form__radio-row">
+                <label class="auth-form__radio"><input type="radio" name="tripFoodRelated" value="Yes" required /> Yes</label>
+                <label class="auth-form__radio"><input type="radio" name="tripFoodRelated" value="No" required /> No</label>
+                <label class="auth-form__radio"><input type="radio" name="tripFoodRelated" value="Other" required /> Other</label>
+              </div>
+            </div>
+
+            <div class="auth-form__group js-trip-food-other" hidden>
+              <label class="auth-form__label" for="tripFoodRelatedDetail">Please describe the purpose of this trip</label>
+              <textarea
+                class="auth-form__input booking-request-card__textarea"
+                id="tripFoodRelatedDetail"
+                name="tripFoodRelatedDetail"
+                rows="2"
               ></textarea>
             </div>
 

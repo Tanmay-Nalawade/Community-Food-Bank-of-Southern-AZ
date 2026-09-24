@@ -102,6 +102,10 @@
   min-width: 0;
 }
 
+.auth-form__group[hidden] {
+  display: none;
+}
+
 .auth-form__label {
   font-family: var(--font-display);
   font-size: 0.8rem;
@@ -162,6 +166,22 @@
 .auth-form__input--invalid:focus {
   border-color: #b3261e;
   box-shadow: 0 0 0 3px rgba(179, 38, 30, 0.14);
+}
+
+.auth-form__radio-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+}
+
+.auth-form__radio {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  color: var(--cfb-ink);
+  cursor: pointer;
 }
 
 .auth-form__field-error {

@@ -155,6 +155,15 @@
       <h2 class="vehicle-detail__section-title">Notes</h2>
       <dl>
         <div>
+          <dt>Food related trip?</dt>
+          <dd>
+            <%= reservation.tripFoodRelated || "—" %>
+            <% if (reservation.tripFoodRelated === "Other" && reservation.tripFoodRelatedDetail) { %>
+              &mdash; <%= reservation.tripFoodRelatedDetail %>
+            <% } %>
+          </dd>
+        </div>
+        <div>
           <dt>Staff notes</dt>
           <dd><%= reservation.staffNotes || "—" %></dd>
         </div>

@@ -107,6 +107,9 @@ exports.createRequest = async (req, res) => {
       requestedStartTime: booking.start,
       requestedEndTime: booking.end,
       staffNotes: req.body.staffNotes || "",
+      tripFoodRelated: req.body.tripFoodRelated,
+      tripFoodRelatedDetail:
+        req.body.tripFoodRelated === "Other" ? req.body.tripFoodRelatedDetail || "" : "",
       status: "Reserved",
     });
   } catch (error) {
@@ -285,6 +288,9 @@ exports.updateRequest = async (req, res) => {
   reservation.requestedStartTime = booking.start;
   reservation.requestedEndTime = booking.end;
   reservation.staffNotes = req.body.staffNotes || "";
+  reservation.tripFoodRelated = req.body.tripFoodRelated;
+  reservation.tripFoodRelatedDetail =
+    req.body.tripFoodRelated === "Other" ? req.body.tripFoodRelatedDetail || "" : "";
   await reservation.save();
 
   req.flash("success", "Booking request updated.");

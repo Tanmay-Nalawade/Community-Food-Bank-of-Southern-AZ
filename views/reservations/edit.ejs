@@ -59,6 +59,32 @@
         ><%= reservation.staffNotes || "" %></textarea>
       </div>
 
+      <div class="auth-form__group">
+        <span class="auth-form__label">Is this trip food related?</span>
+        <div class="auth-form__radio-row">
+          <label class="auth-form__radio">
+            <input type="radio" name="tripFoodRelated" value="Yes" <%= reservation.tripFoodRelated === "Yes" ? "checked" : "" %> required /> Yes
+          </label>
+          <label class="auth-form__radio">
+            <input type="radio" name="tripFoodRelated" value="No" <%= reservation.tripFoodRelated === "No" ? "checked" : "" %> required /> No
+          </label>
+          <label class="auth-form__radio">
+            <input type="radio" name="tripFoodRelated" value="Other" <%= reservation.tripFoodRelated === "Other" ? "checked" : "" %> required /> Other
+          </label>
+        </div>
+      </div>
+
+      <div class="auth-form__group js-trip-food-other" <%= reservation.tripFoodRelated === "Other" ? "" : "hidden" %>>
+        <label class="auth-form__label" for="tripFoodRelatedDetail">Please describe the purpose of this trip</label>
+        <textarea
+          class="auth-form__input booking-request-card__textarea"
+          id="tripFoodRelatedDetail"
+          name="tripFoodRelatedDetail"
+          rows="2"
+          <%= reservation.tripFoodRelated === "Other" ? "required" : "" %>
+        ><%= reservation.tripFoodRelatedDetail || "" %></textarea>
+      </div>
+
       <button class="auth-form__submit" type="submit">Save changes</button>
     </form>
   </div>

@@ -21,6 +21,23 @@ const bookingWindowSchema = Joi.object({
     "string.pattern.base": "Please choose a valid end time.",
   }),
   staffNotes: Joi.string().trim().max(1000).empty("").optional(),
+  tripFoodRelated: Joi.string().valid("Yes", "No", "Other").required().messages({
+    "string.empty": "Please let us know if this trip is food related.",
+    "any.required": "Please let us know if this trip is food related.",
+    "any.only": "Please choose one of the options.",
+  }),
+  tripFoodRelatedDetail: Joi.string()
+    .trim()
+    .max(500)
+    .when("tripFoodRelated", {
+      is: "Other",
+      then: Joi.string().trim().max(500).required(),
+      otherwise: Joi.string().trim().max(500).empty("").optional(),
+    })
+    .messages({
+      "string.empty": "Please briefly describe the purpose of this trip.",
+      "any.required": "Please briefly describe the purpose of this trip.",
+    }),
 });
 
 const mileageSchema = Joi.object({

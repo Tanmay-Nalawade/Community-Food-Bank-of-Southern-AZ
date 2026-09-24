@@ -36,6 +36,26 @@ document.addEventListener("click", (event) => {
   }
 });
 
+// Booking forms ask "is this trip food related?" — picking "Other" reveals
+// a required detail textarea; switching away from "Other" hides and clears
+// it so a stale answer can't be submitted silently.
+document.addEventListener("change", (event) => {
+  const radio = event.target.closest('input[name="tripFoodRelated"]');
+  if (!radio) return;
+
+  const detailGroup = radio.form && radio.form.querySelector(".js-trip-food-other");
+  if (!detailGroup) return;
+
+  const detailInput = detailGroup.querySelector("textarea");
+  const showDetail = radio.value === "Other";
+
+  detailGroup.hidden = !showDetail;
+  if (detailInput) {
+    detailInput.required = showDetail;
+    if (!showDetail) detailInput.value = "";
+  }
+});
+
 // Inline field validation for forms opted out of native browser validation
 // (novalidate) so errors render inside our own card instead of the browser's
 // default tooltip UI.

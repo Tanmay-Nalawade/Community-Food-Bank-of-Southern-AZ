@@ -18,6 +18,9 @@ const reservationSchema = new Schema(
     staffNotes: { type: String, default: "" },
     adminNotes: { type: String, default: "" },
 
+    tripFoodRelated: { type: String, enum: ["Yes", "No", "Other"] },
+    tripFoodRelatedDetail: { type: String, default: "" },
+
     reviewedBy: { type: Schema.Types.ObjectId, ref: "User" },
     reviewedAt: { type: Date },
 
