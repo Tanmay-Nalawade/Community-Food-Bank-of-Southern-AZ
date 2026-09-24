@@ -4,16 +4,14 @@
   <div class="vehicles-page__header">
     <div>
       <h1>Manage Reservations</h1>
-      <p class="vehicles-page__lead">
-        Bookings confirm automatically when the vehicle is available; a request for an
-        already-booked time is rejected before it's created. Items marked Pending are a
-        KeyCafe issue that needs your review. You can edit, override, or cancel any booking
-        below.
+      <p class="vehicles-page__lead admin-page__lead">
+        Bookings confirm automatically when the vehicle is free. A Pending booking means
+        KeyCafe access couldn&rsquo;t be set up, so it needs your review.
       </p>
     </div>
     <div class="admin-page__header-actions">
-      <a class="vehicles-page__add-btn" href="/admin/reservations/history">Booking History</a>
-      <a class="vehicles-page__add-btn" href="/admin/vehicles/add">Add Vehicle</a>
+      <a class="action-btn action-btn--edit" href="/admin/reservations/history">Booking history</a>
+      <a class="action-btn action-btn--edit" href="/admin/vehicles/add">Add vehicle</a>
     </div>
   </div>
 
@@ -62,7 +60,7 @@
       <input class="auth-form__input" type="date" id="endDate" name="endDate" value="<%= filters.endDate %>" />
     </div>
 
-    <button class="admin-filters__submit" type="submit">Filter</button>
+    <button class="action-btn action-btn--primary admin-filters__submit" type="submit">Filter</button>
     <% if (filters.driver || filters.vehicleId || filters.status || filters.startDate || filters.endDate) { %>
       <a class="admin-filters__clear" href="/admin/reservations">Clear</a>
     <% } %>
@@ -72,12 +70,12 @@
     <p class="vehicles-page__empty">No reservations to review.</p>
   <% } else { %>
     <div class="admin-table-wrap">
-      <table class="admin-table">
+      <table class="admin-table admin-table--reservations">
         <thead>
           <tr>
-            <th>Staff</th>
-            <th>Vehicle</th>
             <th>When</th>
+            <th>Driver</th>
+            <th>Vehicle</th>
             <th>Status</th>
             <th>Actions</th>
           </tr>
