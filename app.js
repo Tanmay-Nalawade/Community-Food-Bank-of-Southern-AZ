@@ -57,12 +57,19 @@ app.use(
   }),
 );
 
-// Long browser caching for static assets pays off in production, but in
-// development it just makes CSS/JS edits invisible until a hard-refresh —
-// so only cache aggressively when NODE_ENV is production.
+// Every static asset URL carries ?v=<this> (see views/layouts/boilerplate.ejs
+// and asset() below) so a year-long, "immutable" cache is safe: the moment
+// the app restarts (any deploy), the version changes and every page starts
+// requesting fresh URLs — old cached files are simply never asked for again,
+// rather than needing to expire or be re-validated. In dev, no caching at
+// all so CSS/JS edits show up on a normal refresh, not just a hard one.
+const ASSET_VERSION = String(Date.now());
+app.locals.asset = (assetPath) => `${assetPath}?v=${ASSET_VERSION}`;
+
 app.use(
   express.static(path.join(__dirname, "public"), {
-    maxAge: process.env.NODE_ENV === "production" ? "1h" : 0,
+    maxAge: process.env.NODE_ENV === "production" ? "1y" : 0,
+    immutable: process.env.NODE_ENV === "production",
   }),
 );
 app.use(express.urlencoded({ extended: true }));
@@ -98,6 +105,14 @@ app.use(computeEffectiveRole);
 app.use((req, res, next) => {
   res.locals.successMessages = req.flash("success");
   res.locals.errorMessages = req.flash("error");
+  next();
+});
+
+// Which page-specific CSS bundle to load (see views/layouts/boilerplate.ejs)
+// — admin.css and it.js's own pages share one "admin" bundle since they use
+// the same table/action-bar primitives; every other page gets staff.css.
+app.use((req, res, next) => {
+  res.locals.isAdminSection = req.path.startsWith("/admin") || req.path.startsWith("/it");
   next();
 });
 

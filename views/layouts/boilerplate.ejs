@@ -4,9 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title><%= typeof title !== 'undefined' ? title : 'Motor Pool' %> | Community Food Bank of Southern Arizona</title>
-    <link rel="stylesheet" href="/css/navbar.css" />
-    <link rel="stylesheet" href="/css/app.css" />
-    <link rel="stylesheet" href="/css/auth.css" />
+    <link rel="stylesheet" href="<%= asset('/css/navbar.css') %>" />
+    <link rel="stylesheet" href="<%= asset('/css/app.css') %>" />
+    <link rel="stylesheet" href="<%= asset('/css/auth.css') %>" />
+    <% if (isAdminSection) { %>
+      <link rel="stylesheet" href="<%= asset('/css/admin.css') %>" />
+    <% } else { %>
+      <link rel="stylesheet" href="<%= asset('/css/staff.css') %>" />
+    <% } %>
   </head>
   <body class="site-shell">
     <%- include('../partials/navbar') %>
@@ -15,6 +20,6 @@
       <%- body %>
     </main>
     <%- include('../partials/footer') %>
-    <script src="/js/app.js" defer></script>
+    <script src="<%= asset('/js/app.js') %>" defer></script>
   </body>
 </html>
