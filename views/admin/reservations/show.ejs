@@ -119,7 +119,34 @@
       </div>
     </div>
 
-    <a class="vehicles-page__add-btn booking-detail__edit" href="/admin/reservations/<%= r._id %>/edit">Edit booking</a>
+    <div class="booking-detail__actions">
+      <% if (["Pending", "Reserved", "Active"].includes(r.status)) { %>
+        <div class="booking-detail__action-group">
+          <% if (r.status === "Pending") { %>
+            <form action="/admin/reservations/<%= r._id %>/approve" method="POST">
+              <input type="hidden" name="returnTo" value="detail" />
+              <button class="booking-detail__btn booking-detail__btn--approve" type="submit">Approve</button>
+            </form>
+            <form action="/admin/reservations/<%= r._id %>/deny" method="POST">
+              <input type="hidden" name="returnTo" value="detail" />
+              <button class="booking-detail__btn booking-detail__btn--deny" type="submit">Deny</button>
+            </form>
+          <% } %>
+          <% if (["Reserved", "Active"].includes(r.status)) { %>
+            <form action="/admin/reservations/<%= r._id %>/cancel" method="POST">
+              <input type="hidden" name="returnTo" value="detail" />
+              <button class="booking-detail__btn booking-detail__btn--deny" type="submit">Cancel booking</button>
+            </form>
+          <% } %>
+        </div>
+      <% } %>
+      <div class="booking-detail__action-group">
+        <a class="booking-detail__btn booking-detail__btn--edit" href="/admin/reservations/<%= r._id %>/edit">Edit booking</a>
+        <form class="booking-detail__delete" action="/admin/reservations/<%= r._id %>?_method=DELETE" method="POST">
+          <button class="booking-detail__btn booking-detail__btn--delete" type="submit">Delete</button>
+        </form>
+      </div>
+    </div>
   </header>
 
   <div class="vehicle-detail__layout">

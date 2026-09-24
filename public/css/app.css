@@ -1734,11 +1734,6 @@ textarea {
   .booking-detail__date {
     width: 4rem;
   }
-
-  .booking-detail__edit {
-    grid-column: 1 / -1;
-    justify-self: start;
-  }
 }
 
 .booking-detail__admin-note {
@@ -1919,4 +1914,114 @@ textarea {
 .page-content .booking-timeline__detail--hint {
   font-size: 0.9rem;
   margin-top: 0.6rem;
+}
+
+/* Header actions: the review decision (approve / deny / cancel) on the left,
+   housekeeping (edit / delete) on the right. One button height throughout;
+   only Approve is filled, and Delete is kept quiet so it can't be mistaken
+   for Deny. */
+.booking-detail__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.75rem 1.5rem;
+}
+
+.booking-detail__action-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.booking-detail__action-group form {
+  margin: 0;
+}
+
+.booking-detail__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.6rem;
+  box-sizing: border-box;
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  padding: 0 1.15rem;
+  border: 2px solid transparent;
+  border-radius: 2px;
+  background: #ffffff;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.booking-detail__btn:focus-visible {
+  outline: 3px solid var(--cfb-orange);
+  outline-offset: 2px;
+}
+
+.booking-detail__btn--approve {
+  background: #2e7d32;
+  border-color: #2e7d32;
+  color: #ffffff;
+}
+
+.booking-detail__btn--approve:hover {
+  background: #1b5e20;
+  border-color: #1b5e20;
+}
+
+.booking-detail__btn--deny {
+  border-color: #c62828;
+  color: #c62828;
+}
+
+.booking-detail__btn--deny:hover {
+  background: #c62828;
+  color: #ffffff;
+}
+
+.booking-detail__btn--edit {
+  border-color: var(--cfb-maroon);
+  color: var(--cfb-maroon);
+}
+
+.booking-detail__btn--edit:hover {
+  background: var(--cfb-maroon);
+  color: #ffffff;
+}
+
+.booking-detail__delete {
+  padding-left: 0.6rem;
+  border-left: 1px solid var(--cfb-line);
+}
+
+.booking-detail__btn--delete {
+  background: none;
+  color: #c62828;
+  padding: 0 0.5rem;
+}
+
+.booking-detail__btn--delete:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Below full desktop the actions would squeeze the heading, so they drop to
+   their own row under it. Kept after the base rules so it wins. */
+@media (max-width: 1200px) {
+  .booking-detail__header {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .booking-detail__actions {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+  }
 }

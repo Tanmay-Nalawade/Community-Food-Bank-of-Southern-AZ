@@ -33,6 +33,10 @@ const updateReservationSchema = Joi.object({
 
 const adminNotesSchema = Joi.object({
   adminNotes: Joi.string().trim().max(2000).empty("").optional(),
+  // Only ever sent by the reservation detail page's Deny form, so it can
+  // redirect back there instead of the list — stripUnknown would otherwise
+  // silently drop it, since it isn't a real admin-notes field.
+  returnTo: Joi.string().valid("detail").empty("").optional(),
 });
 
 module.exports = { updateReservationSchema, adminNotesSchema };

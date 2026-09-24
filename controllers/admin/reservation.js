@@ -11,6 +11,16 @@ const { fetchPage, PAGE_SIZE } = require("../../utils/pagination");
 
 const HOLDING_STATUSES = ["Reserved", "Active"];
 
+// Approve/deny/cancel are triggered from both the reservations list and a
+// single reservation's detail page — bouncing a detail-page action back to
+// the list would be a jarring, pointless navigation, so the form carries
+// where it was submitted from.
+function redirectAfterAction(req, res, reservationId) {
+  const target =
+    req.body.returnTo === "detail" ? `/admin/reservations/${reservationId}` : "/admin/reservations";
+  res.redirect(target);
+}
+
 function escapeRegex(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -330,7 +340,7 @@ exports.approveReservation = async (req, res) => {
     );
   }
 
-  res.redirect("/admin/reservations");
+  redirectAfterAction(req, res, reservation._id);
 };
 
 async function freeVehicleIfHeldBy(vehicleId) {
@@ -371,7 +381,7 @@ exports.denyReservation = async (req, res) => {
     req.flash("success", "Booking canceled.");
   }
 
-  res.redirect("/admin/reservations");
+  redirectAfterAction(req, res, reservation._id);
 };
 
 exports.cancelReservation = async (req, res) => {
@@ -382,7 +392,7 @@ exports.cancelReservation = async (req, res) => {
 
   if (!["Reserved", "Active"].includes(reservation.status)) {
     req.flash("error", "Only confirmed bookings can be canceled this way.");
-    return res.redirect("/admin/reservations");
+    return redirectAfterAction(req, res, reservation._id);
   }
 
   let revokeFailed = false;
@@ -408,7 +418,7 @@ exports.cancelReservation = async (req, res) => {
     req.flash("success", "Booking canceled by Transportation.");
   }
 
-  res.redirect("/admin/reservations");
+  redirectAfterAction(req, res, reservation._id);
 };
 
 exports.deleteReservation = async (req, res) => {

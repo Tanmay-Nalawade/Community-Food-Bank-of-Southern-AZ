@@ -278,6 +278,36 @@
   background: var(--cfb-ink);
 }
 
+/* Between the hamburger breakpoint and full desktop there isn't room for the
+   full-size logo plus the admin's five links and account button, so the row
+   wrapped and the account button dropped onto its own line. Shrink the logo
+   and the gaps instead so everything stays on one line. */
+@media (min-width: 901px) and (max-width: 1240px) {
+  .site-navbar__inner {
+    gap: 1.25rem;
+  }
+
+  .site-navbar__brand {
+    width: clamp(200px, 22vw, 260px);
+  }
+
+  .site-navbar__logo {
+    height: auto;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .site-navbar__nav {
+    flex-wrap: nowrap;
+    gap: clamp(0.9rem, 1.6vw, 1.5rem);
+  }
+
+  .site-navbar__link {
+    font-size: 0.9rem;
+    letter-spacing: 0.04em;
+  }
+}
+
 @media (max-width: 900px) {
   .site-navbar__inner {
     flex-wrap: wrap;
