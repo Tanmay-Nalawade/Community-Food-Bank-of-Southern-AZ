@@ -16,7 +16,6 @@ const webhookRoutes = require("./routes/webhook");
 const accountRoutes = require("./routes/account");
 const itRoutes = require("./routes/it");
 const reminderScheduler = require("./jobs/reminderScheduler");
-const mileageLogScheduler = require("./jobs/mileageLogScheduler");
 const passport = require("./config/passport");
 const { computeEffectiveRole } = require("./middleware/auth");
 const { Reservation } = require("./models");
@@ -284,7 +283,6 @@ async function start() {
   });
 
   reminderScheduler.start();
-  mileageLogScheduler.start();
 }
 
 start();

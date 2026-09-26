@@ -10,7 +10,7 @@ const TABLES = [
   "vehicle_issues",
   "access_logs",
   "activity_logs",
-  "mileage_log_sends",
+  "trip_log_sends",
   "reservations",
   "vehicles",
   "users",

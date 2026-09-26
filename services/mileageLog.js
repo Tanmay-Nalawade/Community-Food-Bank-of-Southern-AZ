@@ -18,9 +18,21 @@ function driverFullName(user) {
   return `${user.firstName || ""} ${user.lastName || ""}`.trim();
 }
 
+// WHERE fragment matching trips whose effective date (see
+// effectiveTripDate) falls in [start, end). Shared by the per-vehicle
+// monthly log and the fleet-wide Trip Log email so both agree on which
+// month/range a trip belongs to.
+function tripDateInRange(start, end) {
+  return {
+    [Op.or]: [
+      { tripStartedAt: { [Op.gte]: start, [Op.lt]: end } },
+      { tripStartedAt: null, requestedStartTime: { [Op.gte]: start, [Op.lt]: end } },
+    ],
+  };
+}
+
 // Single source of truth for "what does vehicle X's mileage log look like
-// for month Y" — used by both the on-demand admin page and the scheduled
-// monthly email job, so the query/row-shaping logic exists exactly once.
+// for month Y", so the query/row-shaping logic exists exactly once.
 async function buildMonthlyLog(vehicleId, year, month) {
   const vehicle = await Vehicle.findByPk(vehicleId);
   if (!vehicle) {
@@ -34,13 +46,7 @@ async function buildMonthlyLog(vehicleId, year, month) {
     where: {
       vehicleId,
       status: { [Op.in]: LOGGABLE_STATUSES },
-      [Op.or]: [
-        { tripStartedAt: { [Op.gte]: monthStart, [Op.lt]: monthEnd } },
-        {
-          tripStartedAt: null,
-          requestedStartTime: { [Op.gte]: monthStart, [Op.lt]: monthEnd },
-        },
-      ],
+      ...tripDateInRange(monthStart, monthEnd),
     },
     include: [{ association: "user", attributes: ["id", "firstName", "lastName"] }],
     order: [["requestedStartTime", "ASC"], ["id", "ASC"]],
@@ -80,4 +86,4 @@ async function buildMonthlyLog(vehicleId, year, month) {
   };
 }
 
-module.exports = { buildMonthlyLog, effectiveTripDate, driverFullName };
+module.exports = { buildMonthlyLog, effectiveTripDate, driverFullName, tripDateInRange, LOGGABLE_STATUSES };

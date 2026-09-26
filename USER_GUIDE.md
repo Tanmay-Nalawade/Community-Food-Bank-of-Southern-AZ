@@ -46,7 +46,7 @@ If you're an Admin or IT Admin, the same menu lets you **View as Staff** to see 
 - **Reservations** — approve, deny, edit, or cancel bookings; see full booking history
 - **Vehicles** — add a vehicle (a KeyCafe key is created for it automatically — nothing to set up in KeyCafe yourself), edit details, or view a vehicle's own reservation and mileage history
 - **Issues** — see everything reported by drivers, mark reviewed or dismiss
-- **Reports** — usage and mileage summaries
+- **Reports** — usage and mileage summaries. To email the **Trip log** (every trip in a date range), pick the From/To dates at the bottom of the Trip log section, enter the recipient's address and click **Send** — reports are not sent automatically
 - **Drivers** (in the My Account menu) — a list of staff and their booking activity
 
 ## For IT Admins

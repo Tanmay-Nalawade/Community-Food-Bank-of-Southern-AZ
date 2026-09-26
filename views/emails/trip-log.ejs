@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+  <body style="margin:0; padding:0; background:#fbf7f9; font-family: Helvetica, Arial, sans-serif;">
+    <div style="max-width:720px; margin:0 auto; padding:32px 24px;">
+      <h1 style="color:#632c4f; font-size:20px; margin:0 0 16px;">Community Food Bank Motor Pool</h1>
+      <p style="color:#333; font-size:15px; line-height:1.5; margin:0 0 12px;">
+        Trip log for <strong><%= rangeLabel %></strong> —
+        <%= rows.length %> trip<%= rows.length === 1 ? "" : "s" %><% if (totalDistance > 0) { %>,
+        <%= totalDistance.toLocaleString() %> miles recorded<% } %>.
+      </p>
+
+      <% if (!rows.length) { %>
+        <p style="color:#333; font-size:14px; margin:0 0 24px;">No trips were recorded in this period.</p>
+      <% } else { %>
+        <table style="width:100%; border-collapse:collapse; margin:16px 0; font-size:13px;" cellpadding="8" cellspacing="0">
+          <thead>
+            <tr style="background:#fbf7f9;">
+              <th style="text-align:left; color:#632c4f; border-bottom:1px solid #e0e0e0;">Date</th>
+              <th style="text-align:left; color:#632c4f; border-bottom:1px solid #e0e0e0;">Vehicle</th>
+              <th style="text-align:left; color:#632c4f; border-bottom:1px solid #e0e0e0;">Driver</th>
+              <th style="text-align:left; color:#632c4f; border-bottom:1px solid #e0e0e0;">Start Odometer</th>
+              <th style="text-align:left; color:#632c4f; border-bottom:1px solid #e0e0e0;">End Odometer</th>
+              <th style="text-align:left; color:#632c4f; border-bottom:1px solid #e0e0e0;">Distance</th>
+              <th style="text-align:left; color:#632c4f; border-bottom:1px solid #e0e0e0;">Food Related</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% rows.forEach((row) => { %>
+              <tr>
+                <td style="border-bottom:1px solid #f0f0f0; color:#333;"><%= fmt.date(row.date) %></td>
+                <td style="border-bottom:1px solid #f0f0f0; color:#333;">
+                  <% if (row.vehicle) { %>
+                    <%= row.vehicle.year ? row.vehicle.year + " " : "" %><%= row.vehicle.make %> <%= row.vehicle.model %>
+                    <span style="color:#777;">(<%= row.vehicle.licensePlate %>)</span>
+                  <% } else { %>—<% } %>
+                </td>
+                <td style="border-bottom:1px solid #f0f0f0; color:#333;"><%= row.driverName || "—" %></td>
+                <td style="border-bottom:1px solid #f0f0f0; color:#333;"><%= row.startMileage != null ? row.startMileage.toLocaleString() : "—" %></td>
+                <td style="border-bottom:1px solid #f0f0f0; color:#333;"><%= row.endMileage != null ? row.endMileage.toLocaleString() : "—" %></td>
+                <td style="border-bottom:1px solid #f0f0f0; color:#333;"><%= row.distanceTravelled != null ? row.distanceTravelled.toLocaleString() : "—" %></td>
+                <td style="border-bottom:1px solid #f0f0f0; color:#333;"><%= row.foodRelated ? "Y" : "N" %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      <% } %>
+
+      <p style="font-size:14px; margin:0 0 24px;">
+        <a href="<%= reportsUrl %>" style="color:#632c4f; font-weight:bold; text-decoration:none;">Open Reports &rarr;</a>
+      </p>
+
+      <p style="color:#999; font-size:12px; margin-top:24px;">
+        Sent<%= sentByName ? ` by ${sentByName}` : "" %> from the Community Food Bank Motor Pool system.
+      </p>
+    </div>
+  </body>
+</html>

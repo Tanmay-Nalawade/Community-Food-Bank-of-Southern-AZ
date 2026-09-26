@@ -57,7 +57,6 @@ controllers/                 Route handler logic
     activity.js, apiStatus.js, user.js
 jobs/                        Background schedulers, started once from app.js
   reminderScheduler.js        Upcoming-booking reminder emails
-  mileageLogScheduler.js      Monthly mileage log emailed to Transportation
 middleware/                   Express middleware
   auth.js                     Login/role guards, "view as" role computation
   validate.js                 Generic Joi-validate-body middleware factory
@@ -77,7 +76,7 @@ services/                     Integrations and business logic reused across cont
   email/                      Outgoing email (console-logged if SMTP unconfigured)
     index.js                  Low-level sendEmail()
     reservationNotifications.js   Booking confirmation + reminder emails
-    mileageLogNotifications.js    Monthly mileage log email
+    tripLogNotifications.js       Trip Log email, sent on demand from the Reports page
   mileageLog.js                Builds "vehicle X's log for month Y" (shared by the page + job)
 utils/                        Small framework-agnostic helpers
 validators/                   Joi request-body schemas, one file per resource

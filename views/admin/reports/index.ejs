@@ -8,7 +8,8 @@
     <h2 class="vehicle-detail__section-title">Trip log</h2>
     <p class="vehicle-detail__empty admin-hint">
       Every trip across the fleet, newest first. Click a vehicle to see that trip's full
-      detailed monthly mileage log (inspection, fuel level, and more).
+      detailed monthly mileage log (inspection, fuel level, and more). Use the form below
+      to email every trip in a date range to anyone.
     </p>
     <% if (!tripLog.length) { %>
       <p class="vehicle-detail__empty">No trips recorded yet.</p>
@@ -45,6 +46,46 @@
           Load more
         </button>
       <% } %>
+    <% } %>
+
+    <h3 class="vehicle-detail__section-title no-print">Email the trip log</h3>
+    <form class="auth-form admin-issue-form no-print" action="/admin/reports/trips/send" method="POST">
+      <div class="auth-form__group">
+        <label class="auth-form__label" for="tripLogFrom">From</label>
+        <input class="auth-form__input" type="date" id="tripLogFrom" name="fromDate" value="<%= sendDefaults.fromDate %>" required />
+      </div>
+      <div class="auth-form__group">
+        <label class="auth-form__label" for="tripLogTo">To</label>
+        <input class="auth-form__input" type="date" id="tripLogTo" name="toDate" value="<%= sendDefaults.toDate %>" required />
+      </div>
+      <div class="auth-form__group">
+        <label class="auth-form__label" for="tripLogRecipient">Send to</label>
+        <input
+          class="auth-form__input"
+          type="email"
+          id="tripLogRecipient"
+          name="recipient"
+          value="<%= sendDefaults.recipient %>"
+          placeholder="name@communityfoodbank.org"
+          autocomplete="email"
+          maxlength="255"
+          required
+        />
+      </div>
+      <button class="auth-form__submit" type="submit">Send</button>
+    </form>
+
+    <% if (tripLogSends.length) { %>
+      <p class="vehicle-detail__empty admin-hint no-print">Recently sent:</p>
+      <ul class="admin-hint no-print">
+        <% tripLogSends.forEach((send) => { %>
+          <li>
+            <%= fmt.date(new Date(`${send.fromDate}T00:00`)) %> – <%= fmt.date(new Date(`${send.toDate}T00:00`)) %>
+            (<%= send.tripCount %> trip<%= send.tripCount === 1 ? "" : "s" %>) to <%= send.recipient %>,
+            <%= fmt.dateTime(send.sentAt) %><%= send.sentBy ? ` by ${send.sentBy.firstName} ${send.sentBy.lastName}` : "" %>
+          </li>
+        <% }) %>
+      </ul>
     <% } %>
   </div>
 

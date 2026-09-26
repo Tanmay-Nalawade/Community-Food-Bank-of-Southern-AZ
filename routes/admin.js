@@ -8,6 +8,7 @@ const {
   updateReservationSchema,
   adminNotesSchema,
 } = require("../validators/admin/reservation");
+const { sendTripLogSchema } = require("../validators/admin/report");
 const adminDashboardController = wrapControllerAsync(require("../controllers/admin/dashboard"));
 const adminReservationController = wrapControllerAsync(require("../controllers/admin/reservation"));
 const adminIssueController = wrapControllerAsync(require("../controllers/admin/issue"));
@@ -75,6 +76,12 @@ router.get(
 router.get("/reports", requireAdmin, adminReportController.index);
 router.get("/reports/more", requireAdmin, adminReportController.more);
 router.get("/reports/trips/more", requireAdmin, adminReportController.moreTrips);
+router.post(
+  "/reports/trips/send",
+  requireAdmin,
+  validateBody(sendTripLogSchema, { redirect: "/admin/reports" }),
+  adminReportController.sendTripLog,
+);
 
 router.get("/issues", requireAdmin, adminIssueController.index);
 router.get("/issues/more", requireAdmin, adminIssueController.more);
