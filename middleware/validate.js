@@ -24,7 +24,7 @@ function validateBody(schema, options = {}) {
 
 // Primary keys are auto-increment integers. MySQL would silently coerce a
 // malformed id like "12abc" to 12, so anything that isn't all digits is
-// rejected up front with the same 400 the old Mongoose CastError produced.
+// rejected up front with a 400 "invalid link" page.
 const ID_PATTERN = /^[1-9]\d{0,9}$/;
 
 function validateIdParams(router, names) {

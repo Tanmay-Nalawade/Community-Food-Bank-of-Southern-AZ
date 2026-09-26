@@ -22,8 +22,7 @@ const sequelize = new Sequelize(
     logging: process.env.DB_LOGGING === "true" ? console.log : false,
     pool: { max: 10, min: 0, acquire: 30000, idle: 10000 },
     define: {
-      // createdAt/updatedAt on every table, matching the old
-      // { timestamps: true } Mongoose schemas.
+      // createdAt/updatedAt on every table.
       timestamps: true,
     },
   },

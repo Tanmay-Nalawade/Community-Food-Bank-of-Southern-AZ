@@ -81,7 +81,7 @@ function shapeTripRow(reservation) {
 }
 
 // Per-vehicle booking count, total booked hours and most recent booking,
-// computed in MySQL (was a Mongo $group aggregation).
+// computed in a single grouped query.
 async function fetchUtilization() {
   const rows = await Reservation.findAll({
     attributes: [

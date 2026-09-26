@@ -8,7 +8,11 @@ const pbkdf2 = promisify(crypto.pbkdf2);
 // Replaces passport-local-mongoose's hashing. Stored as one self-describing
 // string ("pbkdf2_sha256$<iterations>$<salt>$<hash>") so the work factor can
 // be raised later without a schema change — existing hashes keep verifying
-// with the iteration count they were created with.
+// with the iteration count and key length they were created with (the key
+// length is implied by the hash's length). Accounts imported from the old
+// MongoDB app carry passport-local-mongoose's parameters (25,000
+// iterations, 512-byte key) in this same format, and are upgraded to the
+// current parameters the next time that person logs in.
 const HASH_ALGORITHM = "pbkdf2_sha256";
 const HASH_ITERATIONS = 600000; // OWASP 2023 recommendation for PBKDF2-SHA256
 const HASH_KEYLEN = 32;
@@ -19,20 +23,38 @@ const AUTH_ERRORS = {
   userExists: "An account with that email already exists.",
 };
 
-async function hashPassword(password, iterations = HASH_ITERATIONS, salt = crypto.randomBytes(16).toString("hex")) {
-  const derived = await pbkdf2(String(password), salt, iterations, HASH_KEYLEN, "sha256");
-  return `${HASH_ALGORITHM}$${iterations}$${salt}$${derived.toString("hex")}`;
+async function hashPassword(
+  password,
+  { iterations = HASH_ITERATIONS, keylen = HASH_KEYLEN, salt = crypto.randomBytes(16).toString("hex") } = {},
+) {
+  const derived = await pbkdf2(String(password), salt, iterations, keylen, "sha256");
+  return [HASH_ALGORITHM, iterations, salt, derived.toString("hex")].join("$");
+}
+
+function parseHash(stored) {
+  const [algorithm, iterations, salt, hash] = String(stored || "").split("$");
+  if (algorithm !== HASH_ALGORITHM || !salt || !hash || !/^[0-9a-f]+$/i.test(hash) || !(Number(iterations) > 0)) {
+    return null;
+  }
+  return { iterations: Number(iterations), salt, hash, keylen: hash.length / 2 };
 }
 
 async function verifyPassword(password, stored) {
-  const [algorithm, iterations, salt, hash] = String(stored || "").split("$");
-  if (algorithm !== HASH_ALGORITHM || !salt || !hash) {
+  const parsed = parseHash(stored);
+  if (!parsed) {
     return false;
   }
-  const candidate = (await hashPassword(password, Number(iterations), salt)).split("$")[3];
+  const candidate = (await hashPassword(password, parsed)).split("$")[3];
   const a = Buffer.from(candidate, "hex");
-  const b = Buffer.from(hash, "hex");
+  const b = Buffer.from(parsed.hash, "hex");
   return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+
+// True for hashes made with weaker-than-current parameters (e.g. imported
+// from the MongoDB app), which get re-hashed on the next successful login.
+function needsRehash(stored) {
+  const parsed = parseHash(stored);
+  return Boolean(parsed) && (parsed.iterations < HASH_ITERATIONS || parsed.keylen !== HASH_KEYLEN);
 }
 
 class User extends Model {
@@ -61,6 +83,10 @@ class User extends Model {
     });
     if (!user || !(await verifyPassword(password, user.passwordHash))) {
       return null;
+    }
+    if (needsRehash(user.passwordHash)) {
+      await user.setPassword(password);
+      await user.save({ fields: ["passwordHash"] });
     }
     return user;
   }
@@ -104,7 +130,8 @@ User.init(
       defaultValue: "Staff",
     },
     isActive: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
-    passwordHash: { type: DataTypes.STRING(255), allowNull: false },
+    // Wide enough for imported passport-local-mongoose hashes (~1,110 chars).
+    passwordHash: { type: DataTypes.STRING(1200), allowNull: false },
 
     emailVerified: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
     emailVerificationTokenHash: { type: DataTypes.CHAR(64) },
@@ -138,5 +165,6 @@ User.init(
 );
 
 User.AUTH_ERRORS = AUTH_ERRORS;
+User.needsRehash = needsRehash;
 
 module.exports = User;

@@ -1,8 +1,7 @@
-// Initial MySQL schema — the relational equivalent of the old Mongoose
-// collections. Embedded sub-documents (Reservation.tripLog/keyCafeAccess/
-// notifications/vehicleInspection, User.emailVerification/passwordReset)
-// are flattened into columns on their parent table; Vehicle.activeIssues
-// becomes its own vehicle_issues table.
+// Initial MySQL schema. Trip log, KeyCafe access, notification and
+// inspection details are columns on reservations; email-verification and
+// password-reset tokens are columns on users; vehicle issues have their own
+// vehicle_issues table.
 const { DataTypes } = require("sequelize");
 
 const id = () => ({
@@ -153,9 +152,8 @@ module.exports = {
     await queryInterface.addIndex("reservations", ["status", "requested_start_time"]);
     await queryInterface.addIndex("reservations", ["key_cafe_access_id"]);
 
-    // MySQL has no partial indexes, so the old Mongo
-    // { unique, partialFilterExpression: { status: { $in: [...] } } } is
-    // emulated with a generated column that is 1 for a non-terminal
+    // "No two identical open bookings" backstop. MySQL has no partial
+    // indexes, so it's a unique index over a generated column that is 1 for a non-terminal
     // reservation and NULL otherwise — NULLs never collide in a unique
     // index, so Completed/Cancelled/Denied rows don't block a rebook of the
     // exact same vehicle/window.

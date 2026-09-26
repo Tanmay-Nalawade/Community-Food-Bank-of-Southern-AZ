@@ -41,6 +41,24 @@ npm run db:migrate -- down    # roll back the most recent one
 To change the schema, add a new file to `migrations/` (never edit one that has already run
 somewhere) and update the matching model in `models/`.
 
+### Data from the old MongoDB app
+
+The app used to run on MongoDB (Atlas). All of its data was exported on 2026-09-25 to
+`legacy-export/mongo-export-2026-09-25.json` (git-ignored — it contains staff names, emails and
+password hashes, so keep it somewhere secure) and imported into MySQL with:
+
+```
+npm run db:migrate
+node scripts/import-legacy-data.js legacy-export/mongo-export-2026-09-25.json [--replace]
+```
+
+Run the same two commands against the datacenter MySQL (with its `DB_*` settings) to load that
+data there. The script needs no MongoDB software. Without `--replace` it refuses to touch a
+database that already has data; with it, every app table is emptied first. Existing passwords keep
+working and are upgraded to the current hashing the first time each person logs in. Login sessions
+aren't carried over (everyone logs in once more), and log entries belonging to accounts that had
+already been deleted in MongoDB are left out (they're still in the export file).
+
 ## Folder structure
 
 ```
