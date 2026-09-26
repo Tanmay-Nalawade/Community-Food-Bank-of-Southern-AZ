@@ -1,7 +1,6 @@
 <% layout('layouts/boilerplate') %>
 
 <section class="admin-page">
-  <a class="vehicle-detail__back" href="/admin/dashboard">&larr; Back to dashboard</a>
   <h1>Notification Emails</h1>
   <p class="vehicles-page__lead">
     Choose who gets emailed when something needs Transportation's attention. Enter one or more
@@ -20,7 +19,7 @@
       <h2 class="vehicle-detail__section-title"><%= setting.label %></h2>
       <p class="vehicle-detail__empty admin-hint"><%= setting.description %></p>
 
-      <form class="auth-form admin-issue-form" action="/admin/notifications" method="POST">
+      <form class="auth-form admin-issue-form" action="/it/notifications" method="POST">
         <input type="hidden" name="type" value="<%= setting.key %>" />
         <div class="auth-form__group">
           <label class="auth-form__label" for="recipients-<%= setting.key %>">Send to</label>

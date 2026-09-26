@@ -1,9 +1,9 @@
 const Joi = require("joi");
 const { NotificationSetting } = require("../models");
 
-// Every admin notification email an Admin can route from the Notification
-// Emails page. Adding a new kind of notification = one entry here, plus a
-// call to getRecipients("<key>") where the email is sent.
+// Every notification email an IT Admin can route from the Notification
+// Emails page (/it/notifications). Adding a new kind of notification = one
+// entry here, plus a call to getRecipients("<key>") where the email is sent.
 const NOTIFICATION_TYPES = [
   {
     key: "vehicleIssue",

@@ -6,6 +6,7 @@ const { validateIdParams } = require("../middleware/validate");
 const itUserController = wrapControllerAsync(require("../controllers/it/user"));
 const itActivityController = wrapControllerAsync(require("../controllers/it/activity"));
 const itApiStatusController = wrapControllerAsync(require("../controllers/it/apiStatus"));
+const itNotificationController = wrapControllerAsync(require("../controllers/it/notificationSettings"));
 
 validateIdParams(router, ["id"]);
 
@@ -24,5 +25,9 @@ router.post(
   requireITAdmin,
   itApiStatusController.checkVehicleAccess,
 );
+
+// Who receives notification emails (e.g. vehicle issue reported).
+router.get("/notifications", requireITAdmin, itNotificationController.index);
+router.post("/notifications", requireITAdmin, itNotificationController.update);
 
 module.exports = router;

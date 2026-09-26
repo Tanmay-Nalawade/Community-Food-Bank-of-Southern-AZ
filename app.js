@@ -186,6 +186,8 @@ app.use((req, res, next) => {
     res.locals.activeNav = "it-activity";
   } else if (req.path.startsWith("/it/api-status")) {
     res.locals.activeNav = "it-api-status";
+  } else if (req.path.startsWith("/it/notifications")) {
+    res.locals.activeNav = "it-notifications";
   } else if (req.path.startsWith("/it")) {
     res.locals.activeNav = "it";
   }

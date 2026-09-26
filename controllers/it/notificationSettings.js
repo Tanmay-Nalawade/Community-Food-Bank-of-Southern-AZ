@@ -7,14 +7,14 @@ const {
 const { isConfigured: isEmailConfigured } = require("../../services/email");
 
 async function renderPage(res, { status = 200, drafts = {} } = {}) {
-  res.status(status).render("admin/notifications/index", {
+  res.status(status).render("it/notifications/index", {
     title: "Notification Emails",
     // Not `settings` — Express reserves that local for app settings, and
     // ejs-mate reads the views directory from it.
     notificationTypes: await listSettings(),
     drafts,
     emailConfigured: isEmailConfigured(),
-    activeNav: "admin-dashboard",
+    activeNav: "it-notifications",
   });
 }
 
@@ -27,7 +27,7 @@ exports.update = async (req, res) => {
   const type = typeof req.body.type === "string" ? req.body.type : "";
   if (!TYPE_KEYS.includes(type)) {
     req.flash("error", "Unknown notification type.");
-    return res.redirect("/admin/notifications");
+    return res.redirect("/it/notifications");
   }
 
   const { list, error } = parseRecipients(req.body.recipients);
@@ -45,5 +45,5 @@ exports.update = async (req, res) => {
       ? `Saved — these notifications will go to ${list.join(", ")}.`
       : "Saved — nobody will be emailed for this notification.",
   );
-  res.redirect("/admin/notifications");
+  res.redirect("/it/notifications");
 };
