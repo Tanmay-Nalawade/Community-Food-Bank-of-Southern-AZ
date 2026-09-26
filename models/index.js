@@ -9,6 +9,7 @@ const Reservation = require("./reservation");
 const AccessLog = require("./accessLog");
 const ActivityLog = require("./activityLog");
 const TripLogSend = require("./tripLogSend");
+const NotificationSetting = require("./notificationSetting");
 
 Reservation.belongsTo(User, { as: "user", foreignKey: "userId" });
 Reservation.belongsTo(Vehicle, { as: "vehicle", foreignKey: "vehicleId" });
@@ -29,6 +30,7 @@ AccessLog.belongsTo(Reservation, { as: "reservation", foreignKey: "reservationId
 ActivityLog.belongsTo(User, { as: "user", foreignKey: "userId" });
 
 TripLogSend.belongsTo(User, { as: "sentBy", foreignKey: "sentById" });
+NotificationSetting.belongsTo(User, { as: "updatedBy", foreignKey: "updatedById" });
 
 module.exports = {
   sequelize,
@@ -39,4 +41,5 @@ module.exports = {
   AccessLog,
   ActivityLog,
   TripLogSend,
+  NotificationSetting,
 };

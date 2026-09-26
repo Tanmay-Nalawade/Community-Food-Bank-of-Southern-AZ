@@ -47,6 +47,7 @@ If you're an Admin or IT Admin, the same menu lets you **View as Staff** to see 
 - **Vehicles** — add a vehicle (you'll be asked for its current odometer reading, which the first trip starts from; a KeyCafe key is created for it automatically — nothing to set up in KeyCafe yourself), edit details, or view a vehicle's own reservation and mileage history
 - **Issues** — see everything reported by drivers, mark reviewed or dismiss
 - **Log a trip** — the **+ Log a trip** button on the Admin Dashboard records a trip that happened without a booking: pick the vehicle, driver, date and times, and enter the end odometer. The start reading is filled in from the vehicle's previous trip. It's saved as a normal completed trip (marked "Logged manually"), so it appears in the Trip log, the mileage log and emailed reports, and updates the vehicle's odometer
+- **Notification emails** — from the Admin Dashboard, choose who is emailed when something needs attention (currently: whenever an issue is reported on a vehicle, by a driver, from a Return Vehicle inspection, or by an admin). Enter one or more addresses; leave it empty to turn the email off
 - **Reports** — usage and mileage summaries. To email the **Trip log** (every trip in a date range), pick the From/To dates at the bottom of the Trip log section, enter the recipient's address and click **Send** — reports are not sent automatically
 - **Drivers** (in the My Account menu) — a list of staff and their booking activity
 

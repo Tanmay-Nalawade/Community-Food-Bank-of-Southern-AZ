@@ -11,6 +11,7 @@ const TABLES = [
   "access_logs",
   "activity_logs",
   "trip_log_sends",
+  "notification_settings",
   "reservations",
   "vehicles",
   "users",

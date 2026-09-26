@@ -52,7 +52,7 @@ config/
 controllers/                 Route handler logic
   account.js, reservation.js, user.js, vehicle.js, webhook.js   Staff-facing / shared
   admin/                      Fleet-manager (Admin role) features
-    dashboard.js, driver.js, issue.js, mileageLog.js, report.js, reservation.js, trip.js, vehicle.js
+    dashboard.js, driver.js, issue.js, mileageLog.js, notificationSettings.js, report.js, reservation.js, trip.js, vehicle.js
   it/                         IT Admin features
     activity.js, apiStatus.js, user.js
 jobs/                        Background schedulers, started once from app.js
@@ -77,8 +77,10 @@ services/                     Integrations and business logic reused across cont
     index.js                  Low-level sendEmail()
     reservationNotifications.js   Booking confirmation + reminder emails
     tripLogNotifications.js       Trip Log email, sent on demand from the Reports page
+    issueNotifications.js         "Vehicle issue reported" email to the admin-configured recipients
   mileageLog.js                Builds "vehicle X's log for month Y"; also the trip date-range filter
   odometer.js                  Start reading = vehicle odometer; end readings advance it
+  notificationSettings.js      Notification types + who receives each (set on the Notification Emails page)
 utils/                        Small framework-agnostic helpers
 validators/                   Joi request-body schemas, one file per resource
   user.js, vehicle.js, reservation.js   General schemas

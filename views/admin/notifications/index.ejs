@@ -1,0 +1,50 @@
+<% layout('layouts/boilerplate') %>
+
+<section class="admin-page">
+  <a class="vehicle-detail__back" href="/admin/dashboard">&larr; Back to dashboard</a>
+  <h1>Notification Emails</h1>
+  <p class="vehicles-page__lead">
+    Choose who gets emailed when something needs Transportation's attention. Enter one or more
+    addresses, separated by commas or new lines. Leave a box empty to turn that email off.
+  </p>
+
+  <% if (!emailConfigured) { %>
+    <p class="vehicle-detail__empty admin-hint">
+      Outgoing email isn't configured on this server yet (SMTP settings), so these notifications are
+      only written to the server log until it is.
+    </p>
+  <% } %>
+
+  <% notificationTypes.forEach((setting) => { %>
+    <div class="vehicle-detail__card admin-history-card">
+      <h2 class="vehicle-detail__section-title"><%= setting.label %></h2>
+      <p class="vehicle-detail__empty admin-hint"><%= setting.description %></p>
+
+      <form class="auth-form admin-issue-form" action="/admin/notifications" method="POST">
+        <input type="hidden" name="type" value="<%= setting.key %>" />
+        <div class="auth-form__group">
+          <label class="auth-form__label" for="recipients-<%= setting.key %>">Send to</label>
+          <textarea
+            class="auth-form__input booking-request-card__textarea"
+            id="recipients-<%= setting.key %>"
+            name="recipients"
+            rows="3"
+            placeholder="transportation@communityfoodbank.org"
+          ><%= drafts[setting.key] !== undefined ? drafts[setting.key] : setting.recipients.join("\n") %></textarea>
+        </div>
+        <button class="auth-form__submit" type="submit">Save</button>
+      </form>
+
+      <p class="vehicle-detail__empty admin-hint">
+        <% if (setting.recipients.length) { %>
+          Currently sent to <%= setting.recipients.length %> address<%= setting.recipients.length === 1 ? "" : "es" %>.
+        <% } else { %>
+          Currently off — nobody is emailed.
+        <% } %>
+        <% if (setting.updatedAt) { %>
+          Last changed <%= fmt.dateTime(setting.updatedAt) %><%= setting.updatedBy ? ` by ${setting.updatedBy.firstName} ${setting.updatedBy.lastName}` : "" %>.
+        <% } %>
+      </p>
+    </div>
+  <% }) %>
+</section>

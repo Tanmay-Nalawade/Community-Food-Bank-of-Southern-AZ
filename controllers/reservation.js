@@ -13,6 +13,7 @@ const {
   revokeReservationAccess,
 } = require("../services/keycafe/reservationAccess");
 const { sendBookingConfirmation } = require("../services/email/reservationNotifications");
+const { notifyVehicleIssues } = require("../services/email/issueNotifications");
 const {
   OdometerError,
   applyEndMileage,
@@ -592,6 +593,13 @@ exports.submitIssue = async (req, res) => {
     reservationId: reservation.id,
     reviewed: false,
   });
+  await notifyVehicleIssues({
+    vehicleId: reservation.vehicleId,
+    descriptions: [description],
+    reporter: res.locals.currentUser,
+    reservationId: reservation.id,
+    source: "during their trip",
+  });
 
   req.flash("success", "Issue reported to Transportation for review.");
   res.redirect("/reservations/mine");
@@ -672,6 +680,13 @@ exports.submitInspection = async (req, res) => {
           reviewed: false,
         })),
       );
+      await notifyVehicleIssues({
+        vehicleId: reservation.vehicleId,
+        descriptions: defects.map((item) => `Vehicle inspection: ${item}`),
+        reporter: res.locals.currentUser,
+        reservationId: reservation.id,
+        source: "on the Return Vehicle inspection",
+      });
     }
   }
 

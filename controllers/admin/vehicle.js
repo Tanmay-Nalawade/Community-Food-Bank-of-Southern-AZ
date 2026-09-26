@@ -8,6 +8,7 @@ const {
   ensureVehicleKey,
   syncVehicleKeyName,
 } = require("../../services/keycafe/vehicleKeySync");
+const { notifyVehicleIssues } = require("../../services/email/issueNotifications");
 
 const BY_NAME = [["make", "ASC"], ["model", "ASC"]];
 
@@ -307,7 +308,18 @@ exports.addIssue = async (req, res) => {
     return res.redirect(`/admin/vehicles/${vehicle.id}`);
   }
 
-  await VehicleIssue.create({ vehicleId: vehicle.id, description, reportedAt: new Date() });
+  await VehicleIssue.create({
+    vehicleId: vehicle.id,
+    description,
+    reportedById: res.locals.currentUser.id,
+    reportedAt: new Date(),
+  });
+  await notifyVehicleIssues({
+    vehicleId: vehicle.id,
+    descriptions: [description],
+    reporter: res.locals.currentUser,
+    source: "from the admin vehicle page",
+  });
 
   req.flash("success", "Issue reported.");
   res.redirect(`/admin/vehicles/${vehicle.id}`);

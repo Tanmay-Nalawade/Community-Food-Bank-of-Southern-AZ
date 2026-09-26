@@ -17,6 +17,7 @@ const adminDriverController = wrapControllerAsync(require("../controllers/admin/
 const adminReportController = wrapControllerAsync(require("../controllers/admin/report"));
 const adminMileageLogController = wrapControllerAsync(require("../controllers/admin/mileageLog"));
 const adminTripController = wrapControllerAsync(require("../controllers/admin/trip"));
+const adminNotificationController = wrapControllerAsync(require("../controllers/admin/notificationSettings"));
 
 validateIdParams(router, ["id", "issueId", "vehicleId"]);
 
@@ -26,6 +27,10 @@ router.get("/dashboard", requireAdmin, adminDashboardController.index);
 // Log a trip that happened without a booking.
 router.get("/trips/new", requireAdmin, adminTripController.newForm);
 router.post("/trips", requireAdmin, adminTripController.create);
+
+// Who receives admin notification emails (e.g. vehicle issue reported).
+router.get("/notifications", requireAdmin, adminNotificationController.index);
+router.post("/notifications", requireAdmin, adminNotificationController.update);
 
 router.get("/vehicles", requireAdmin, adminVehicleController.index);
 router.get("/vehicles/more", requireAdmin, adminVehicleController.more);
