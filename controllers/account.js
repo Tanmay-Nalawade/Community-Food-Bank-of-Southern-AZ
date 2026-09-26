@@ -1,5 +1,5 @@
-const ActivityLog = require("../models/activityLog");
-const User = require("../models/user");
+const { Op, UniqueConstraintError } = require("sequelize");
+const { ActivityLog, User } = require("../models");
 const { ALLOWED_VIEW_AS, landingPathForRole } = require("../middleware/auth");
 
 exports.editForm = (req, res) => {
@@ -11,13 +11,13 @@ exports.updateProfile = async (req, res) => {
   const email = (req.body.email || "").trim().toLowerCase();
   const currentUser = res.locals.currentUser;
 
-  const existing = await User.findOne({ email, _id: { $ne: currentUser._id } });
+  const existing = await User.findOne({ where: { email, id: { [Op.ne]: currentUser.id } } });
   if (existing) {
     req.flash("error", "That email is already in use by another account.");
     return res.redirect("/account/edit");
   }
 
-  const user = await User.findById(currentUser._id);
+  const user = await User.findByPk(currentUser.id);
   user.firstName = firstName;
   user.lastName = lastName;
   user.email = email;
@@ -25,7 +25,7 @@ exports.updateProfile = async (req, res) => {
   try {
     await user.save();
   } catch (error) {
-    if (error.code === 11000) {
+    if (error instanceof UniqueConstraintError) {
       req.flash("error", "That email is already in use by another account.");
       return res.redirect("/account/edit");
     }
@@ -38,7 +38,7 @@ exports.updateProfile = async (req, res) => {
 
 exports.changePassword = async (req, res) => {
   const { currentPassword, newPassword } = req.body;
-  const user = await User.findById(res.locals.currentUser._id);
+  const user = await User.findByPk(res.locals.currentUser.id);
 
   try {
     await user.changePassword(currentPassword, newPassword);
@@ -61,7 +61,7 @@ exports.switchView = async (req, res) => {
 
     if (fromRole !== currentUser.role) {
       await ActivityLog.create({
-        userId: currentUser._id,
+        userId: currentUser.id,
         action: "RoleSwitch",
         detail: `Returned to ${currentUser.role} view from ${fromRole} view`,
       });
@@ -81,7 +81,7 @@ exports.switchView = async (req, res) => {
   req.session.viewAsRole = targetRole;
 
   await ActivityLog.create({
-    userId: currentUser._id,
+    userId: currentUser.id,
     action: "RoleSwitch",
     detail: `Switched to ${targetRole} view`,
   });

@@ -1,7 +1,7 @@
-const Vehicle = require("../models/vehicle");
-const MileageLogSend = require("../models/mileageLogSend");
+const { UniqueConstraintError } = require("sequelize");
+const { Vehicle, MileageLogSend } = require("../models");
 const { buildMonthlyLog } = require("../services/mileageLog");
-const { sendMonthlyMileageLog } = require("../services/email/mileageLogNotifications");
+const { sendMonthlyMileageLog, RECIPIENT } = require("../services/email/mileageLogNotifications");
 
 const CHECK_INTERVAL_MS = 60 * 60 * 1000;
 const TIMEZONE = process.env.MILEAGE_LOG_TIMEZONE || "America/Phoenix";
@@ -60,7 +60,7 @@ async function runCheck() {
 
   let vehicles;
   try {
-    vehicles = await Vehicle.find({});
+    vehicles = await Vehicle.findAll();
   } catch (error) {
     console.error("Mileage log scheduler failed to load vehicles:", error);
     return;
@@ -68,16 +68,18 @@ async function runCheck() {
 
   for (const vehicle of vehicles) {
     try {
-      await MileageLogSend.create({ vehicleId: vehicle._id, year, month });
+      await MileageLogSend.create({ vehicleId: vehicle.id, year, month, recipient: RECIPIENT });
     } catch (error) {
-      if (error.code === 11000) {
+      // Already claimed for this vehicle/month (by an earlier check or
+      // another app instance) — the unique index is the dedupe.
+      if (error instanceof UniqueConstraintError) {
         continue;
       }
-      console.error(`Failed to record mileage log send for vehicle ${vehicle._id}:`, error);
+      console.error(`Failed to record mileage log send for vehicle ${vehicle.id}:`, error);
       continue;
     }
 
-    const log = await buildMonthlyLog(vehicle._id, year, month);
+    const log = await buildMonthlyLog(vehicle.id, year, month);
     await sendMonthlyMileageLog(log);
   }
 }

@@ -1,3 +1,5 @@
+const { renderError } = require("../utils/httpError");
+
 function validateBody(schema, options = {}) {
   const { redirect } = options;
 
@@ -19,4 +21,21 @@ function validateBody(schema, options = {}) {
   };
 }
 
-module.exports = { validateBody };
+
+// Primary keys are auto-increment integers. MySQL would silently coerce a
+// malformed id like "12abc" to 12, so anything that isn't all digits is
+// rejected up front with the same 400 the old Mongoose CastError produced.
+const ID_PATTERN = /^[1-9]\d{0,9}$/;
+
+function validateIdParams(router, names) {
+  names.forEach((name) => {
+    router.param(name, (req, res, next, value) => {
+      if (!ID_PATTERN.test(value)) {
+        return renderError(res, 400, "That link looks invalid or malformed.");
+      }
+      next();
+    });
+  });
+}
+
+module.exports = { validateBody, validateIdParams, ID_PATTERN };

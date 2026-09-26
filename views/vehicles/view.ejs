@@ -103,7 +103,7 @@
             <a href="/it/users">IT dashboard</a>. Switch to Staff view from the account menu to book a vehicle.
           </p>
         <% } else if (booking) { %>
-          <form class="auth-form" id="vehicleBookingForm" action="/reservations/vehicles/<%= vehicle._id %>" method="POST">
+          <form class="auth-form" id="vehicleBookingForm" action="/reservations/vehicles/<%= vehicle.id %>" method="POST">
             <input type="hidden" name="date" value="<%= booking.date %>" />
             <input type="hidden" name="startTime" value="<%= booking.startTime %>" />
             <input type="hidden" name="endTime" value="<%= booking.endTime %>" />
@@ -159,7 +159,7 @@
           <% } %>
         <% } else if (vehicle.status === "Available") { %>
           <p class="vehicle-detail__lead-in">Choose a date and time to reserve this vehicle.</p>
-          <form class="auth-form" action="/reservations/vehicles/<%= vehicle._id %>" method="POST">
+          <form class="auth-form" action="/reservations/vehicles/<%= vehicle.id %>" method="POST">
             <div class="auth-form__group">
               <label class="auth-form__label" for="date">Date</label>
               <input

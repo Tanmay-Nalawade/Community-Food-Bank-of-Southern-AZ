@@ -26,12 +26,12 @@
   </div>
 </td>
 <td data-label="Driver">
-  <a class="admin-table__primary-link" href="/admin/drivers/<%= reservation.userId._id %>"><%= reservation.userId.firstName %> <%= reservation.userId.lastName %></a>
-  <span class="admin-table__subtext admin-table__subtext--block admin-table__email"><%= reservation.userId.email %></span>
+  <a class="admin-table__primary-link" href="/admin/drivers/<%= reservation.user.id %>"><%= reservation.user.firstName %> <%= reservation.user.lastName %></a>
+  <span class="admin-table__subtext admin-table__subtext--block admin-table__email"><%= reservation.user.email %></span>
 </td>
 <td class="admin-table__vehicle" data-label="Vehicle">
-  <%= reservation.vehicleId.year ? reservation.vehicleId.year + " " : "" %><%= reservation.vehicleId.make %> <%= reservation.vehicleId.model %>
-  <span class="admin-table__subtext admin-table__subtext--block"><%= reservation.vehicleId.licensePlate %></span>
+  <%= reservation.vehicle.year ? reservation.vehicle.year + " " : "" %><%= reservation.vehicle.make %> <%= reservation.vehicle.model %>
+  <span class="admin-table__subtext admin-table__subtext--block"><%= reservation.vehicle.licensePlate %></span>
 </td>
 <td data-label="Status">
   <%- include('../../partials/status-pill', { value: reservation.status }) %>

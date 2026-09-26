@@ -1,45 +1,51 @@
-const Vehicle = require("../../models/vehicle");
-const Reservation = require("../../models/reservation");
+const { UniqueConstraintError } = require("sequelize");
+const { Vehicle, VehicleIssue, Reservation } = require("../../models");
 const { renderError } = require("../../utils/httpError");
 const { fetchPage, PAGE_SIZE } = require("../../utils/pagination");
+const { queryString, containsAny } = require("../../utils/query");
 const {
   isRealKeyCafeId,
   ensureVehicleKey,
   syncVehicleKeyName,
 } = require("../../services/keycafe/vehicleKeySync");
 
-function escapeRegex(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
+const BY_NAME = [["make", "ASC"], ["model", "ASC"]];
 
 function buildVehicleFilter(query) {
-  const q = (query.q || "").trim();
-  const status = query.status || "";
-  const filter = {};
+  const q = queryString(query.q);
+  const status = queryString(query.status);
+  const where = {};
 
   if (status) {
-    filter.status = status;
+    where.status = status;
   }
 
   if (q) {
-    const regex = new RegExp(escapeRegex(q), "i");
-    filter.$or = [
-      { make: regex },
-      { model: regex },
-      { licensePlate: regex },
-      { keyCafeKeyId: regex },
-    ];
+    Object.assign(where, containsAny(["make", "model", "licensePlate", "keyCafeKeyId"], q));
   }
 
-  return filter;
+  return where;
 }
 
 function filterQueryString(query) {
   const params = new URLSearchParams();
-  if (query.q) params.set("q", query.q);
-  if (query.status) params.set("status", query.status);
+  const q = queryString(query.q);
+  const status = queryString(query.status);
+  if (q) params.set("q", q);
+  if (status) params.set("status", status);
   const qs = params.toString();
   return qs ? `?${qs}` : "";
+}
+
+function fetchVehicleReservations(vehicleId) {
+  return (skip, limit) =>
+    Reservation.findAll({
+      where: { vehicleId },
+      include: [{ association: "user", attributes: ["id", "firstName", "lastName", "email"] }],
+      order: [["requestedStartTime", "DESC"], ["id", "DESC"]],
+      offset: skip,
+      limit,
+    });
 }
 
 // Was its own "adminController.js" at the controllers/ root — merged in here
@@ -57,18 +63,18 @@ exports.postAddVehicle = async (req, res) => {
   // can create a real, permanent KeyCafe key (no retire/delete feature
   // exists in this app), so failing fast here avoids leaving an orphaned
   // real key behind every time this save would fail on the unique index
-  // anyway. Normalized the same way the schema does (uppercase/trim).
+  // anyway. Normalized the same way the model does (uppercase/trim).
   const normalizedPlate = (licensePlate || "").trim().toUpperCase();
-  const duplicate = await Vehicle.findOne({ licensePlate: normalizedPlate });
+  const duplicate = await Vehicle.findOne({ where: { licensePlate: normalizedPlate } });
   if (duplicate) {
     req.flash("error", "A vehicle with that license plate already exists.");
     return res.redirect("/admin/vehicles/add");
   }
 
-  const newVehicle = new Vehicle({
+  const newVehicle = Vehicle.build({
     make,
     model,
-    year: year ? Number(year) : undefined,
+    year: year ? Number(year) : null,
     licensePlate,
     photoUrl: (photoUrl || "").trim(),
     currentMileage: Number(currentMileage) || 0,
@@ -86,7 +92,7 @@ exports.postAddVehicle = async (req, res) => {
   }
 
   // KeyCafe not configured (dev/mock mode) — a placeholder keeps the
-  // required schema field satisfied, the same spirit as this app's other
+  // required column satisfied, the same spirit as this app's other
   // mock fallbacks (e.g. mock KeyCafe booking codes) when unconfigured.
   if (!newVehicle.keyCafeKeyId) {
     newVehicle.keyCafeKeyId = `PENDING-${Date.now()}`;
@@ -95,7 +101,7 @@ exports.postAddVehicle = async (req, res) => {
   try {
     await newVehicle.save();
   } catch (error) {
-    if (error.code === 11000) {
+    if (error instanceof UniqueConstraintError) {
       req.flash("error", "A vehicle with that license plate already exists.");
       return res.redirect("/admin/vehicles/add");
     }
@@ -103,24 +109,22 @@ exports.postAddVehicle = async (req, res) => {
   }
 
   req.flash("success", `${newVehicle.make} ${newVehicle.model} added to the fleet.`);
-  res.redirect(`/admin/vehicles/${newVehicle._id}`);
+  res.redirect(`/admin/vehicles/${newVehicle.id}`);
 };
 
 exports.index = async (req, res) => {
-  const q = (req.query.q || "").trim();
-  const status = req.query.status || "";
-  const filter = buildVehicleFilter(req.query);
+  const where = buildVehicleFilter(req.query);
 
   const { items: vehicles, hasMore, nextSkip } = await fetchPage(
-    (skip, limit) => Vehicle.find(filter).sort({ make: 1, model: 1 }).skip(skip).limit(limit),
+    (skip, limit) => Vehicle.findAll({ where, order: BY_NAME, offset: skip, limit }),
     0,
   );
 
   res.render("admin/vehicles/index", {
     title: "Manage Vehicles",
     vehicles,
-    q,
-    status,
+    q: queryString(req.query.q),
+    status: queryString(req.query.status),
     hasMore,
     nextSkip,
     pageSize: PAGE_SIZE,
@@ -130,11 +134,11 @@ exports.index = async (req, res) => {
 };
 
 exports.more = async (req, res) => {
-  const filter = buildVehicleFilter(req.query);
+  const where = buildVehicleFilter(req.query);
   const skip = Math.max(0, Number(req.query.skip) || 0);
 
   const { items: vehicles, hasMore } = await fetchPage(
-    (s, limit) => Vehicle.find(filter).sort({ make: 1, model: 1 }).skip(s).limit(limit),
+    (s, limit) => Vehicle.findAll({ where, order: BY_NAME, offset: s, limit }),
     skip,
   );
 
@@ -143,20 +147,19 @@ exports.more = async (req, res) => {
 };
 
 exports.show = async (req, res) => {
-  const vehicle = await Vehicle.findById(req.params.id);
+  const vehicle = await Vehicle.findByPk(req.params.id, {
+    include: ["activeIssues"],
+    order: [["activeIssues", "id", "ASC"]],
+  });
 
   if (!vehicle) {
     return renderError(res, 404, "Vehicle not found.");
   }
 
-  const fetchReservations = (skip, limit) =>
-    Reservation.find({ vehicleId: vehicle._id })
-      .populate("userId", "firstName lastName email")
-      .sort({ requestedStartTime: -1 })
-      .skip(skip)
-      .limit(limit);
-
-  const { items: reservations, hasMore, nextSkip } = await fetchPage(fetchReservations, 0);
+  const { items: reservations, hasMore, nextSkip } = await fetchPage(
+    fetchVehicleReservations(vehicle.id),
+    0,
+  );
 
   res.render("admin/vehicles/show", {
     title: `${vehicle.make} ${vehicle.model}`,
@@ -171,7 +174,7 @@ exports.show = async (req, res) => {
 };
 
 exports.moreReservations = async (req, res) => {
-  const vehicle = await Vehicle.findById(req.params.id);
+  const vehicle = await Vehicle.findByPk(req.params.id);
 
   if (!vehicle) {
     return renderError(res, 404, "Vehicle not found.");
@@ -179,21 +182,17 @@ exports.moreReservations = async (req, res) => {
 
   const skip = Math.max(0, Number(req.query.skip) || 0);
 
-  const fetchReservations = (s, limit) =>
-    Reservation.find({ vehicleId: vehicle._id })
-      .populate("userId", "firstName lastName email")
-      .sort({ requestedStartTime: -1 })
-      .skip(s)
-      .limit(limit);
-
-  const { items: reservations, hasMore } = await fetchPage(fetchReservations, skip);
+  const { items: reservations, hasMore } = await fetchPage(
+    fetchVehicleReservations(vehicle.id),
+    skip,
+  );
 
   res.set("X-Has-More", hasMore ? "1" : "0");
   res.render("admin/vehicles/_reservation-rows", { reservations });
 };
 
 exports.update = async (req, res) => {
-  const vehicle = await Vehicle.findById(req.params.id);
+  const vehicle = await Vehicle.findByPk(req.params.id);
 
   if (!vehicle) {
     return renderError(res, 404, "Vehicle not found.");
@@ -212,34 +211,34 @@ exports.update = async (req, res) => {
 
   vehicle.make = make;
   vehicle.model = model;
-  vehicle.year = year ? Number(year) : undefined;
+  vehicle.year = year ? Number(year) : null;
   vehicle.licensePlate = licensePlate;
   vehicle.currentMileage = Number(currentMileage) || 0;
   vehicle.status = status;
   vehicle.nextMaintenanceDueMileage = nextMaintenanceDueMileage
     ? Number(nextMaintenanceDueMileage)
-    : undefined;
+    : null;
   vehicle.nextMaintenanceDueDate = nextMaintenanceDueDate
     ? new Date(nextMaintenanceDueDate)
-    : undefined;
+    : null;
 
   try {
     await vehicle.save();
   } catch (error) {
-    if (error.code === 11000) {
+    if (error instanceof UniqueConstraintError) {
       req.flash("error", "Another vehicle already uses that license plate.");
-      return res.redirect(`/admin/vehicles/${vehicle._id}`);
+      return res.redirect(`/admin/vehicles/${vehicle.id}`);
     }
     throw error;
   }
   await syncVehicleKeyName(vehicle);
 
   req.flash("success", "Vehicle updated.");
-  res.redirect(`/admin/vehicles/${vehicle._id}`);
+  res.redirect(`/admin/vehicles/${vehicle.id}`);
 };
 
 exports.createKeyCafeKey = async (req, res) => {
-  const vehicle = await Vehicle.findById(req.params.id);
+  const vehicle = await Vehicle.findByPk(req.params.id);
 
   if (!vehicle) {
     return renderError(res, 404, "Vehicle not found.");
@@ -247,14 +246,14 @@ exports.createKeyCafeKey = async (req, res) => {
 
   if (isRealKeyCafeId(vehicle.keyCafeKeyId)) {
     req.flash("error", "This vehicle already has a real KeyCafe key.");
-    return res.redirect(`/admin/vehicles/${vehicle._id}`);
+    return res.redirect(`/admin/vehicles/${vehicle.id}`);
   }
 
   try {
     const keyId = await ensureVehicleKey(vehicle);
     if (!keyId) {
       req.flash("error", "KeyCafe isn't configured — set KEYCAFE_EMAIL/KEYCAFE_TOKEN first.");
-      return res.redirect(`/admin/vehicles/${vehicle._id}`);
+      return res.redirect(`/admin/vehicles/${vehicle.id}`);
     }
     vehicle.keyCafeKeyId = keyId;
     await vehicle.save();
@@ -264,11 +263,11 @@ exports.createKeyCafeKey = async (req, res) => {
     req.flash("error", "Could not create a KeyCafe key. Check API Status and try again.");
   }
 
-  res.redirect(`/admin/vehicles/${vehicle._id}`);
+  res.redirect(`/admin/vehicles/${vehicle.id}`);
 };
 
 exports.resetKeyCafeKey = async (req, res) => {
-  const vehicle = await Vehicle.findById(req.params.id);
+  const vehicle = await Vehicle.findByPk(req.params.id);
 
   if (!vehicle) {
     return renderError(res, 404, "Vehicle not found.");
@@ -276,14 +275,14 @@ exports.resetKeyCafeKey = async (req, res) => {
 
   if (!isRealKeyCafeId(vehicle.keyCafeKeyId)) {
     req.flash("error", "This vehicle doesn't have a real KeyCafe key to reset.");
-    return res.redirect(`/admin/vehicles/${vehicle._id}`);
+    return res.redirect(`/admin/vehicles/${vehicle.id}`);
   }
 
-  // Does not affect any Reservation.keyCafeAccess snapshots already granted
-  // under the old key id — those are independent of Vehicle.keyCafeKeyId.
+  // Does not affect any reservation's keyCafe* access already granted under
+  // the old key id — those are independent of Vehicle.keyCafeKeyId.
   vehicle.keyCafeKeyId = `PENDING-${Date.now()}`;
-  vehicle.keyCafeAccessValid = undefined;
-  vehicle.keyCafeAccessCheckedAt = undefined;
+  vehicle.keyCafeAccessValid = null;
+  vehicle.keyCafeAccessCheckedAt = null;
   await vehicle.save();
 
   req.flash(
@@ -291,11 +290,11 @@ exports.resetKeyCafeKey = async (req, res) => {
     "KeyCafe key cleared. Use \"Create KeyCafe Key\" to link a new one. " +
       "The old key still exists in KeyCafe — remove it there manually if it's no longer valid.",
   );
-  res.redirect(`/admin/vehicles/${vehicle._id}`);
+  res.redirect(`/admin/vehicles/${vehicle.id}`);
 };
 
 exports.addIssue = async (req, res) => {
-  const vehicle = await Vehicle.findById(req.params.id);
+  const vehicle = await Vehicle.findByPk(req.params.id);
 
   if (!vehicle) {
     return renderError(res, 404, "Vehicle not found.");
@@ -305,29 +304,24 @@ exports.addIssue = async (req, res) => {
 
   if (!description) {
     req.flash("error", "Issue description is required.");
-    return res.redirect(`/admin/vehicles/${vehicle._id}`);
+    return res.redirect(`/admin/vehicles/${vehicle.id}`);
   }
 
-  vehicle.activeIssues.push({ description, reportedAt: new Date() });
-  await vehicle.save();
+  await VehicleIssue.create({ vehicleId: vehicle.id, description, reportedAt: new Date() });
 
   req.flash("success", "Issue reported.");
-  res.redirect(`/admin/vehicles/${vehicle._id}`);
+  res.redirect(`/admin/vehicles/${vehicle.id}`);
 };
 
 exports.resolveIssue = async (req, res) => {
-  const vehicle = await Vehicle.findById(req.params.id);
+  const vehicle = await Vehicle.findByPk(req.params.id);
 
   if (!vehicle) {
     return renderError(res, 404, "Vehicle not found.");
   }
 
-  const issue = vehicle.activeIssues.id(req.params.issueId);
-  if (issue) {
-    issue.deleteOne();
-    await vehicle.save();
-  }
+  await VehicleIssue.destroy({ where: { id: req.params.issueId, vehicleId: vehicle.id } });
 
   req.flash("success", "Issue resolved.");
-  res.redirect(`/admin/vehicles/${vehicle._id}`);
+  res.redirect(`/admin/vehicles/${vehicle.id}`);
 };

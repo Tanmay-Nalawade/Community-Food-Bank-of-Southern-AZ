@@ -1,17 +1,25 @@
-const mongoose = require("mongoose");
-const { Schema } = mongoose;
+const { DataTypes, Model } = require("sequelize");
+const { sequelize } = require("../config/db");
 
-const mileageLogSendSchema = new Schema(
+class MileageLogSend extends Model {}
+
+// Unique on (vehicleId, year, month) — see the initial-schema migration —
+// so the monthly email is claimed at most once per vehicle per month.
+MileageLogSend.init(
   {
-    vehicleId: { type: Schema.Types.ObjectId, ref: "Vehicle", required: true },
-    year: { type: Number, required: true },
-    month: { type: Number, required: true },
-    sentAt: { type: Date, default: Date.now },
-    recipient: { type: String },
+    id: { type: DataTypes.INTEGER.UNSIGNED, autoIncrement: true, primaryKey: true },
+    vehicleId: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false },
+    year: { type: DataTypes.SMALLINT.UNSIGNED, allowNull: false },
+    month: { type: DataTypes.TINYINT.UNSIGNED, allowNull: false },
+    sentAt: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
+    recipient: { type: DataTypes.STRING(255) },
   },
-  { timestamps: true },
+  {
+    sequelize,
+    modelName: "MileageLogSend",
+    tableName: "mileage_log_sends",
+    underscored: true,
+  },
 );
 
-mileageLogSendSchema.index({ vehicleId: 1, year: 1, month: 1 }, { unique: true });
-
-module.exports = mongoose.model("MileageLogSend", mileageLogSendSchema);
+module.exports = MileageLogSend;

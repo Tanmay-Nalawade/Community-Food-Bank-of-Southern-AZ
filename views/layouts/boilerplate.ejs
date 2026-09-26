@@ -27,10 +27,10 @@
           <h2 class="tight-gap-dialog__title">Before you go &mdash; Start Odometer</h2>
           <p class="tight-gap-dialog__body">
             Enter the starting odometer reading for the
-            <%= mop.reservation.vehicleId.year ? mop.reservation.vehicleId.year + " " : "" %><%= mop.reservation.vehicleId.make %>
-            <%= mop.reservation.vehicleId.model %> to continue.
+            <%= mop.reservation.vehicle.year ? mop.reservation.vehicle.year + " " : "" %><%= mop.reservation.vehicle.make %>
+            <%= mop.reservation.vehicle.model %> to continue.
           </p>
-          <form class="auth-form" action="/reservations/<%= mop.reservation._id %>/mileage" method="POST">
+          <form class="auth-form" action="/reservations/<%= mop.reservation.id %>/mileage" method="POST">
             <div class="auth-form__group">
               <label class="auth-form__label" for="mandatoryStartMileage">Start odometer (mi)</label>
               <input
@@ -45,16 +45,16 @@
             </div>
             <button class="auth-form__submit" type="submit">Save and continue</button>
           </form>
-          <form action="/reservations/<%= mop.reservation._id %>/cancel" method="POST">
+          <form action="/reservations/<%= mop.reservation.id %>/cancel" method="POST">
             <button class="tight-gap-dialog__cancel" type="submit">Cancel this booking instead</button>
           </form>
         <% } else { %>
           <h2 class="tight-gap-dialog__title">One more thing &mdash; End Odometer</h2>
           <p class="tight-gap-dialog__body">
-            The <%= mop.reservation.vehicleId.make %> <%= mop.reservation.vehicleId.model %>
+            The <%= mop.reservation.vehicle.make %> <%= mop.reservation.vehicle.model %>
             was returned, but the ending odometer reading is still missing.
           </p>
-          <form class="auth-form" action="/reservations/<%= mop.reservation._id %>/mileage" method="POST">
+          <form class="auth-form" action="/reservations/<%= mop.reservation.id %>/mileage" method="POST">
             <div class="auth-form__group">
               <label class="auth-form__label" for="mandatoryEndMileage">End odometer (mi)</label>
               <input

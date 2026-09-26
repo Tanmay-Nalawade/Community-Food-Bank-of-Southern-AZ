@@ -5,13 +5,13 @@
 
   <h1>Report Mileage</h1>
   <p class="reservations-page__lead">
-    <%= reservation.vehicleId.year ? reservation.vehicleId.year + " " : "" %>
-    <%= reservation.vehicleId.make %> <%= reservation.vehicleId.model %>
-    (<%= reservation.vehicleId.licensePlate %>)
+    <%= reservation.vehicle.year ? reservation.vehicle.year + " " : "" %>
+    <%= reservation.vehicle.make %> <%= reservation.vehicle.model %>
+    (<%= reservation.vehicle.licensePlate %>)
   </p>
 
   <div class="auth-card auth-card--wide admin-edit-card">
-    <form class="auth-form" action="/reservations/<%= reservation._id %>/mileage" method="POST">
+    <form class="auth-form" action="/reservations/<%= reservation.id %>/mileage" method="POST">
       <div class="auth-form__row">
         <div class="auth-form__group">
           <label class="auth-form__label" for="startMileage">Start mileage</label>
@@ -21,7 +21,7 @@
             id="startMileage"
             name="startMileage"
             min="0"
-            value="<%= reservation.tripLog?.startMileage ?? '' %>"
+            value="<%= reservation.startMileage ?? '' %>"
           />
         </div>
         <div class="auth-form__group">
@@ -32,7 +32,7 @@
             id="endMileage"
             name="endMileage"
             min="0"
-            value="<%= reservation.tripLog?.endMileage ?? '' %>"
+            value="<%= reservation.endMileage ?? '' %>"
           />
         </div>
       </div>
@@ -51,7 +51,7 @@
             name="fuelLevelEndPercent"
             min="0"
             max="100"
-            value="<%= reservation.tripLog?.fuelLevelEndPercent ?? '' %>"
+            value="<%= reservation.fuelLevelEndPercent ?? '' %>"
           />
         </div>
       </div>
@@ -61,7 +61,7 @@
           <input
             type="checkbox"
             name="preTripInspectionPassed"
-            <%= reservation.tripLog?.preTripInspectionPassed ? "checked" : "" %>
+            <%= reservation.preTripInspectionPassed ? "checked" : "" %>
           />
           Pre-trip inspection passed
         </label>
@@ -72,7 +72,7 @@
           <input
             type="checkbox"
             name="droppedOffFood"
-            <%= reservation.tripLog?.droppedOffFood ? "checked" : "" %>
+            <%= reservation.droppedOffFood ? "checked" : "" %>
           />
           Dropped off CFB food using this vehicle
         </label>
@@ -83,7 +83,7 @@
           <input
             type="checkbox"
             name="pickedUpFood"
-            <%= reservation.tripLog?.pickedUpFood ? "checked" : "" %>
+            <%= reservation.pickedUpFood ? "checked" : "" %>
           />
           Picked up CFB food using this vehicle
         </label>
@@ -94,7 +94,7 @@
           <input
             type="checkbox"
             name="otherDuty"
-            <%= reservation.tripLog?.otherDuty ? "checked" : "" %>
+            <%= reservation.otherDuty ? "checked" : "" %>
           />
           Used for other CFB business
         </label>
@@ -107,12 +107,12 @@
           id="otherDutyNote"
           name="otherDutyNote"
           rows="2"
-        ><%= reservation.tripLog?.otherDutyNote || "" %></textarea>
+        ><%= reservation.otherDutyNote || "" %></textarea>
       </div>
 
       <div class="auth-form__group">
         <label class="auth-form__label">
-          <input type="checkbox" name="washed" <%= reservation.tripLog?.washed ? "checked" : "" %> />
+          <input type="checkbox" name="washed" <%= reservation.washed ? "checked" : "" %> />
           Vehicle washed
         </label>
       </div>

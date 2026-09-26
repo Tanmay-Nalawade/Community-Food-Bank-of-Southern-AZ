@@ -5,9 +5,9 @@
 
   <h1>Return Vehicle</h1>
   <p class="reservations-page__lead">
-    <%= reservation.vehicleId.year ? reservation.vehicleId.year + " " : "" %>
-    <%= reservation.vehicleId.make %> <%= reservation.vehicleId.model %>
-    (<%= reservation.vehicleId.licensePlate %>)
+    <%= reservation.vehicle.year ? reservation.vehicle.year + " " : "" %>
+    <%= reservation.vehicle.make %> <%= reservation.vehicle.model %>
+    (<%= reservation.vehicle.licensePlate %>)
   </p>
 
   <div class="auth-card auth-card--wide admin-edit-card">
@@ -16,7 +16,7 @@
       but it's optional — skip it if you're in a hurry.
     </p>
 
-    <form class="auth-form" action="/reservations/<%= reservation._id %>/inspection" method="POST">
+    <form class="auth-form" action="/reservations/<%= reservation.id %>/inspection" method="POST">
       <div class="auth-form__group">
         <label class="auth-form__label" for="endMileage">Ending odometer (mi)</label>
         <input

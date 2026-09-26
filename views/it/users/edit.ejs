@@ -12,7 +12,7 @@
         You can't change your own role or active status here. Ask another IT Admin to make this change.
       </p>
     <% } else { %>
-      <form class="auth-form" action="/it/users/<%= editUser._id %>?_method=PUT" method="POST">
+      <form class="auth-form" action="/it/users/<%= editUser.id %>?_method=PUT" method="POST">
         <div class="auth-form__group">
           <label class="auth-form__label" for="role">Role</label>
           <select class="auth-form__input" id="role" name="role" required>

@@ -1,52 +1,49 @@
-const User = require("../../models/user");
+const { User } = require("../../models");
 const { renderError } = require("../../utils/httpError");
 const { fetchPage, PAGE_SIZE } = require("../../utils/pagination");
+const { queryString, containsAny } = require("../../utils/query");
 
-function escapeRegex(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
+const BY_NAME = [["firstName", "ASC"], ["lastName", "ASC"]];
 
 function buildUserFilter(query) {
-  const q = (query.q || "").trim();
-  const role = query.role || "";
-  const filter = {};
+  const q = queryString(query.q);
+  const role = queryString(query.role);
+  const where = {};
 
   if (role) {
-    filter.role = role;
+    where.role = role;
   }
 
   if (q) {
-    const regex = new RegExp(escapeRegex(q), "i");
-    filter.$or = [{ firstName: regex }, { lastName: regex }, { email: regex }];
+    Object.assign(where, containsAny(["firstName", "lastName", "email"], q));
   }
 
-  return filter;
+  return where;
 }
 
 function filterQueryString(query) {
   const params = new URLSearchParams();
-  if (query.q) params.set("q", query.q);
-  if (query.role) params.set("role", query.role);
+  const q = queryString(query.q);
+  const role = queryString(query.role);
+  if (q) params.set("q", q);
+  if (role) params.set("role", role);
   const qs = params.toString();
   return qs ? `?${qs}` : "";
 }
 
 exports.index = async (req, res) => {
-  const q = (req.query.q || "").trim();
-  const role = req.query.role || "";
-  const filter = buildUserFilter(req.query);
+  const where = buildUserFilter(req.query);
 
   const { items: users, hasMore, nextSkip } = await fetchPage(
-    (skip, limit) =>
-      User.find(filter).sort({ firstName: 1, lastName: 1 }).skip(skip).limit(limit),
+    (skip, limit) => User.findAll({ where, order: BY_NAME, offset: skip, limit }),
     0,
   );
 
   res.render("it/users/index", {
     title: "Manage Users",
     users,
-    q,
-    role,
+    q: queryString(req.query.q),
+    role: queryString(req.query.role),
     hasMore,
     nextSkip,
     pageSize: PAGE_SIZE,
@@ -56,11 +53,11 @@ exports.index = async (req, res) => {
 };
 
 exports.more = async (req, res) => {
-  const filter = buildUserFilter(req.query);
+  const where = buildUserFilter(req.query);
   const skip = Math.max(0, Number(req.query.skip) || 0);
 
   const { items: users, hasMore } = await fetchPage(
-    (s, limit) => User.find(filter).sort({ firstName: 1, lastName: 1 }).skip(s).limit(limit),
+    (s, limit) => User.findAll({ where, order: BY_NAME, offset: s, limit }),
     skip,
   );
 
@@ -69,7 +66,7 @@ exports.more = async (req, res) => {
 };
 
 exports.edit = async (req, res) => {
-  const user = await User.findById(req.params.id);
+  const user = await User.findByPk(req.params.id);
 
   if (!user) {
     return renderError(res, 404, "User not found.");
@@ -78,21 +75,21 @@ exports.edit = async (req, res) => {
   res.render("it/users/edit", {
     title: `${user.firstName} ${user.lastName}`,
     editUser: user,
-    isSelf: String(user._id) === String(res.locals.currentUser._id),
+    isSelf: user.id === res.locals.currentUser.id,
     activeNav: "it-users",
   });
 };
 
 exports.update = async (req, res) => {
-  const user = await User.findById(req.params.id);
+  const user = await User.findByPk(req.params.id);
 
   if (!user) {
     return renderError(res, 404, "User not found.");
   }
 
-  if (String(user._id) === String(res.locals.currentUser._id)) {
+  if (user.id === res.locals.currentUser.id) {
     req.flash("error", "You can't change your own role or active status. Ask another IT Admin.");
-    return res.redirect(`/it/users/${user._id}/edit`);
+    return res.redirect(`/it/users/${user.id}/edit`);
   }
 
   user.role = req.body.role;

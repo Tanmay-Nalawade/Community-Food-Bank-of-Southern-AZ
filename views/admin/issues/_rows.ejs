@@ -10,7 +10,7 @@
       <% } %>
     </td>
     <td class="admin-table__vehicle" data-label="Vehicle">
-      <a class="admin-table__primary-link" href="/admin/vehicles/<%= vehicle._id %>"><%= vehicle.year ? vehicle.year + " " : "" %><%= vehicle.make %> <%= vehicle.model %></a>
+      <a class="admin-table__primary-link" href="/admin/vehicles/<%= vehicle.id %>"><%= vehicle.year ? vehicle.year + " " : "" %><%= vehicle.make %> <%= vehicle.model %></a>
       <span class="admin-table__subtext admin-table__subtext--block"><%= vehicle.licensePlate %></span>
     </td>
     <td data-label="Reported">
@@ -32,11 +32,11 @@
     <td class="admin-table__actions" data-label="Actions">
       <div class="action-bar action-bar--row">
         <% if (!issue.reviewed) { %>
-          <form action="/admin/issues/<%= vehicle._id %>/<%= issue._id %>/review" method="POST">
+          <form action="/admin/issues/<%= vehicle.id %>/<%= issue.id %>/review" method="POST">
             <button class="action-btn action-btn--sm action-btn--approve" type="submit">Mark reviewed</button>
           </form>
         <% } %>
-        <form action="/admin/issues/<%= vehicle._id %>/<%= issue._id %>/dismiss" method="POST">
+        <form action="/admin/issues/<%= vehicle.id %>/<%= issue.id %>/dismiss" method="POST">
           <button class="action-btn action-btn--sm action-btn--delete" type="submit">Dismiss</button>
         </form>
       </div>

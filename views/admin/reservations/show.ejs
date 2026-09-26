@@ -9,9 +9,18 @@
   const when = (d) => new Date(d).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
   const miles = (n) => n.toLocaleString() + " mi";
 
-  const access = r.keyCafeAccess || {};
-  const log = r.tripLog || {};
-  const inspection = r.vehicleInspection || {};
+  const access = {
+    bookingCode: r.keyCafeBookingCode,
+    keyPickedUpAt: r.keyPickedUpAt,
+    keyReturnedAt: r.keyReturnedAt,
+  };
+  const log = { startMileage: r.startMileage, endMileage: r.endMileage };
+  const inspection = {
+    completedAt: r.inspectionCompletedAt,
+    skipped: r.inspectionSkipped,
+    conditionSatisfactory: r.inspectionConditionSatisfactory,
+    remarks: r.inspectionRemarks,
+  };
   const hasMileage = log.startMileage != null || log.endMileage != null;
   const terminal = ["Cancelled", "Denied"].includes(r.status);
 
@@ -98,9 +107,9 @@
     <div class="booking-detail__heading">
       <div class="booking-detail__title-row">
         <h1>
-          <%= r.vehicleId.year ? r.vehicleId.year + " " : "" %><%= r.vehicleId.make %> <%= r.vehicleId.model %>
+          <%= r.vehicle.year ? r.vehicle.year + " " : "" %><%= r.vehicle.make %> <%= r.vehicle.model %>
         </h1>
-        <span class="vehicle-detail__plate"><%= r.vehicleId.licensePlate %></span>
+        <span class="vehicle-detail__plate"><%= r.vehicle.licensePlate %></span>
       </div>
       <p class="booking-detail__window">
         <% if (sameDay) { %>
@@ -114,7 +123,7 @@
         <%- include('../../partials/status-pill', { value: r.status }) %>
         <span>
           Driver:
-          <a class="booking-detail__link" href="/admin/drivers/<%= r.userId._id %>"><%= r.userId.firstName %> <%= r.userId.lastName %></a>
+          <a class="booking-detail__link" href="/admin/drivers/<%= r.user.id %>"><%= r.user.firstName %> <%= r.user.lastName %></a>
         </span>
       </div>
     </div>
@@ -123,17 +132,17 @@
       <% if (["Pending", "Reserved", "Active"].includes(r.status)) { %>
         <div class="action-group">
           <% if (r.status === "Pending") { %>
-            <form action="/admin/reservations/<%= r._id %>/approve" method="POST">
+            <form action="/admin/reservations/<%= r.id %>/approve" method="POST">
               <input type="hidden" name="returnTo" value="detail" />
               <button class="action-btn action-btn--approve" type="submit">Approve</button>
             </form>
-            <form action="/admin/reservations/<%= r._id %>/deny" method="POST">
+            <form action="/admin/reservations/<%= r.id %>/deny" method="POST">
               <input type="hidden" name="returnTo" value="detail" />
               <button class="action-btn action-btn--deny" type="submit">Deny</button>
             </form>
           <% } %>
           <% if (["Reserved", "Active"].includes(r.status)) { %>
-            <form action="/admin/reservations/<%= r._id %>/cancel" method="POST">
+            <form action="/admin/reservations/<%= r.id %>/cancel" method="POST">
               <input type="hidden" name="returnTo" value="detail" />
               <button class="action-btn action-btn--deny" type="submit">Cancel booking</button>
             </form>
@@ -141,10 +150,10 @@
         </div>
       <% } %>
       <div class="action-group">
-        <a class="action-btn action-btn--edit" href="/admin/reservations/<%= r._id %>/edit">Edit booking</a>
+        <a class="action-btn action-btn--edit" href="/admin/reservations/<%= r.id %>/edit">Edit booking</a>
         <form
           class="action-group__divider"
-          action="/admin/reservations/<%= r._id %>?_method=DELETE"
+          action="/admin/reservations/<%= r.id %>?_method=DELETE"
           method="POST"
           data-confirm="Permanently delete this booking? This can't be undone."
         >
@@ -221,11 +230,11 @@
         <dl class="booking-detail__list">
           <div>
             <dt>Name</dt>
-            <dd><a class="booking-detail__link" href="/admin/drivers/<%= r.userId._id %>"><%= r.userId.firstName %> <%= r.userId.lastName %></a></dd>
+            <dd><a class="booking-detail__link" href="/admin/drivers/<%= r.user.id %>"><%= r.user.firstName %> <%= r.user.lastName %></a></dd>
           </div>
           <div>
             <dt>Email</dt>
-            <dd><%= r.userId.email %></dd>
+            <dd><%= r.user.email %></dd>
           </div>
         </dl>
       </div>
@@ -236,14 +245,14 @@
           <div>
             <dt>Vehicle</dt>
             <dd>
-              <a class="booking-detail__link" href="/admin/vehicles/<%= r.vehicleId._id %>">
-                <%= r.vehicleId.year ? r.vehicleId.year + " " : "" %><%= r.vehicleId.make %> <%= r.vehicleId.model %>
+              <a class="booking-detail__link" href="/admin/vehicles/<%= r.vehicle.id %>">
+                <%= r.vehicle.year ? r.vehicle.year + " " : "" %><%= r.vehicle.make %> <%= r.vehicle.model %>
               </a>
             </dd>
           </div>
           <div>
             <dt>License plate</dt>
-            <dd><%= r.vehicleId.licensePlate %></dd>
+            <dd><%= r.vehicle.licensePlate %></dd>
           </div>
         </dl>
       </div>

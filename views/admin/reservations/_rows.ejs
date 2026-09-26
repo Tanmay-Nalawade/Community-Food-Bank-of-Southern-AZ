@@ -6,22 +6,22 @@
         <% if (["Pending", "Reserved", "Active"].includes(reservation.status)) { %>
           <div class="action-group">
             <% if (reservation.status === "Pending") { %>
-              <form action="/admin/reservations/<%= reservation._id %>/approve" method="POST">
+              <form action="/admin/reservations/<%= reservation.id %>/approve" method="POST">
                 <button class="action-btn action-btn--sm action-btn--approve" type="submit">Approve</button>
               </form>
-              <form action="/admin/reservations/<%= reservation._id %>/deny" method="POST">
+              <form action="/admin/reservations/<%= reservation.id %>/deny" method="POST">
                 <button class="action-btn action-btn--sm action-btn--deny" type="submit">Deny</button>
               </form>
             <% } %>
             <% if (["Reserved", "Active"].includes(reservation.status)) { %>
-              <form action="/admin/reservations/<%= reservation._id %>/cancel" method="POST">
+              <form action="/admin/reservations/<%= reservation.id %>/cancel" method="POST">
                 <button class="action-btn action-btn--sm action-btn--deny" type="submit">Cancel</button>
               </form>
             <% } %>
           </div>
         <% } %>
         <%# Edit and Delete live on the booking's own page, one click away via View. %>
-        <a class="action-btn action-btn--sm action-btn--edit" href="/admin/reservations/<%= reservation._id %>">View</a>
+        <a class="action-btn action-btn--sm action-btn--edit" href="/admin/reservations/<%= reservation.id %>">View</a>
       </div>
     </td>
   </tr>

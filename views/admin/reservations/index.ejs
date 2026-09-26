@@ -33,7 +33,7 @@
       <select class="auth-form__input" id="vehicleId" name="vehicleId">
         <option value="">All vehicles</option>
         <% vehicles.forEach((vehicle) => { %>
-          <option value="<%= vehicle._id %>" <%= filters.vehicleId === String(vehicle._id) ? "selected" : "" %>>
+          <option value="<%= vehicle.id %>" <%= filters.vehicleId === String(vehicle.id) ? "selected" : "" %>>
             <%= vehicle.year ? vehicle.year + " " : "" %><%= vehicle.make %> <%= vehicle.model %> (<%= vehicle.licensePlate %>)
           </option>
         <% }) %>

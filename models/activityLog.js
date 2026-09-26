@@ -1,18 +1,22 @@
-const mongoose = require("mongoose");
-const { Schema } = mongoose;
+const { DataTypes, Model } = require("sequelize");
+const { sequelize } = require("../config/db");
 
-const activityLogSchema = new Schema(
+class ActivityLog extends Model {}
+
+ActivityLog.init(
   {
-    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    action: {
-      type: String,
-      enum: ["Login", "Logout", "RoleSwitch"],
-      required: true,
-    },
-    detail: { type: String, default: "" },
-    ip: { type: String },
+    id: { type: DataTypes.INTEGER.UNSIGNED, autoIncrement: true, primaryKey: true },
+    userId: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false },
+    action: { type: DataTypes.ENUM("Login", "Logout", "RoleSwitch"), allowNull: false },
+    detail: { type: DataTypes.STRING(500), allowNull: false, defaultValue: "" },
+    ip: { type: DataTypes.STRING(45) },
   },
-  { timestamps: true },
+  {
+    sequelize,
+    modelName: "ActivityLog",
+    tableName: "activity_logs",
+    underscored: true,
+  },
 );
 
-module.exports = mongoose.model("ActivityLog", activityLogSchema);
+module.exports = ActivityLog;

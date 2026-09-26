@@ -1,56 +1,53 @@
-const mongoose = require("mongoose");
-const { Schema } = mongoose;
+const { DataTypes, Model } = require("sequelize");
+const { sequelize } = require("../config/db");
 
-const vehicleSchema = new Schema(
+class Vehicle extends Model {}
+
+Vehicle.init(
   {
-    make: { type: String, required: true },
-    model: { type: String, required: true },
-    year: { type: Number },
+    id: { type: DataTypes.INTEGER.UNSIGNED, autoIncrement: true, primaryKey: true },
+    make: { type: DataTypes.STRING(100), allowNull: false },
+    model: { type: DataTypes.STRING(100), allowNull: false },
+    year: { type: DataTypes.SMALLINT.UNSIGNED },
     // uppercase+trim so "abc-1234" and "ABC-1234" collide as the same plate
     // instead of slipping past the unique index as two "different" vehicles.
-    licensePlate: { type: String, required: true, unique: true, uppercase: true, trim: true },
+    licensePlate: {
+      type: DataTypes.STRING(20),
+      allowNull: false,
+      unique: true,
+      set(value) {
+        this.setDataValue("licensePlate", String(value ?? "").trim().toUpperCase());
+      },
+    },
 
-    keyCafeKeyId: { type: String, required: true },
+    keyCafeKeyId: { type: DataTypes.STRING(64), allowNull: false },
 
     // Only set when an admin runs "Check KeyCafe Access" on the API Status
     // page — a live lookup against KeyCafe's own key list. Never refreshed
     // automatically (that would mean an external API call on every page
     // load), so this can go stale if the key is later deleted in KeyCafe.
-    keyCafeAccessValid: { type: Boolean },
-    keyCafeAccessCheckedAt: { type: Date },
+    keyCafeAccessValid: { type: DataTypes.BOOLEAN },
+    keyCafeAccessCheckedAt: { type: DataTypes.DATE },
 
-    photoUrl: { type: String, default: "" },
+    photoUrl: { type: DataTypes.STRING(2048), allowNull: false, defaultValue: "" },
 
-    currentMileage: { type: Number, required: true, default: 0 },
+    currentMileage: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false, defaultValue: 0 },
 
-    nextMaintenanceDueMileage: { type: Number },
-    nextMaintenanceDueDate: { type: Date },
+    nextMaintenanceDueMileage: { type: DataTypes.INTEGER.UNSIGNED },
+    nextMaintenanceDueDate: { type: DataTypes.DATE },
 
     status: {
-      type: String,
-      enum: [
-        "Available",
-        "Reserved",
-        "In Use",
-        "Maintenance",
-        "Out of Service",
-      ],
-      default: "Available",
+      type: DataTypes.ENUM("Available", "Reserved", "In Use", "Maintenance", "Out of Service"),
+      allowNull: false,
+      defaultValue: "Available",
     },
-
-    activeIssues: [
-      {
-        reportedAt: { type: Date, default: Date.now },
-        description: { type: String },
-        reportedBy: { type: Schema.Types.ObjectId, ref: "User" },
-        reservationId: { type: Schema.Types.ObjectId, ref: "Reservation" },
-        reviewed: { type: Boolean, default: false },
-        reviewedBy: { type: Schema.Types.ObjectId, ref: "User" },
-        reviewedAt: { type: Date },
-      },
-    ],
   },
-  { timestamps: true },
+  {
+    sequelize,
+    modelName: "Vehicle",
+    tableName: "vehicles",
+    underscored: true,
+  },
 );
 
-module.exports = mongoose.model("Vehicle", vehicleSchema);
+module.exports = Vehicle;

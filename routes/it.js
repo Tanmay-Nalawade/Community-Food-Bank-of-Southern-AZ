@@ -2,9 +2,12 @@ const express = require("express");
 const router = express.Router();
 const { requireITAdmin } = require("../middleware/auth");
 const { wrapControllerAsync } = require("../utils/asyncHandler");
+const { validateIdParams } = require("../middleware/validate");
 const itUserController = wrapControllerAsync(require("../controllers/it/user"));
 const itActivityController = wrapControllerAsync(require("../controllers/it/activity"));
 const itApiStatusController = wrapControllerAsync(require("../controllers/it/apiStatus"));
+
+validateIdParams(router, ["id"]);
 
 router.get("/users", requireITAdmin, itUserController.index);
 router.get("/users/more", requireITAdmin, itUserController.more);

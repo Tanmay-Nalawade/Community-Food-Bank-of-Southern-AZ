@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { requireAdmin } = require("../middleware/auth");
 const { wrapControllerAsync } = require("../utils/asyncHandler");
-const { validateBody } = require("../middleware/validate");
+const { validateBody, validateIdParams } = require("../middleware/validate");
 const { addVehicleSchema } = require("../validators/vehicle");
 const {
   updateReservationSchema,
@@ -15,6 +15,8 @@ const adminVehicleController = wrapControllerAsync(require("../controllers/admin
 const adminDriverController = wrapControllerAsync(require("../controllers/admin/driver"));
 const adminReportController = wrapControllerAsync(require("../controllers/admin/report"));
 const adminMileageLogController = wrapControllerAsync(require("../controllers/admin/mileageLog"));
+
+validateIdParams(router, ["id", "issueId", "vehicleId"]);
 
 router.get("/", requireAdmin, (req, res) => res.redirect("/admin/dashboard"));
 router.get("/dashboard", requireAdmin, adminDashboardController.index);

@@ -1,8 +1,10 @@
-const Reservation = require("../models/reservation");
-const Vehicle = require("../models/vehicle");
+const { Op, UniqueConstraintError } = require("sequelize");
+const { Reservation, Vehicle, VehicleIssue } = require("../models");
 const { renderError } = require("../utils/httpError");
 const {
   parseBookingWindow,
+  hasOverlappingReservation,
+  withVehicleLock,
   findTightPrecedingBooking,
   formatTimeLabel,
 } = require("../utils/availability");
@@ -28,6 +30,12 @@ const MILEAGE_REPORTABLE_STATUSES = ["Reserved", "Active", "Completed"];
 const CURRENT_STATUSES = ["Reserved", "Active"];
 const UPCOMING_STATUSES = ["Pending", "Reserved", "Active"];
 
+const VEHICLE_SUMMARY = { association: "vehicle", attributes: ["id", "make", "model", "year", "licensePlate"] };
+
+// Thrown inside a withVehicleLock() transaction to roll it back when the
+// locked re-check finds someone else got the slot first.
+class SlotTakenError extends Error {}
+
 // A driver's current/upcoming bookings are naturally small (bounded by how
 // many trips one person can have going on or scheduled at once), so those
 // are fetched in full. Past bookings accumulate for as long as someone's
@@ -35,21 +43,23 @@ const UPCOMING_STATUSES = ["Pending", "Reserved", "Active"];
 function buildPastFilter(userId, now) {
   return {
     userId,
-    $or: [
-      { status: { $in: ["Completed", "Cancelled", "Denied"] } },
-      { status: "Pending", requestedStartTime: { $lte: now } },
-      { status: { $in: CURRENT_STATUSES }, requestedEndTime: { $lte: now } },
+    [Op.or]: [
+      { status: { [Op.in]: ["Completed", "Cancelled", "Denied"] } },
+      { status: "Pending", requestedStartTime: { [Op.lte]: now } },
+      { status: { [Op.in]: CURRENT_STATUSES }, requestedEndTime: { [Op.lte]: now } },
     ],
   };
 }
 
 function fetchPastBookings(userId, now) {
   return (skip, limit) =>
-    Reservation.find(buildPastFilter(userId, now))
-      .populate("vehicleId")
-      .sort({ requestedStartTime: -1 })
-      .skip(skip)
-      .limit(limit);
+    Reservation.findAll({
+      where: buildPastFilter(userId, now),
+      include: ["vehicle"],
+      order: [["requestedStartTime", "DESC"], ["id", "DESC"]],
+      offset: skip,
+      limit,
+    });
 }
 
 // Same "past" definition as fetchPastBookings, additionally bounded to the
@@ -61,14 +71,23 @@ function fetchHistory(userId, now) {
   oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
 
   return (skip, limit) =>
-    Reservation.find({
-      ...buildPastFilter(userId, now),
-      requestedStartTime: { $gte: oneYearAgo },
-    })
-      .populate("vehicleId")
-      .sort({ requestedStartTime: -1 })
-      .skip(skip)
-      .limit(limit);
+    Reservation.findAll({
+      where: {
+        ...buildPastFilter(userId, now),
+        requestedStartTime: { [Op.gte]: oneYearAgo },
+      },
+      include: ["vehicle"],
+      order: [["requestedStartTime", "DESC"], ["id", "DESC"]],
+      offset: skip,
+      limit,
+    });
+}
+
+function findOwnReservation(req, res, options = {}) {
+  return Reservation.findOne({
+    where: { id: req.params.id, userId: res.locals.currentUser.id },
+    ...options,
+  });
 }
 
 exports.createRequest = async (req, res) => {
@@ -83,7 +102,7 @@ exports.createRequest = async (req, res) => {
     return res.redirect(`/vehicles/${req.params.vehicleId}`);
   }
 
-  const vehicle = await Vehicle.findById(req.params.vehicleId);
+  const vehicle = await Vehicle.findByPk(req.params.vehicleId);
   if (!vehicle) {
     req.flash("error", "That vehicle could not be found.");
     return res.redirect("/vehicles");
@@ -92,25 +111,14 @@ exports.createRequest = async (req, res) => {
   // Checks ANY overlapping reservation for this vehicle, including one the
   // same user already holds — a conflict is rejected outright below, so a
   // duplicate self-booking is already caught here too (no separate check
-  // needed). This is a plain read, not atomic with the insert below — the
-  // real backstop against two different people racing past it is the
-  // insert-then-verify check further down, not the DB's unique index (that
-  // index only rejects an exact same-user/vehicle/start/end duplicate, so it
-  // can't catch two different users, or merely-overlapping non-identical
-  // windows).
-  const hasConflict = await Reservation.exists({
-    vehicleId: vehicle._id,
-    status: { $in: ["Pending", "Reserved", "Active"] },
-    requestedStartTime: { $lt: booking.end },
-    requestedEndTime: { $gt: booking.start },
-  });
-
-  if (hasConflict) {
+  // needed). This is a plain, unlocked read for a fast answer in the common
+  // case; the real race-safe check is repeated under the vehicle lock below.
+  if (await hasOverlappingReservation(vehicle.id, booking)) {
     req.flash(
       "error",
       "That vehicle isn't available for the time you selected. Please choose a different time or vehicle.",
     );
-    return res.redirect(`/vehicles/${vehicle._id}`);
+    return res.redirect(`/vehicles/${vehicle.id}`);
   }
 
   // Not a hard block — just a heads-up before committing, so bounce back to
@@ -118,7 +126,7 @@ exports.createRequest = async (req, res) => {
   // creating the reservation, unless the driver already clicked through the
   // warning ("Yes, book anyway" posts confirmTightGap=true).
   if (req.body.confirmTightGap !== "true") {
-    const tightPrevious = await findTightPrecedingBooking(vehicle._id, booking);
+    const tightPrevious = await findTightPrecedingBooking(vehicle.id, booking);
     if (tightPrevious) {
       const qs = new URLSearchParams({
         date: req.body.date,
@@ -129,66 +137,58 @@ exports.createRequest = async (req, res) => {
         tripFoodRelatedDetail: req.body.tripFoodRelatedDetail || "",
         confirm: "gap",
       });
-      return res.redirect(`/vehicles/${vehicle._id}?${qs.toString()}`);
+      return res.redirect(`/vehicles/${vehicle.id}?${qs.toString()}`);
     }
   }
 
+  // The check above and the insert must be atomic, or two people submitting
+  // an overlapping request for the same vehicle within milliseconds of each
+  // other could both pass it. Locking the vehicle row serializes them: the
+  // second request blocks until the first commits, then its own re-check
+  // sees the first reservation and backs off.
   let reservation;
   try {
-    reservation = await Reservation.create({
-      userId: res.locals.currentUser._id,
-      vehicleId: vehicle._id,
-      requestedStartTime: booking.start,
-      requestedEndTime: booking.end,
-      staffNotes: req.body.staffNotes || "",
-      tripFoodRelated: req.body.tripFoodRelated,
-      tripFoodRelatedDetail:
-        req.body.tripFoodRelated === "Other" ? req.body.tripFoodRelatedDetail || "" : "",
-      status: "Reserved",
+    reservation = await withVehicleLock(vehicle.id, async ({ transaction }) => {
+      if (await hasOverlappingReservation(vehicle.id, booking, { transaction })) {
+        throw new SlotTakenError();
+      }
+      return Reservation.create(
+        {
+          userId: res.locals.currentUser.id,
+          vehicleId: vehicle.id,
+          requestedStartTime: booking.start,
+          requestedEndTime: booking.end,
+          staffNotes: req.body.staffNotes || "",
+          tripFoodRelated: req.body.tripFoodRelated,
+          tripFoodRelatedDetail:
+            req.body.tripFoodRelated === "Other" ? req.body.tripFoodRelatedDetail || "" : "",
+          status: "Reserved",
+        },
+        { transaction },
+      );
     });
   } catch (error) {
-    if (error.code === 11000) {
+    if (error instanceof SlotTakenError) {
+      req.flash(
+        "error",
+        "That vehicle was just booked by someone else for an overlapping time. Please choose a different time or vehicle.",
+      );
+      return res.redirect(`/vehicles/${vehicle.id}`);
+    }
+    if (error instanceof UniqueConstraintError) {
       req.flash(
         "error",
         "That vehicle isn't available for the time you selected. Please choose a different time or vehicle.",
       );
-      return res.redirect(`/vehicles/${vehicle._id}`);
+      return res.redirect(`/vehicles/${vehicle.id}`);
     }
     throw error;
   }
 
-  // The hasConflict check above and this insert aren't atomic — two people
-  // submitting an overlapping request for the same vehicle within
-  // milliseconds of each other could both pass that check and both get
-  // inserted. MongoDB serializes all writes through a single primary, so
-  // immediately after our own insert commits, every reservation that was
-  // truly created before it is guaranteed to already be visible — comparing
-  // ObjectIds (not wall-clock time) is what makes this race-safe: whichever
-  // insert has the smaller _id is unambiguously the one that landed first,
-  // and both concurrent requests will agree on that same answer.
-  const earlierConflict = await Reservation.findOne({
-    _id: { $lt: reservation._id },
-    vehicleId: vehicle._id,
-    status: { $in: ["Pending", "Reserved", "Active"] },
-    requestedStartTime: { $lt: booking.end },
-    requestedEndTime: { $gt: booking.start },
-  });
-
-  if (earlierConflict) {
-    await Reservation.deleteOne({ _id: reservation._id });
-    req.flash(
-      "error",
-      "That vehicle was just booked by someone else for an overlapping time. Please choose a different time or vehicle.",
-    );
-    return res.redirect(`/vehicles/${vehicle._id}`);
-  }
-
   try {
-    await reservation.populate("userId", "firstName lastName email");
-    await reservation.populate("vehicleId", "make model keyCafeKeyId");
-    await grantReservationAccess(reservation);
+    await grantReservationAccess(reservation, res.locals.currentUser, vehicle);
     await reservation.save();
-    await Vehicle.findByIdAndUpdate(vehicle._id, { status: "Reserved" });
+    await Vehicle.update({ status: "Reserved" }, { where: { id: vehicle.id } });
     await sendBookingConfirmation(reservation, res.locals.currentUser, vehicle);
     req.flash("success", "Vehicle booked! Your KeyCafe pickup code is ready on your dashboard.");
   } catch (error) {
@@ -207,26 +207,30 @@ exports.createRequest = async (req, res) => {
 };
 
 exports.mine = async (req, res) => {
-  const userId = res.locals.currentUser._id;
+  const userId = res.locals.currentUser.id;
   const now = new Date();
 
   const [currentBookings, upcomingBookings, pastPage] = await Promise.all([
-    Reservation.find({
-      userId,
-      status: { $in: CURRENT_STATUSES },
-      requestedStartTime: { $lte: now },
-      requestedEndTime: { $gt: now },
-    })
-      .populate("vehicleId")
-      .sort({ requestedStartTime: 1 }),
+    Reservation.findAll({
+      where: {
+        userId,
+        status: { [Op.in]: CURRENT_STATUSES },
+        requestedStartTime: { [Op.lte]: now },
+        requestedEndTime: { [Op.gt]: now },
+      },
+      include: ["vehicle"],
+      order: [["requestedStartTime", "ASC"]],
+    }),
 
-    Reservation.find({
-      userId,
-      status: { $in: UPCOMING_STATUSES },
-      requestedStartTime: { $gt: now },
-    })
-      .populate("vehicleId")
-      .sort({ requestedStartTime: 1 }),
+    Reservation.findAll({
+      where: {
+        userId,
+        status: { [Op.in]: UPCOMING_STATUSES },
+        requestedStartTime: { [Op.gt]: now },
+      },
+      include: ["vehicle"],
+      order: [["requestedStartTime", "ASC"]],
+    }),
 
     fetchPage(fetchPastBookings(userId, now), 0),
   ]);
@@ -244,7 +248,7 @@ exports.mine = async (req, res) => {
 };
 
 exports.morePast = async (req, res) => {
-  const userId = res.locals.currentUser._id;
+  const userId = res.locals.currentUser.id;
   const now = new Date();
   const skip = Math.max(0, Number(req.query.skip) || 0);
 
@@ -258,7 +262,7 @@ exports.morePast = async (req, res) => {
 };
 
 exports.history = async (req, res) => {
-  const userId = res.locals.currentUser._id;
+  const userId = res.locals.currentUser.id;
   const now = new Date();
 
   const { items: reservations, hasMore, nextSkip } = await fetchPage(fetchHistory(userId, now), 0);
@@ -274,7 +278,7 @@ exports.history = async (req, res) => {
 };
 
 exports.moreHistory = async (req, res) => {
-  const userId = res.locals.currentUser._id;
+  const userId = res.locals.currentUser.id;
   const now = new Date();
   const skip = Math.max(0, Number(req.query.skip) || 0);
 
@@ -285,10 +289,7 @@ exports.moreHistory = async (req, res) => {
 };
 
 exports.editForm = async (req, res) => {
-  const reservation = await Reservation.findOne({
-    _id: req.params.id,
-    userId: res.locals.currentUser._id,
-  }).populate("vehicleId");
+  const reservation = await findOwnReservation(req, res, { include: ["vehicle"] });
 
   if (!reservation) {
     return renderError(res, 404, "Reservation not found.");
@@ -327,8 +328,8 @@ exports.editForm = async (req, res) => {
       formValues.tripFoodRelated = req.query.tripFoodRelated || "";
       formValues.tripFoodRelatedDetail = req.query.tripFoodRelatedDetail || "";
 
-      const tightPrevious = await findTightPrecedingBooking(reservation.vehicleId._id, booking, {
-        excludeReservationId: reservation._id,
+      const tightPrevious = await findTightPrecedingBooking(reservation.vehicleId, booking, {
+        excludeReservationId: reservation.id,
       });
       if (tightPrevious) {
         gapWarning = { previousEndLabel: formatTimeLabel(tightPrevious.requestedEndTime) };
@@ -346,10 +347,7 @@ exports.editForm = async (req, res) => {
 };
 
 exports.updateRequest = async (req, res) => {
-  const reservation = await Reservation.findOne({
-    _id: req.params.id,
-    userId: res.locals.currentUser._id,
-  });
+  const reservation = await findOwnReservation(req, res);
 
   if (!reservation) {
     return renderError(res, 404, "Reservation not found.");
@@ -373,26 +371,18 @@ exports.updateRequest = async (req, res) => {
 
   if (!booking) {
     req.flash("error", "Please choose a valid date and time.");
-    return res.redirect(`/reservations/${reservation._id}/edit`);
+    return res.redirect(`/reservations/${reservation.id}/edit`);
   }
 
-  const conflictExists = await Reservation.exists({
-    _id: { $ne: reservation._id },
-    vehicleId: reservation.vehicleId,
-    status: { $in: ["Pending", "Reserved", "Active"] },
-    requestedStartTime: { $lt: booking.end },
-    requestedEndTime: { $gt: booking.start },
-  });
+  const overlapOptions = { excludeReservationId: reservation.id };
 
-  if (conflictExists) {
+  if (await hasOverlappingReservation(reservation.vehicleId, booking, overlapOptions)) {
     req.flash("error", "That vehicle is already booked during that window.");
-    return res.redirect(`/reservations/${reservation._id}/edit`);
+    return res.redirect(`/reservations/${reservation.id}/edit`);
   }
 
   if (req.body.confirmTightGap !== "true") {
-    const tightPrevious = await findTightPrecedingBooking(reservation.vehicleId, booking, {
-      excludeReservationId: reservation._id,
-    });
+    const tightPrevious = await findTightPrecedingBooking(reservation.vehicleId, booking, overlapOptions);
     if (tightPrevious) {
       const qs = new URLSearchParams({
         date: req.body.date,
@@ -403,51 +393,34 @@ exports.updateRequest = async (req, res) => {
         tripFoodRelatedDetail: req.body.tripFoodRelatedDetail || "",
         confirm: "gap",
       });
-      return res.redirect(`/reservations/${reservation._id}/edit?${qs.toString()}`);
+      return res.redirect(`/reservations/${reservation.id}/edit?${qs.toString()}`);
     }
   }
 
-  // Captured whole so a race-loss rollback below can restore every field
-  // this request touched, not just the time window — reverting only the
-  // time while leaving the new staffNotes/tripFoodRelated values in place
-  // would silently mix an old time slot with new, unrelated field values.
-  const previous = {
-    requestedStartTime: reservation.requestedStartTime,
-    requestedEndTime: reservation.requestedEndTime,
-    staffNotes: reservation.staffNotes,
-    tripFoodRelated: reservation.tripFoodRelated,
-    tripFoodRelatedDetail: reservation.tripFoodRelatedDetail,
-  };
-
-  reservation.requestedStartTime = booking.start;
-  reservation.requestedEndTime = booking.end;
-  reservation.staffNotes = req.body.staffNotes || "";
-  reservation.tripFoodRelated = req.body.tripFoodRelated;
-  reservation.tripFoodRelatedDetail =
-    req.body.tripFoodRelated === "Other" ? req.body.tripFoodRelatedDetail || "" : "";
-  await reservation.save();
-
-  // Same race as createRequest (see its comment), but there's no fresh _id
-  // to compare here since this reservation already existed — updatedAt (set
-  // on every save, including at creation) plays the same "who landed first"
-  // role instead.
-  const earlierConflict = await Reservation.findOne({
-    _id: { $ne: reservation._id },
-    vehicleId: reservation.vehicleId,
-    status: { $in: ["Pending", "Reserved", "Active"] },
-    requestedStartTime: { $lt: booking.end },
-    requestedEndTime: { $gt: booking.start },
-    updatedAt: { $lt: reservation.updatedAt },
-  });
-
-  if (earlierConflict) {
-    Object.assign(reservation, previous);
-    await reservation.save();
-    req.flash(
-      "error",
-      "That vehicle was just booked by someone else for that time. Please choose a different time.",
-    );
-    return res.redirect(`/reservations/${reservation._id}/edit`);
+  // Same race as createRequest (see its comment) — re-check and save under
+  // the vehicle lock so the change either lands cleanly or not at all.
+  try {
+    await withVehicleLock(reservation.vehicleId, async ({ transaction }) => {
+      if (await hasOverlappingReservation(reservation.vehicleId, booking, { ...overlapOptions, transaction })) {
+        throw new SlotTakenError();
+      }
+      reservation.requestedStartTime = booking.start;
+      reservation.requestedEndTime = booking.end;
+      reservation.staffNotes = req.body.staffNotes || "";
+      reservation.tripFoodRelated = req.body.tripFoodRelated;
+      reservation.tripFoodRelatedDetail =
+        req.body.tripFoodRelated === "Other" ? req.body.tripFoodRelatedDetail || "" : "";
+      await reservation.save({ transaction });
+    });
+  } catch (error) {
+    if (error instanceof SlotTakenError || error instanceof UniqueConstraintError) {
+      req.flash(
+        "error",
+        "That vehicle was just booked by someone else for that time. Please choose a different time.",
+      );
+      return res.redirect(`/reservations/${reservation.id}/edit`);
+    }
+    throw error;
   }
 
   req.flash("success", "Booking request updated.");
@@ -455,10 +428,7 @@ exports.updateRequest = async (req, res) => {
 };
 
 exports.cancelRequest = async (req, res) => {
-  const reservation = await Reservation.findOne({
-    _id: req.params.id,
-    userId: res.locals.currentUser._id,
-  });
+  const reservation = await findOwnReservation(req, res);
 
   if (!reservation) {
     return renderError(res, 404, "Reservation not found.");
@@ -496,10 +466,7 @@ exports.cancelRequest = async (req, res) => {
 };
 
 exports.mileageForm = async (req, res) => {
-  const reservation = await Reservation.findOne({
-    _id: req.params.id,
-    userId: res.locals.currentUser._id,
-  }).populate("vehicleId", "make model year licensePlate");
+  const reservation = await findOwnReservation(req, res, { include: [VEHICLE_SUMMARY] });
 
   if (!reservation) {
     return renderError(res, 404, "Reservation not found.");
@@ -518,10 +485,7 @@ exports.mileageForm = async (req, res) => {
 };
 
 exports.submitMileage = async (req, res) => {
-  const reservation = await Reservation.findOne({
-    _id: req.params.id,
-    userId: res.locals.currentUser._id,
-  });
+  const reservation = await findOwnReservation(req, res);
 
   if (!reservation) {
     return renderError(res, 404, "Reservation not found.");
@@ -535,21 +499,21 @@ exports.submitMileage = async (req, res) => {
   const { startMileage, endMileage, fuelLevelEndPercent, otherDutyNote } = req.body;
 
   if (startMileage !== "" && startMileage !== undefined) {
-    reservation.tripLog.startMileage = Number(startMileage);
+    reservation.startMileage = Number(startMileage);
   }
   if (endMileage !== "" && endMileage !== undefined) {
-    reservation.tripLog.endMileage = Number(endMileage);
+    reservation.endMileage = Number(endMileage);
   }
   if (fuelLevelEndPercent !== "" && fuelLevelEndPercent !== undefined) {
-    reservation.tripLog.fuelLevelEndPercent = Number(fuelLevelEndPercent);
+    reservation.fuelLevelEndPercent = Number(fuelLevelEndPercent);
   }
 
-  reservation.tripLog.preTripInspectionPassed = req.body.preTripInspectionPassed === "on";
-  reservation.tripLog.droppedOffFood = req.body.droppedOffFood === "on";
-  reservation.tripLog.pickedUpFood = req.body.pickedUpFood === "on";
-  reservation.tripLog.otherDuty = req.body.otherDuty === "on";
-  reservation.tripLog.otherDutyNote = (otherDutyNote || "").trim();
-  reservation.tripLog.washed = req.body.washed === "on";
+  reservation.preTripInspectionPassed = req.body.preTripInspectionPassed === "on";
+  reservation.droppedOffFood = req.body.droppedOffFood === "on";
+  reservation.pickedUpFood = req.body.pickedUpFood === "on";
+  reservation.otherDuty = req.body.otherDuty === "on";
+  reservation.otherDutyNote = (otherDutyNote || "").trim();
+  reservation.washed = req.body.washed === "on";
 
   await reservation.save();
 
@@ -558,10 +522,7 @@ exports.submitMileage = async (req, res) => {
 };
 
 exports.issueForm = async (req, res) => {
-  const reservation = await Reservation.findOne({
-    _id: req.params.id,
-    userId: res.locals.currentUser._id,
-  }).populate("vehicleId", "make model year licensePlate");
+  const reservation = await findOwnReservation(req, res, { include: [VEHICLE_SUMMARY] });
 
   if (!reservation) {
     return renderError(res, 404, "Reservation not found.");
@@ -580,10 +541,7 @@ exports.issueForm = async (req, res) => {
 };
 
 exports.submitIssue = async (req, res) => {
-  const reservation = await Reservation.findOne({
-    _id: req.params.id,
-    userId: res.locals.currentUser._id,
-  });
+  const reservation = await findOwnReservation(req, res);
 
   if (!reservation) {
     return renderError(res, 404, "Reservation not found.");
@@ -598,18 +556,15 @@ exports.submitIssue = async (req, res) => {
 
   if (!description) {
     req.flash("error", "Please describe the issue.");
-    return res.redirect(`/reservations/${reservation._id}/issue`);
+    return res.redirect(`/reservations/${reservation.id}/issue`);
   }
 
-  await Vehicle.findByIdAndUpdate(reservation.vehicleId, {
-    $push: {
-      activeIssues: {
-        description,
-        reportedBy: res.locals.currentUser._id,
-        reservationId: reservation._id,
-        reviewed: false,
-      },
-    },
+  await VehicleIssue.create({
+    vehicleId: reservation.vehicleId,
+    description,
+    reportedById: res.locals.currentUser.id,
+    reservationId: reservation.id,
+    reviewed: false,
   });
 
   req.flash("success", "Issue reported to Transportation for review.");
@@ -623,10 +578,7 @@ exports.submitIssue = async (req, res) => {
 // checkpoint: fill out the inspection or skip it, either way land on a
 // confirmation screen reminding them of their existing drop-off code.
 exports.inspectionForm = async (req, res) => {
-  const reservation = await Reservation.findOne({
-    _id: req.params.id,
-    userId: res.locals.currentUser._id,
-  }).populate("vehicleId", "make model year licensePlate");
+  const reservation = await findOwnReservation(req, res, { include: [VEHICLE_SUMMARY] });
 
   if (!reservation) {
     return renderError(res, 404, "Reservation not found.");
@@ -646,10 +598,7 @@ exports.inspectionForm = async (req, res) => {
 };
 
 exports.submitInspection = async (req, res) => {
-  const reservation = await Reservation.findOne({
-    _id: req.params.id,
-    userId: res.locals.currentUser._id,
-  }).populate("vehicleId", "make model year licensePlate");
+  const reservation = await findOwnReservation(req, res, { include: [VEHICLE_SUMMARY] });
 
   if (!reservation) {
     return renderError(res, 404, "Reservation not found.");
@@ -664,45 +613,42 @@ exports.submitInspection = async (req, res) => {
   // should already have forced this before the driver could reach this
   // page, but a direct POST could otherwise skip straight to an end reading
   // with no start reading to compare it against.
-  if (reservation.tripLog?.startMileage == null) {
+  if (reservation.startMileage == null) {
     req.flash(
       "error",
       "Start odometer is missing for this trip — it needs to be added before you can log the end odometer.",
     );
-    return res.redirect(`/reservations/${reservation._id}/inspection`);
+    return res.redirect(`/reservations/${reservation.id}/inspection`);
   }
 
-  reservation.tripLog.endMileage = Number(req.body.endMileage);
+  reservation.endMileage = Number(req.body.endMileage);
 
   const skipped = req.body.action === "skip";
 
+  reservation.inspectionCompletedAt = new Date();
+  reservation.inspectionSkipped = skipped;
+
   if (skipped) {
-    reservation.vehicleInspection = { completedAt: new Date(), skipped: true };
+    reservation.inspectionConditionSatisfactory = null;
+    reservation.inspectionRemarks = "";
   } else {
     const defects = (req.body.defects || []).filter((item) =>
       VEHICLE_INSPECTION_ITEMS.includes(item),
     );
 
-    reservation.vehicleInspection = {
-      completedAt: new Date(),
-      skipped: false,
-      conditionSatisfactory: req.body.conditionSatisfactory === "on",
-      remarks: (req.body.remarks || "").trim(),
-    };
+    reservation.inspectionConditionSatisfactory = req.body.conditionSatisfactory === "on";
+    reservation.inspectionRemarks = (req.body.remarks || "").trim();
 
     if (defects.length) {
-      await Vehicle.findByIdAndUpdate(reservation.vehicleId._id, {
-        $push: {
-          activeIssues: {
-            $each: defects.map((item) => ({
-              description: `Vehicle inspection: ${item}`,
-              reportedBy: res.locals.currentUser._id,
-              reservationId: reservation._id,
-              reviewed: false,
-            })),
-          },
-        },
-      });
+      await VehicleIssue.bulkCreate(
+        defects.map((item) => ({
+          vehicleId: reservation.vehicleId,
+          description: `Vehicle inspection: ${item}`,
+          reportedById: res.locals.currentUser.id,
+          reservationId: reservation.id,
+          reviewed: false,
+        })),
+      );
     }
   }
 

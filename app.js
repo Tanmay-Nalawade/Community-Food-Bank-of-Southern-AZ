@@ -2,10 +2,10 @@ const path = require("path");
 const express = require("express");
 const methodOverride = require("method-override");
 const session = require("express-session");
-const { MongoStore } = require("connect-mongo");
+const MySQLStore = require("express-mysql-session")(session);
 const flash = require("connect-flash");
 const helmet = require("helmet");
-const mongoSanitize = require("express-mongo-sanitize");
+const { Op } = require("sequelize");
 const engine = require("ejs-mate");
 
 const userRoutes = require("./routes/user");
@@ -19,11 +19,11 @@ const reminderScheduler = require("./jobs/reminderScheduler");
 const mileageLogScheduler = require("./jobs/mileageLogScheduler");
 const passport = require("./config/passport");
 const { computeEffectiveRole } = require("./middleware/auth");
-const Reservation = require("./models/reservation");
+const { Reservation } = require("./models");
+const { connect } = require("./config/db");
+const migrator = require("./config/migrator");
 
 const app = express();
-
-require("./config/db");
 
 if (process.env.NODE_ENV === "production" && !process.env.SESSION_SECRET) {
   console.error(
@@ -83,17 +83,23 @@ app.use(
   }),
 );
 app.use(express.urlencoded({ extended: true }));
-app.use(mongoSanitize());
 app.use(methodOverride("_method"));
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "cfb-motor-pool-dev-secret",
     resave: false,
     saveUninitialized: false,
-    store: MongoStore.create({
-      mongoUrl: process.env.MONGO_DB_URL,
-      collectionName: "sessions",
-      ttl: 14 * 24 * 60 * 60,
+    store: new MySQLStore({
+      host: process.env.DB_HOST,
+      port: Number(process.env.DB_PORT) || 3306,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
+      // The `sessions` table is created by the initial-schema migration.
+      createDatabaseTable: false,
+      clearExpired: true,
+      checkExpirationInterval: 15 * 60 * 1000,
+      expiration: 14 * 24 * 60 * 60 * 1000,
     }),
     cookie: {
       httpOnly: true,
@@ -126,25 +132,30 @@ app.use(async (req, res, next) => {
   try {
     const soon = new Date(Date.now() + 30 * 60 * 1000);
 
+    const vehicleSummary = {
+      association: "vehicle",
+      attributes: ["id", "make", "model", "year", "licensePlate"],
+    };
+
     const needsStart = await Reservation.findOne({
-      userId: res.locals.currentUser._id,
-      status: { $in: ["Reserved", "Active"] },
-      "tripLog.startMileage": { $exists: false },
-      requestedStartTime: { $lte: soon },
-    })
-      .sort({ requestedStartTime: 1 })
-      .populate("vehicleId", "make model year licensePlate");
+      where: {
+        userId: res.locals.currentUser.id,
+        status: { [Op.in]: ["Reserved", "Active"] },
+        startMileage: null,
+        requestedStartTime: { [Op.lte]: soon },
+      },
+      include: [vehicleSummary],
+      order: [["requestedStartTime", "ASC"]],
+    });
 
     if (needsStart) {
       res.locals.mandatoryOdometerPrompt = { type: "start", reservation: needsStart };
     } else {
       const needsEnd = await Reservation.findOne({
-        userId: res.locals.currentUser._id,
-        status: "Completed",
-        "tripLog.endMileage": { $exists: false },
-      })
-        .sort({ "tripLog.tripEndedAt": -1 })
-        .populate("vehicleId", "make model year licensePlate");
+        where: { userId: res.locals.currentUser.id, status: "Completed", endMileage: null },
+        include: [vehicleSummary],
+        order: [["tripEndedAt", "DESC"]],
+      });
 
       if (needsEnd) {
         res.locals.mandatoryOdometerPrompt = { type: "end", reservation: needsEnd };
@@ -233,14 +244,9 @@ app.use((err, req, res, next) => {
   let status = err.status || 500;
   let message = "Something went wrong on our end. Please try again.";
 
-  if (err.name === "CastError") {
+  if (err.name === "SequelizeValidationError") {
     status = 400;
-    message = "That link looks invalid or malformed.";
-  } else if (err.name === "ValidationError") {
-    status = 400;
-    message = Object.values(err.errors)
-      .map((fieldError) => fieldError.message)
-      .join(" ");
+    message = err.errors.map((fieldError) => fieldError.message).join(" ");
   } else if (err.type === "entity.parse.failed") {
     status = 400;
     message = "That request could not be understood.";
@@ -257,12 +263,31 @@ app.use((err, req, res, next) => {
 
 const port = process.env.PORT || 8080;
 
-app.listen(port, "0.0.0.0", () => {
-  console.log(`Serving on port ${port}`);
-});
+// Only start serving (and running the schedulers, which query the DB) once
+// the database is reachable and its schema is current — a missing
+// migration would otherwise surface as confusing "unknown column" errors
+// on whichever page happened to need it first.
+async function start() {
+  await connect();
 
-reminderScheduler.start();
-mileageLogScheduler.start();
+  const pending = await migrator.pending();
+  if (pending.length) {
+    console.error(
+      `FATAL: ${pending.length} database migration(s) pending ` +
+        `(${pending.map((m) => m.name).join(", ")}). Run \`npm run db:migrate\` first.`,
+    );
+    process.exit(1);
+  }
+
+  app.listen(port, "0.0.0.0", () => {
+    console.log(`Serving on port ${port}`);
+  });
+
+  reminderScheduler.start();
+  mileageLogScheduler.start();
+}
+
+start();
 
 process.on("unhandledRejection", (reason) => {
   console.error("Unhandled promise rejection:", reason);

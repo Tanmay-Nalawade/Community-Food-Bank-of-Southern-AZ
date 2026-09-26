@@ -1,5 +1,5 @@
 const keycafe = require("../../services/keycafe");
-const Vehicle = require("../../models/vehicle");
+const { Vehicle } = require("../../models");
 const { isRealKeyCafeId } = require("../../services/keycafe/vehicleKeySync");
 
 // hasRealId is a local, format-only check (is keyCafeKeyId a positive
@@ -30,7 +30,7 @@ function buildVehicleKeyStatus(vehicle) {
   }
 
   return {
-    id: vehicle._id,
+    id: vehicle.id,
     label: `${vehicle.year ? vehicle.year + " " : ""}${vehicle.make} ${vehicle.model}`,
     licensePlate: vehicle.licensePlate,
     slug,
@@ -41,7 +41,7 @@ function buildVehicleKeyStatus(vehicle) {
 }
 
 exports.index = async (req, res) => {
-  const vehicles = await Vehicle.find().sort({ make: 1, model: 1 });
+  const vehicles = await Vehicle.findAll({ order: [["make", "ASC"], ["model", "ASC"]] });
 
   const vehicleKeyStatuses = vehicles.map(buildVehicleKeyStatus);
   const missingCount = vehicleKeyStatuses.filter((v) => v.needsAttention).length;
@@ -89,7 +89,7 @@ exports.checkVehicleAccess = async (req, res) => {
     const liveKeys = await keycafe.listKeys();
     const liveKeyIds = new Set(liveKeys.map((key) => String(key.id)));
 
-    const vehicles = await Vehicle.find();
+    const vehicles = await Vehicle.findAll();
     const checkedAt = new Date();
 
     const vehiclesWithRealKeys = vehicles.filter((vehicle) =>

@@ -1,8 +1,12 @@
-const Reservation = require("../../models/reservation");
-const Vehicle = require("../../models/vehicle");
-const User = require("../../models/user");
+const { Op, UniqueConstraintError } = require("sequelize");
+const { Reservation, Vehicle, User } = require("../../models");
 const { renderError } = require("../../utils/httpError");
-const { parseBookingWindow, formatBookingLabel } = require("../../utils/availability");
+const { queryString, containsAny } = require("../../utils/query");
+const {
+  parseBookingWindow,
+  hasOverlappingReservation,
+  withVehicleLock,
+} = require("../../utils/availability");
 const {
   grantReservationAccess,
   revokeReservationAccess,
@@ -10,6 +14,14 @@ const {
 const { fetchPage, PAGE_SIZE } = require("../../utils/pagination");
 
 const HOLDING_STATUSES = ["Reserved", "Active"];
+
+const USER_LIST = { association: "user", attributes: ["id", "firstName", "lastName", "email", "role"] };
+const USER_CONTACT = { association: "user", attributes: ["id", "firstName", "lastName", "email"] };
+const VEHICLE_LIST = { association: "vehicle", attributes: ["id", "make", "model", "year", "licensePlate"] };
+const VEHICLE_KEY = { association: "vehicle", attributes: ["id", "make", "model", "keyCafeKeyId"] };
+const BY_NAME = [["make", "ASC"], ["model", "ASC"]];
+
+class SlotTakenError extends Error {}
 
 // Approve/deny/cancel are triggered from both the reservations list and a
 // single reservation's detail page — bouncing a detail-page action back to
@@ -21,70 +33,92 @@ function redirectAfterAction(req, res, reservationId) {
   res.redirect(target);
 }
 
-function escapeRegex(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+function validDate(value) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
 }
 
 async function buildReservationFilter(query) {
-  const { status, vehicleId, driver, startDate, endDate } = query;
-  const filter = {};
+  const status = queryString(query.status);
+  const vehicleId = queryString(query.vehicleId);
+  const driver = queryString(query.driver);
+  const startDate = queryString(query.startDate);
+  const endDate = queryString(query.endDate);
+  const where = {};
 
   if (status) {
-    filter.status = status;
+    where.status = status;
   }
 
   if (vehicleId) {
-    filter.vehicleId = vehicleId;
+    where.vehicleId = vehicleId;
   }
 
   if (driver) {
-    const regex = new RegExp(escapeRegex(driver.trim()), "i");
-    const matchingUserIds = await User.find({
-      $or: [{ firstName: regex }, { lastName: regex }, { email: regex }],
-    }).distinct("_id");
-    filter.userId = { $in: matchingUserIds };
+    const matchingUsers = await User.findAll({
+      attributes: ["id"],
+      where: containsAny(["firstName", "lastName", "email"], driver),
+      raw: true,
+    });
+    // An empty IN matches nothing, which is the right answer here: no
+    // matching driver means no matching reservations.
+    where.userId = { [Op.in]: matchingUsers.map((user) => user.id) };
   }
 
-  if (startDate || endDate) {
-    filter.requestedStartTime = {};
-    if (startDate) {
-      filter.requestedStartTime.$gte = new Date(`${startDate}T00:00`);
+  const from = startDate && validDate(`${startDate}T00:00`);
+  const to = endDate && validDate(`${endDate}T23:59:59`);
+  if (from || to) {
+    where.requestedStartTime = {};
+    if (from) {
+      where.requestedStartTime[Op.gte] = from;
     }
-    if (endDate) {
-      filter.requestedStartTime.$lte = new Date(`${endDate}T23:59:59`);
+    if (to) {
+      where.requestedStartTime[Op.lte] = to;
     }
   }
 
-  return filter;
+  return where;
 }
 
 function filterQueryString(query) {
   const params = new URLSearchParams();
   ["status", "vehicleId", "driver", "startDate", "endDate"].forEach((key) => {
-    if (query[key]) {
-      params.set(key, query[key]);
+    const value = queryString(query[key]);
+    if (value) {
+      params.set(key, value);
     }
   });
   const qs = params.toString();
   return qs ? `?${qs}` : "";
 }
 
-function fetchReservations(filter, skip, limit) {
-  return Reservation.find(filter)
-    .populate("userId", "firstName lastName email role")
-    .populate("vehicleId", "make model year licensePlate")
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(limit);
+function fetchReservations(where, skip, limit) {
+  return Reservation.findAll({
+    where,
+    include: [USER_LIST, VEHICLE_LIST],
+    order: [["createdAt", "DESC"], ["id", "DESC"]],
+    offset: skip,
+    limit,
+  });
+}
+
+function fetchPastReservations(now) {
+  return (skip, limit) =>
+    Reservation.findAll({
+      where: { requestedEndTime: { [Op.lt]: now } },
+      include: [USER_LIST, VEHICLE_LIST],
+      order: [["requestedEndTime", "DESC"], ["id", "DESC"]],
+      offset: skip,
+      limit,
+    });
 }
 
 exports.listReservations = async (req, res) => {
-  const { status, vehicleId, driver, startDate, endDate } = req.query;
-  const filter = await buildReservationFilter(req.query);
+  const where = await buildReservationFilter(req.query);
 
   const [{ items: reservations, hasMore, nextSkip }, vehicles] = await Promise.all([
-    fetchPage((skip, limit) => fetchReservations(filter, skip, limit), 0),
-    Vehicle.find({}).sort({ make: 1, model: 1 }),
+    fetchPage((skip, limit) => fetchReservations(where, skip, limit), 0),
+    Vehicle.findAll({ order: BY_NAME }),
   ]);
 
   res.render("admin/reservations/index", {
@@ -92,11 +126,11 @@ exports.listReservations = async (req, res) => {
     reservations,
     vehicles,
     filters: {
-      status: status || "",
-      vehicleId: vehicleId || "",
-      driver: driver || "",
-      startDate: startDate || "",
-      endDate: endDate || "",
+      status: queryString(req.query.status),
+      vehicleId: queryString(req.query.vehicleId),
+      driver: queryString(req.query.driver),
+      startDate: queryString(req.query.startDate),
+      endDate: queryString(req.query.endDate),
     },
     hasMore,
     nextSkip,
@@ -107,11 +141,11 @@ exports.listReservations = async (req, res) => {
 };
 
 exports.moreReservations = async (req, res) => {
-  const filter = await buildReservationFilter(req.query);
+  const where = await buildReservationFilter(req.query);
   const skip = Math.max(0, Number(req.query.skip) || 0);
 
   const { items: reservations, hasMore } = await fetchPage(
-    (s, limit) => fetchReservations(filter, s, limit),
+    (s, limit) => fetchReservations(where, s, limit),
     skip,
   );
 
@@ -120,17 +154,10 @@ exports.moreReservations = async (req, res) => {
 };
 
 exports.pastReservations = async (req, res) => {
-  const now = new Date();
-
-  const fetchHistory = (skip, limit) =>
-    Reservation.find({ requestedEndTime: { $lt: now } })
-      .populate("userId", "firstName lastName email role")
-      .populate("vehicleId", "make model year licensePlate")
-      .sort({ requestedEndTime: -1 })
-      .skip(skip)
-      .limit(limit);
-
-  const { items: reservations, hasMore, nextSkip } = await fetchPage(fetchHistory, 0);
+  const { items: reservations, hasMore, nextSkip } = await fetchPage(
+    fetchPastReservations(new Date()),
+    0,
+  );
 
   res.render("admin/reservations/history", {
     title: "Booking History",
@@ -143,28 +170,25 @@ exports.pastReservations = async (req, res) => {
 };
 
 exports.moreHistory = async (req, res) => {
-  const now = new Date();
   const skip = Math.max(0, Number(req.query.skip) || 0);
 
-  const fetchHistory = (s, limit) =>
-    Reservation.find({ requestedEndTime: { $lt: now } })
-      .populate("userId", "firstName lastName email role")
-      .populate("vehicleId", "make model year licensePlate")
-      .sort({ requestedEndTime: -1 })
-      .skip(s)
-      .limit(limit);
-
-  const { items: reservations, hasMore } = await fetchPage(fetchHistory, skip);
+  const { items: reservations, hasMore } = await fetchPage(
+    fetchPastReservations(new Date()),
+    skip,
+  );
 
   res.set("X-Has-More", hasMore ? "1" : "0");
   res.render("admin/reservations/_history-rows", { reservations });
 };
 
 exports.showReservation = async (req, res) => {
-  const reservation = await Reservation.findById(req.params.id)
-    .populate("userId", "firstName lastName email role")
-    .populate("vehicleId")
-    .populate("reviewedBy", "firstName lastName");
+  const reservation = await Reservation.findByPk(req.params.id, {
+    include: [
+      USER_LIST,
+      "vehicle",
+      { association: "reviewedBy", attributes: ["id", "firstName", "lastName"] },
+    ],
+  });
 
   if (!reservation) {
     return renderError(res, 404, "Reservation not found.");
@@ -178,15 +202,15 @@ exports.showReservation = async (req, res) => {
 };
 
 exports.editReservation = async (req, res) => {
-  const reservation = await Reservation.findById(req.params.id)
-    .populate("userId", "firstName lastName email")
-    .populate("vehicleId");
+  const reservation = await Reservation.findByPk(req.params.id, {
+    include: [USER_CONTACT, "vehicle"],
+  });
 
   if (!reservation) {
     return renderError(res, 404, "Reservation not found.");
   }
 
-  const vehicles = await Vehicle.find({}).sort({ make: 1, model: 1 });
+  const vehicles = await Vehicle.findAll({ order: BY_NAME });
 
   res.render("admin/reservations/edit", {
     title: "Edit Reservation",
@@ -197,9 +221,9 @@ exports.editReservation = async (req, res) => {
 };
 
 exports.updateReservation = async (req, res) => {
-  const reservation = await Reservation.findById(req.params.id)
-    .populate("userId", "firstName lastName email")
-    .populate("vehicleId", "make model keyCafeKeyId");
+  const reservation = await Reservation.findByPk(req.params.id, {
+    include: [USER_CONTACT, VEHICLE_KEY],
+  });
 
   if (!reservation) {
     return renderError(res, 404, "Reservation not found.");
@@ -215,58 +239,48 @@ exports.updateReservation = async (req, res) => {
     return renderError(res, 400, "Invalid booking time.");
   }
 
-  const previousVehicleId = String(reservation.vehicleId._id);
+  const previousVehicleId = String(reservation.vehicleId);
   const nextVehicleId = req.body.vehicleId;
   const nextStatus = req.body.status;
   const vehicleChanged = previousVehicleId !== nextVehicleId;
+  const holdsVehicle = HOLDING_STATUSES.includes(nextStatus);
+  const overlapOptions = { excludeReservationId: reservation.id };
 
   // Only Reserved/Active actually hold a vehicle exclusively — block the
   // save if the requested vehicle/window now conflicts with another booking
   // (the staff-facing booking form already guards against this; this path
-  // didn't, so an admin edit could silently double-book a vehicle).
-  if (HOLDING_STATUSES.includes(nextStatus)) {
-    const conflictExists = await Reservation.exists({
-      _id: { $ne: reservation._id },
-      vehicleId: nextVehicleId,
-      status: { $in: ["Pending", "Reserved", "Active"] },
-      requestedStartTime: { $lt: booking.end },
-      requestedEndTime: { $gt: booking.start },
-    });
-
-    if (conflictExists) {
-      req.flash("error", "That vehicle is already booked during that window.");
-      return res.redirect(`/admin/reservations/${reservation._id}/edit`);
-    }
+  // didn't, so an admin edit could silently double-book a vehicle). This is
+  // the fast unlocked check; it's repeated under the vehicle lock below.
+  if (holdsVehicle && (await hasOverlappingReservation(nextVehicleId, booking, overlapOptions))) {
+    req.flash("error", "That vehicle is already booked during that window.");
+    return res.redirect(`/admin/reservations/${reservation.id}/edit`);
   }
 
-  let newVehicle = reservation.vehicleId;
+  let newVehicle = reservation.vehicle;
   if (vehicleChanged) {
-    newVehicle = await Vehicle.findById(nextVehicleId, "make model keyCafeKeyId");
+    newVehicle = await Vehicle.findByPk(nextVehicleId, {
+      attributes: ["id", "make", "model", "keyCafeKeyId"],
+    });
     if (!newVehicle) {
       req.flash("error", "That vehicle could not be found.");
-      return res.redirect(`/admin/reservations/${reservation._id}/edit`);
+      return res.redirect(`/admin/reservations/${reservation.id}/edit`);
     }
   }
 
+  let grantedHere = false;
   try {
     // An existing KeyCafe access is scoped to the OLD vehicle's key — if the
     // vehicle is being changed, that access no longer matches the
     // reservation and has to be revoked rather than left in place pointing
     // at the wrong vehicle.
-    if (vehicleChanged && reservation.keyCafeAccess?.accessId) {
+    if (vehicleChanged && reservation.keyCafeAccessId) {
       await revokeReservationAccess(reservation);
     }
 
-    if (vehicleChanged) {
-      reservation.vehicleId = newVehicle;
-    }
-
-    if (HOLDING_STATUSES.includes(nextStatus) && !reservation.keyCafeAccess?.accessId) {
-      await grantReservationAccess(reservation);
-    } else if (
-      ["Denied", "Cancelled"].includes(nextStatus) &&
-      reservation.keyCafeAccess?.accessId
-    ) {
+    if (holdsVehicle && !reservation.keyCafeAccessId) {
+      await grantReservationAccess(reservation, reservation.user, newVehicle);
+      grantedHere = true;
+    } else if (["Denied", "Cancelled"].includes(nextStatus) && reservation.keyCafeAccessId) {
       await revokeReservationAccess(reservation);
     }
   } catch (error) {
@@ -275,18 +289,43 @@ exports.updateReservation = async (req, res) => {
       "error",
       "Could not update KeyCafe access for this reservation. No changes were saved.",
     );
-    return res.redirect(`/admin/reservations/${reservation._id}/edit`);
+    return res.redirect(`/admin/reservations/${reservation.id}/edit`);
   }
 
-  reservation.vehicleId = nextVehicleId;
+  reservation.vehicleId = newVehicle.id;
   reservation.requestedStartTime = booking.start;
   reservation.requestedEndTime = booking.end;
   reservation.status = nextStatus;
   reservation.adminNotes = req.body.adminNotes || "";
-  reservation.reviewedBy = res.locals.currentUser._id;
+  reservation.reviewedById = res.locals.currentUser.id;
   reservation.reviewedAt = new Date();
 
-  await reservation.save();
+  try {
+    await withVehicleLock(newVehicle.id, async ({ transaction }) => {
+      if (
+        holdsVehicle &&
+        (await hasOverlappingReservation(newVehicle.id, booking, { ...overlapOptions, transaction }))
+      ) {
+        throw new SlotTakenError();
+      }
+      await reservation.save({ transaction });
+    });
+  } catch (error) {
+    if (!(error instanceof SlotTakenError || error instanceof UniqueConstraintError)) {
+      throw error;
+    }
+    // Lost a race for the slot after already granting KeyCafe access for
+    // it — take that access back so it doesn't outlive the failed save.
+    if (grantedHere) {
+      try {
+        await revokeReservationAccess(reservation);
+      } catch (revokeError) {
+        console.error("Failed to revoke KeyCafe access after a lost booking race:", revokeError);
+      }
+    }
+    req.flash("error", "That vehicle was just booked by someone else for that time.");
+    return res.redirect(`/admin/reservations/${reservation.id}/edit`);
+  }
 
   // Keep Vehicle.status in sync: release the old vehicle if this
   // reservation no longer holds it, and reflect the new vehicle's state.
@@ -294,12 +333,13 @@ exports.updateReservation = async (req, res) => {
     await freeVehicleIfHeldBy(previousVehicleId);
   }
 
-  if (HOLDING_STATUSES.includes(nextStatus)) {
-    await Vehicle.findByIdAndUpdate(nextVehicleId, {
-      status: nextStatus === "Active" ? "In Use" : "Reserved",
-    });
+  if (holdsVehicle) {
+    await Vehicle.update(
+      { status: nextStatus === "Active" ? "In Use" : "Reserved" },
+      { where: { id: newVehicle.id } },
+    );
   } else if (["Denied", "Cancelled", "Completed"].includes(nextStatus)) {
-    await freeVehicleIfHeldBy(nextVehicleId);
+    await freeVehicleIfHeldBy(newVehicle.id);
   }
 
   if (["Denied", "Cancelled"].includes(nextStatus)) {
@@ -312,24 +352,22 @@ exports.updateReservation = async (req, res) => {
 };
 
 exports.approveReservation = async (req, res) => {
-  const reservation = await Reservation.findById(req.params.id)
-    .populate("userId", "firstName lastName email")
-    .populate("vehicleId", "make model keyCafeKeyId");
+  const reservation = await Reservation.findByPk(req.params.id, {
+    include: [USER_CONTACT, VEHICLE_KEY],
+  });
 
   if (!reservation) {
     return renderError(res, 404, "Reservation not found.");
   }
 
   try {
-    await grantReservationAccess(reservation);
+    await grantReservationAccess(reservation, reservation.user, reservation.vehicle);
     reservation.status = "Reserved";
-    reservation.reviewedBy = res.locals.currentUser._id;
+    reservation.reviewedById = res.locals.currentUser.id;
     reservation.reviewedAt = new Date();
     await reservation.save();
 
-    await Vehicle.findByIdAndUpdate(reservation.vehicleId._id, {
-      status: "Reserved",
-    });
+    await Vehicle.update({ status: "Reserved" }, { where: { id: reservation.vehicleId } });
 
     req.flash("success", "Reservation approved and KeyCafe access granted.");
   } catch (error) {
@@ -340,19 +378,20 @@ exports.approveReservation = async (req, res) => {
     );
   }
 
-  redirectAfterAction(req, res, reservation._id);
+  redirectAfterAction(req, res, reservation.id);
 };
 
+// Single conditional UPDATE, so it can't clobber a status (e.g.
+// Maintenance) that someone else set in between a read and a write.
 async function freeVehicleIfHeldBy(vehicleId) {
-  const vehicle = await Vehicle.findById(vehicleId);
-  if (vehicle && ["Reserved", "In Use"].includes(vehicle.status)) {
-    vehicle.status = "Available";
-    await vehicle.save();
-  }
+  await Vehicle.update(
+    { status: "Available" },
+    { where: { id: vehicleId, status: { [Op.in]: ["Reserved", "In Use"] } } },
+  );
 }
 
 exports.denyReservation = async (req, res) => {
-  const reservation = await Reservation.findById(req.params.id);
+  const reservation = await Reservation.findByPk(req.params.id);
   if (!reservation) {
     return renderError(res, 404, "Reservation not found.");
   }
@@ -367,7 +406,7 @@ exports.denyReservation = async (req, res) => {
 
   reservation.status = "Denied";
   reservation.adminNotes = req.body.adminNotes || reservation.adminNotes;
-  reservation.reviewedBy = res.locals.currentUser._id;
+  reservation.reviewedById = res.locals.currentUser.id;
   reservation.reviewedAt = new Date();
   await reservation.save();
   await freeVehicleIfHeldBy(reservation.vehicleId);
@@ -381,18 +420,18 @@ exports.denyReservation = async (req, res) => {
     req.flash("success", "Booking canceled.");
   }
 
-  redirectAfterAction(req, res, reservation._id);
+  redirectAfterAction(req, res, reservation.id);
 };
 
 exports.cancelReservation = async (req, res) => {
-  const reservation = await Reservation.findById(req.params.id);
+  const reservation = await Reservation.findByPk(req.params.id);
   if (!reservation) {
     return renderError(res, 404, "Reservation not found.");
   }
 
   if (!["Reserved", "Active"].includes(reservation.status)) {
     req.flash("error", "Only confirmed bookings can be canceled this way.");
-    return redirectAfterAction(req, res, reservation._id);
+    return redirectAfterAction(req, res, reservation.id);
   }
 
   let revokeFailed = false;
@@ -404,7 +443,7 @@ exports.cancelReservation = async (req, res) => {
   }
 
   reservation.status = "Cancelled";
-  reservation.reviewedBy = res.locals.currentUser._id;
+  reservation.reviewedById = res.locals.currentUser.id;
   reservation.reviewedAt = new Date();
   await reservation.save();
   await freeVehicleIfHeldBy(reservation.vehicleId);
@@ -418,25 +457,25 @@ exports.cancelReservation = async (req, res) => {
     req.flash("success", "Booking canceled by Transportation.");
   }
 
-  redirectAfterAction(req, res, reservation._id);
+  redirectAfterAction(req, res, reservation.id);
 };
 
 exports.deleteReservation = async (req, res) => {
-  const reservation = await Reservation.findById(req.params.id);
+  const reservation = await Reservation.findByPk(req.params.id);
 
   let revokeFailed = false;
   if (reservation) {
     try {
       await revokeReservationAccess(reservation);
-      await reservation.save();
     } catch (error) {
       console.error("KeyCafe access cancellation failed:", error);
       revokeFailed = true;
     }
     await freeVehicleIfHeldBy(reservation.vehicleId);
+    // access_logs / vehicle_issues rows pointing at it are kept, with their
+    // reservation_id set to NULL by the foreign key.
+    await reservation.destroy();
   }
-
-  await Reservation.findByIdAndDelete(req.params.id);
 
   if (revokeFailed) {
     req.flash(

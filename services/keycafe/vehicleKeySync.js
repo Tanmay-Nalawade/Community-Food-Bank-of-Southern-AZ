@@ -47,7 +47,7 @@ async function syncVehicleKeyName(vehicle) {
   try {
     await keycafe.updateKey(vehicle.keyCafeKeyId, vehicleKeyName(vehicle));
   } catch (error) {
-    console.error(`Failed to sync KeyCafe key name for vehicle ${vehicle._id}:`, error);
+    console.error(`Failed to sync KeyCafe key name for vehicle ${vehicle.id}:`, error);
   }
 }
 

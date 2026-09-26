@@ -1,20 +1,28 @@
-const mongoose = require("mongoose");
-const { Schema } = mongoose;
+const { DataTypes, Model } = require("sequelize");
+const { sequelize } = require("../config/db");
 
-const accessLogSchema = new Schema(
+class AccessLog extends Model {}
+
+AccessLog.init(
   {
-    reservationId: { type: Schema.Types.ObjectId, ref: "Reservation", required: true },
-    vehicleId: { type: Schema.Types.ObjectId, ref: "Vehicle", required: true },
-    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    id: { type: DataTypes.INTEGER.UNSIGNED, autoIncrement: true, primaryKey: true },
+    // Nullable so the audit row survives an admin deleting the reservation.
+    reservationId: { type: DataTypes.INTEGER.UNSIGNED },
+    vehicleId: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false },
+    userId: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false },
     action: {
-      type: String,
-      enum: ["Granted", "Revoked", "PickedUp", "Returned"],
-      required: true,
+      type: DataTypes.ENUM("Granted", "Revoked", "PickedUp", "Returned"),
+      allowNull: false,
     },
-    accessId: { type: String },
-    bookingCode: { type: String },
+    accessId: { type: DataTypes.STRING(64) },
+    bookingCode: { type: DataTypes.STRING(64) },
   },
-  { timestamps: true },
+  {
+    sequelize,
+    modelName: "AccessLog",
+    tableName: "access_logs",
+    underscored: true,
+  },
 );
 
-module.exports = mongoose.model("AccessLog", accessLogSchema);
+module.exports = AccessLog;

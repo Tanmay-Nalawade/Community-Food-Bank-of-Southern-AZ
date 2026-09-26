@@ -1,7 +1,6 @@
 const passport = require("passport");
-const User = require("../models/user");
-const Reservation = require("../models/reservation");
-const ActivityLog = require("../models/activityLog");
+const { Op } = require("sequelize");
+const { User, Reservation, ActivityLog } = require("../models");
 const { landingPathForRole } = require("../middleware/auth");
 const { issueToken, hashToken } = require("../utils/authTokens");
 const {
@@ -12,12 +11,28 @@ const {
 const VERIFICATION_TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
 const RESET_TOKEN_TTL_MS = 60 * 60 * 1000;
 
+function findByEmail(email) {
+  return User.findOne({ where: { email: String(email || "").trim().toLowerCase() } });
+}
+
+function findByPasswordResetToken(token) {
+  return User.findOne({
+    where: {
+      passwordResetTokenHash: hashToken(token),
+      passwordResetExpiresAt: { [Op.gt]: new Date() },
+    },
+  });
+}
+
 async function getLandingPath(userId) {
   const now = new Date();
-  const hasBookings = await Reservation.exists({
-    userId,
-    status: { $in: ["Pending", "Reserved", "Active"] },
-    requestedEndTime: { $gt: now },
+  const hasBookings = await Reservation.findOne({
+    attributes: ["id"],
+    where: {
+      userId,
+      status: { [Op.in]: Reservation.OPEN_STATUSES },
+      requestedEndTime: { [Op.gt]: now },
+    },
   });
 
   return hasBookings ? "/reservations/mine" : "/";
@@ -29,7 +44,7 @@ async function getLandingPath(userId) {
 // isn't the right question for them.
 async function landingPathFor(user) {
   if (user.role === "Staff") {
-    return getLandingPath(user._id);
+    return getLandingPath(user.id);
   }
   return landingPathForRole(user.role);
 }
@@ -85,7 +100,7 @@ exports.login = (req, res, next) => {
         }
 
         await ActivityLog.create({
-          userId: user._id,
+          userId: user.id,
           action: "Login",
           detail: `Logged in as ${user.role}`,
           ip: req.ip,
@@ -114,24 +129,26 @@ exports.register = (req, res, next) => {
   const { firstName, lastName, password } = req.body;
   const email = (req.body.email || "").trim();
 
-  User.register(new User({ firstName, lastName, email, role: "Staff" }), password, async (err, user) => {
-    if (err) {
+  User.register({ firstName, lastName, email, role: "Staff" }, password).then(
+    async (user) => {
+      try {
+        const { token, tokenHash, expiresAt } = issueToken(VERIFICATION_TOKEN_TTL_MS);
+        user.emailVerificationTokenHash = tokenHash;
+        user.emailVerificationExpiresAt = expiresAt;
+        await user.save();
+        await sendVerificationEmail(user, token);
+      } catch (error) {
+        return next(error);
+      }
+
+      req.flash("success", "Account created — check your email to verify it before logging in.");
+      res.redirect(`/verify-email/pending?email=${encodeURIComponent(user.email)}`);
+    },
+    (err) => {
       req.flash("error", err.message || "Could not create your account.");
-      return res.redirect("/register");
-    }
-
-    try {
-      const { token, tokenHash, expiresAt } = issueToken(VERIFICATION_TOKEN_TTL_MS);
-      user.emailVerification = { tokenHash, expiresAt };
-      await user.save();
-      await sendVerificationEmail(user, token);
-    } catch (error) {
-      return next(error);
-    }
-
-    req.flash("success", "Account created — check your email to verify it before logging in.");
-    res.redirect(`/verify-email/pending?email=${encodeURIComponent(user.email)}`);
-  });
+      res.redirect("/register");
+    },
+  );
 };
 
 exports.forgotPasswordForm = (req, res) => {
@@ -141,12 +158,12 @@ exports.forgotPasswordForm = (req, res) => {
 // Always flashes the same message whether or not the email exists, so this
 // endpoint can't be used to enumerate registered accounts.
 exports.forgotPasswordSubmit = async (req, res) => {
-  const { email } = req.body;
-  const user = await User.findOne({ email });
+  const user = await findByEmail(req.body.email);
 
   if (user) {
     const { token, tokenHash, expiresAt } = issueToken(RESET_TOKEN_TTL_MS);
-    user.passwordReset = { tokenHash, expiresAt };
+    user.passwordResetTokenHash = tokenHash;
+    user.passwordResetExpiresAt = expiresAt;
     await user.save();
     await sendPasswordResetEmail(user, token);
   }
@@ -156,10 +173,7 @@ exports.forgotPasswordSubmit = async (req, res) => {
 };
 
 exports.resetPasswordForm = async (req, res) => {
-  const user = await User.findOne({
-    "passwordReset.tokenHash": hashToken(req.params.token),
-    "passwordReset.expiresAt": { $gt: new Date() },
-  }).select("+passwordReset.tokenHash +passwordReset.expiresAt");
+  const user = await findByPasswordResetToken(req.params.token);
 
   if (!user) {
     return res.render("users/reset-password", {
@@ -179,10 +193,7 @@ exports.resetPasswordForm = async (req, res) => {
 };
 
 exports.resetPasswordSubmit = async (req, res) => {
-  const user = await User.findOne({
-    "passwordReset.tokenHash": hashToken(req.params.token),
-    "passwordReset.expiresAt": { $gt: new Date() },
-  }).select("+passwordReset.tokenHash +passwordReset.expiresAt");
+  const user = await findByPasswordResetToken(req.params.token);
 
   if (!user) {
     req.flash("error", "That reset link is invalid or has expired. Please request a new one.");
@@ -190,7 +201,8 @@ exports.resetPasswordSubmit = async (req, res) => {
   }
 
   await user.setPassword(req.body.password);
-  user.passwordReset = undefined;
+  user.passwordResetTokenHash = null;
+  user.passwordResetExpiresAt = null;
   await user.save();
 
   req.flash("success", "Your password has been reset. Please log in.");
@@ -209,11 +221,12 @@ exports.verifyEmailPendingForm = (req, res) => {
 // account-enumeration reason.
 exports.resendVerification = async (req, res) => {
   const { email } = req.body;
-  const user = await User.findOne({ email });
+  const user = await findByEmail(email);
 
   if (user && !user.emailVerified) {
     const { token, tokenHash, expiresAt } = issueToken(VERIFICATION_TOKEN_TTL_MS);
-    user.emailVerification = { tokenHash, expiresAt };
+    user.emailVerificationTokenHash = tokenHash;
+    user.emailVerificationExpiresAt = expiresAt;
     await user.save();
     await sendVerificationEmail(user, token);
   }
@@ -224,9 +237,11 @@ exports.resendVerification = async (req, res) => {
 
 exports.verifyEmail = async (req, res, next) => {
   const user = await User.findOne({
-    "emailVerification.tokenHash": hashToken(req.params.token),
-    "emailVerification.expiresAt": { $gt: new Date() },
-  }).select("+emailVerification.tokenHash +emailVerification.expiresAt");
+    where: {
+      emailVerificationTokenHash: hashToken(req.params.token),
+      emailVerificationExpiresAt: { [Op.gt]: new Date() },
+    },
+  });
 
   if (!user) {
     return res.render("users/verify-email-pending", {
@@ -238,7 +253,8 @@ exports.verifyEmail = async (req, res, next) => {
   }
 
   user.emailVerified = true;
-  user.emailVerification = undefined;
+  user.emailVerificationTokenHash = null;
+  user.emailVerificationExpiresAt = null;
   await user.save();
 
   req.session.regenerate((regenerateErr) => {
@@ -267,7 +283,7 @@ exports.logout = (req, res, next) => {
 
     if (currentUser) {
       await ActivityLog.create({
-        userId: currentUser._id,
+        userId: currentUser.id,
         action: "Logout",
         ip: req.ip,
       });

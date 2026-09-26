@@ -2,7 +2,7 @@
   <tr>
     <%- include('_row-cells', { reservation }) %>
     <td class="admin-table__actions" data-label="Actions">
-      <a class="action-btn action-btn--sm action-btn--edit" href="/admin/reservations/<%= reservation._id %>">View</a>
+      <a class="action-btn action-btn--sm action-btn--edit" href="/admin/reservations/<%= reservation.id %>">View</a>
     </td>
   </tr>
 <% }) %>

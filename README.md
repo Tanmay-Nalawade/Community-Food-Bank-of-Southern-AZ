@@ -7,18 +7,47 @@ integration's health.
 
 ## Running it locally
 
-1. `npm install`
-2. Copy `.env.example` to `.env` and fill in the values you have (KeyCafe/SMTP/etc. all have
-   safe mock fallbacks when unset — see the comments in that file).
-3. `npm run dev` (nodemon) or `npm start`
-4. `npm run seed` to load demo accounts/vehicles/bookings (prints the login credentials it created).
+The app uses MySQL (8.4). Nothing needs to be installed on your machine besides Docker — the
+database runs in a container defined in `docker-compose.yml`.
+
+1. Copy `.env.example` to `.env` and fill in the `DB_*` values (any passwords you like — the
+   container is created with them the first time it starts) plus whatever else you have
+   (KeyCafe/SMTP/etc. all have safe mock fallbacks when unset — see the comments in that file).
+2. `docker compose up --build` — starts MySQL, applies any pending schema migrations, and runs the
+   app with nodemon at http://localhost:8080.
+3. `docker compose exec app npm run seed` to load demo accounts/vehicles/bookings (prints the login
+   credentials it created). **This wipes every table first.**
+
+Prefer running Node on the host? `docker compose up -d mysql`, then `npm install`,
+`npm run db:migrate`, `npm run dev` — with `DB_HOST=127.0.0.1` and `DB_PORT` set to the
+container's published port. If something else on your machine already uses 3306 (e.g. a Homebrew
+MySQL), set `DB_PORT=3307` in `.env`; compose publishes the container on that port instead.
+
+After changing dependencies in `package.json`, recreate the app container's `node_modules`
+volume or it will keep running with the old packages: `docker compose up --build -V`.
+
+### Database schema and migrations
+
+The schema lives in versioned migrations under `migrations/` (run with
+[umzug](https://github.com/sequelize/umzug); applied ones are recorded in the `schema_migrations`
+table). The app refuses to start while a migration is pending, so a new deployment is always:
+
+```
+npm run db:migrate            # apply pending migrations
+npm run db:migrate -- status  # show applied / pending
+npm run db:migrate -- down    # roll back the most recent one
+```
+
+To change the schema, add a new file to `migrations/` (never edit one that has already run
+somewhere) and update the matching model in `models/`.
 
 ## Folder structure
 
 ```
 app.js                      Entry point: Express setup, session/auth wiring, route mounting
 config/
-  db.js                     MongoDB connection
+  db.js                     MySQL connection (Sequelize)
+  migrator.js               Migration runner used by scripts/migrate.js and the startup check
   passport.js                Passport local-strategy + session (de)serialization
 controllers/                 Route handler logic
   account.js, reservation.js, user.js, vehicle.js, webhook.js   Staff-facing / shared
@@ -33,7 +62,8 @@ middleware/                   Express middleware
   auth.js                     Login/role guards, "view as" role computation
   validate.js                 Generic Joi-validate-body middleware factory
   keycafeWebhookAuth.js        HTTP Basic auth check for the KeyCafe webhook
-models/                       Mongoose schemas, one file per collection
+migrations/                   Versioned MySQL schema changes, applied in filename order
+models/                       Sequelize models, one file per table; index.js wires up associations
 public/                       Static assets served as-is (css/, js/, fonts/, images/)
 routes/                       Express routers, one per top-level URL mount in app.js
   account.js, admin.js, it.js, reservation.js, user.js, vehicle.js, webhook.js
@@ -63,7 +93,7 @@ views/                        EJS templates, mirroring the routes/controllers st
 `/it`, `/reservations`, `/vehicles`, `/account`, `/webhooks`, `/`) → the router applies
 `middleware/` (login/role checks, then body validation against a `validators/` schema) → the
 matching function in `controllers/` (or `controllers/admin/`, `controllers/it/` for those
-areas) runs, using `models/` to talk to MongoDB and `services/` for KeyCafe/email → a template
+areas) runs, using `models/` (required via `models/index.js`) to talk to MySQL and `services/` for KeyCafe/email → a template
 under `views/` renders the response. `jobs/` run independently of any request, on a timer
 started once at boot.
 

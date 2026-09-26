@@ -1,19 +1,28 @@
 const passport = require("passport");
-const User = require("../models/user");
+const LocalStrategy = require("passport-local").Strategy;
+const { User } = require("../models");
 
-passport.use(User.createStrategy());
+passport.use(
+  new LocalStrategy({ usernameField: "email" }, async (email, password, done) => {
+    try {
+      const user = await User.authenticate(email, password);
+      if (!user) {
+        return done(null, false, { message: User.AUTH_ERRORS.incorrect });
+      }
+      done(null, user);
+    } catch (error) {
+      done(error);
+    }
+  }),
+);
 
-// Serialize/deserialize by _id ourselves rather than using
-// passport-local-mongoose's User.serializeUser(), which serializes by the
-// configured usernameField (email) instead — that would mismatch with the
-// _id lookup below.
 passport.serializeUser((user, done) => {
-  done(null, user._id);
+  done(null, user.id);
 });
 
 passport.deserializeUser(async (id, done) => {
   try {
-    const user = await User.findById(id);
+    const user = await User.findByPk(id);
     if (!user || !user.isActive) {
       return done(null, false);
     }

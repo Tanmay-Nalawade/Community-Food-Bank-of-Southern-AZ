@@ -2,10 +2,10 @@ const Joi = require("joi");
 
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
-const OBJECT_ID_PATTERN = /^[0-9a-fA-F]{24}$/;
+const ID_PATTERN = /^[1-9]\d{0,9}$/;
 
 const updateReservationSchema = Joi.object({
-  vehicleId: Joi.string().pattern(OBJECT_ID_PATTERN).required().messages({
+  vehicleId: Joi.string().pattern(ID_PATTERN).required().messages({
     "string.pattern.base": "Please choose a valid vehicle.",
     "any.required": "Please choose a vehicle.",
   }),

@@ -5,19 +5,19 @@
 
   <h1>Edit Reservation</h1>
   <p class="vehicles-page__lead">
-    <%= reservation.userId.firstName %> <%= reservation.userId.lastName %> &middot;
-    <%= reservation.vehicleId.make %> <%= reservation.vehicleId.model %>
+    <%= reservation.user.firstName %> <%= reservation.user.lastName %> &middot;
+    <%= reservation.vehicle.make %> <%= reservation.vehicle.model %>
   </p>
 
   <div class="auth-card auth-card--wide admin-edit-card">
-    <form class="auth-form" action="/admin/reservations/<%= reservation._id %>?_method=PUT" method="POST">
+    <form class="auth-form" action="/admin/reservations/<%= reservation.id %>?_method=PUT" method="POST">
       <div class="auth-form__group">
         <label class="auth-form__label" for="vehicleId">Vehicle</label>
         <select class="auth-form__input" id="vehicleId" name="vehicleId" required>
           <% vehicles.forEach((vehicle) => { %>
             <option
-              value="<%= vehicle._id %>"
-              <%= String(vehicle._id) === String(reservation.vehicleId._id) ? "selected" : "" %>
+              value="<%= vehicle.id %>"
+              <%= String(vehicle.id) === String(reservation.vehicle.id) ? "selected" : "" %>
             >
               <%= vehicle.year ? vehicle.year + " " : "" %><%= vehicle.make %> <%= vehicle.model %> (<%= vehicle.licensePlate %>)
             </option>

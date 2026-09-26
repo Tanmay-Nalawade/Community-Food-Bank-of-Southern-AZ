@@ -23,7 +23,7 @@ async function sendMonthlyMileageLog(log) {
         monthLabel: log.monthLabel,
         rows: log.rows,
         isEmpty: log.isEmpty,
-        logUrl: `${APP_BASE_URL}/admin/vehicles/${log.vehicle._id}/mileage-log?year=${log.year}&month=${log.month}`,
+        logUrl: `${APP_BASE_URL}/admin/vehicles/${log.vehicle.id}/mileage-log?year=${log.year}&month=${log.month}`,
       },
     );
 

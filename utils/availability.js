@@ -1,6 +1,8 @@
-const Reservation = require("../models/reservation");
+const { Op } = require("sequelize");
+const { sequelize, Reservation, Vehicle } = require("../models");
 
 const FLEET_UNAVAILABLE = ["Maintenance", "Out of Service"];
+const { OPEN_STATUSES } = Reservation;
 
 function parseBookingWindow(date, startTime, endTime) {
   if (!date || !startTime || !endTime) {
@@ -21,12 +23,58 @@ function parseBookingWindow(date, startTime, endTime) {
   return { date, startTime, endTime, start, end };
 }
 
+// WHERE clause for "an open reservation on this vehicle that overlaps
+// the given window".
+function overlapWhere(vehicleId, booking, { excludeReservationId } = {}) {
+  const where = {
+    vehicleId,
+    status: { [Op.in]: OPEN_STATUSES },
+    requestedStartTime: { [Op.lt]: booking.end },
+    requestedEndTime: { [Op.gt]: booking.start },
+  };
+  if (excludeReservationId) {
+    where.id = { [Op.ne]: excludeReservationId };
+  }
+  return where;
+}
+
+async function hasOverlappingReservation(vehicleId, booking, { excludeReservationId, transaction } = {}) {
+  const found = await Reservation.findOne({
+    attributes: ["id"],
+    where: overlapWhere(vehicleId, booking, { excludeReservationId }),
+    transaction,
+  });
+  return Boolean(found);
+}
+
+// Runs `work` inside a transaction holding a row lock on the vehicle
+// (SELECT ... FOR UPDATE). Every code path that puts a reservation onto a
+// vehicle's calendar checks for overlaps inside this lock, so two
+// concurrent requests for the same vehicle are serialized — the second one
+// waits, then sees the first one's committed row. `work` receives
+// { vehicle, transaction } and must pass `transaction` to its queries.
+function withVehicleLock(vehicleId, work) {
+  return sequelize.transaction(async (transaction) => {
+    const vehicle = await Vehicle.findByPk(vehicleId, {
+      lock: transaction.LOCK.UPDATE,
+      transaction,
+    });
+    return work({ vehicle, transaction });
+  });
+}
+
 async function getBookedVehicleIds(start, end) {
-  return Reservation.find({
-    status: { $in: ["Pending", "Reserved", "Active"] },
-    requestedStartTime: { $lt: end },
-    requestedEndTime: { $gt: start },
-  }).distinct("vehicleId");
+  const rows = await Reservation.findAll({
+    attributes: ["vehicleId"],
+    where: {
+      status: { [Op.in]: OPEN_STATUSES },
+      requestedStartTime: { [Op.lt]: end },
+      requestedEndTime: { [Op.gt]: start },
+    },
+    group: ["vehicleId"],
+    raw: true,
+  });
+  return rows.map((row) => row.vehicleId);
 }
 
 const TIGHT_GAP_MS = 60 * 60 * 1000;
@@ -37,16 +85,16 @@ const TIGHT_GAP_MS = 60 * 60 * 1000;
 // flagging; a booking ending late one night and another starting early the
 // next morning is a full day apart in practice, not a tight turnaround.
 async function findTightPrecedingBooking(vehicleId, booking, { excludeReservationId } = {}) {
-  const filter = {
+  const where = {
     vehicleId,
-    status: { $in: ["Pending", "Reserved", "Active"] },
-    requestedEndTime: { $lte: booking.start },
+    status: { [Op.in]: OPEN_STATUSES },
+    requestedEndTime: { [Op.lte]: booking.start },
   };
   if (excludeReservationId) {
-    filter._id = { $ne: excludeReservationId };
+    where.id = { [Op.ne]: excludeReservationId };
   }
 
-  const previous = await Reservation.findOne(filter).sort({ requestedEndTime: -1 });
+  const previous = await Reservation.findOne({ where, order: [["requestedEndTime", "DESC"]] });
   if (!previous) {
     return null;
   }
@@ -89,6 +137,8 @@ function toQueryString(booking) {
 module.exports = {
   FLEET_UNAVAILABLE,
   parseBookingWindow,
+  hasOverlappingReservation,
+  withVehicleLock,
   getBookedVehicleIds,
   formatBookingLabel,
   toQueryString,

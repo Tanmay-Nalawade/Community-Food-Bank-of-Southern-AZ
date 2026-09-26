@@ -2,10 +2,10 @@
   <tr>
     <td data-label="When"><%= fmt.dateTime(log.createdAt) %></td>
     <td data-label="User">
-      <% if (log.userId) { %>
-        <%= log.userId.firstName %> <%= log.userId.lastName %>
+      <% if (log.user) { %>
+        <%= log.user.firstName %> <%= log.user.lastName %>
         <br />
-        <span class="admin-table__subtext"><%= log.userId.email %></span>
+        <span class="admin-table__subtext"><%= log.user.email %></span>
       <% } else { %>
         —
       <% } %>

@@ -5,13 +5,13 @@
 
   <h1>Report an Issue</h1>
   <p class="reservations-page__lead">
-    <%= reservation.vehicleId.year ? reservation.vehicleId.year + " " : "" %>
-    <%= reservation.vehicleId.make %> <%= reservation.vehicleId.model %>
-    (<%= reservation.vehicleId.licensePlate %>)
+    <%= reservation.vehicle.year ? reservation.vehicle.year + " " : "" %>
+    <%= reservation.vehicle.make %> <%= reservation.vehicle.model %>
+    (<%= reservation.vehicle.licensePlate %>)
   </p>
 
   <div class="auth-card auth-card--wide admin-edit-card">
-    <form class="auth-form" action="/reservations/<%= reservation._id %>/issue" method="POST">
+    <form class="auth-form" action="/reservations/<%= reservation.id %>/issue" method="POST">
       <div class="auth-form__group">
         <label class="auth-form__label" for="description">What's wrong?</label>
         <textarea

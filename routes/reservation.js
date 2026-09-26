@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { requireLogin } = require("../middleware/auth");
 const { wrapControllerAsync } = require("../utils/asyncHandler");
-const { validateBody } = require("../middleware/validate");
+const { validateBody, validateIdParams } = require("../middleware/validate");
 const {
   bookingWindowSchema,
   mileageSchema,
@@ -10,6 +10,8 @@ const {
   inspectionSchema,
 } = require("../validators/reservation");
 const reservationController = wrapControllerAsync(require("../controllers/reservation"));
+
+validateIdParams(router, ["id", "vehicleId"]);
 
 router.get("/mine", requireLogin, reservationController.mine);
 router.get("/mine/past/more", requireLogin, reservationController.morePast);

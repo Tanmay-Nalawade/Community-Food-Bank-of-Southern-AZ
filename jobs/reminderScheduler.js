@@ -1,4 +1,5 @@
-const Reservation = require("../models/reservation");
+const { Op } = require("sequelize");
+const { Reservation } = require("../models");
 const { sendReminder } = require("../services/email/reservationNotifications");
 
 const CHECK_INTERVAL_MS = 15 * 60 * 1000;
@@ -16,12 +17,13 @@ async function runCheck() {
 
   let candidates;
   try {
-    candidates = await Reservation.find({
-      status: "Reserved",
-      requestedStartTime: { $gt: now },
-    })
-      .populate("userId", "firstName lastName email")
-      .populate("vehicleId", "make model year");
+    candidates = await Reservation.findAll({
+      where: { status: "Reserved", requestedStartTime: { [Op.gt]: now } },
+      include: [
+        { association: "user", attributes: ["id", "firstName", "lastName", "email"] },
+        { association: "vehicle", attributes: ["id", "make", "model", "year"] },
+      ],
+    });
   } catch (error) {
     console.error("Reminder scheduler failed to load reservations:", error);
     return;
@@ -29,7 +31,7 @@ async function runCheck() {
 
   for (const reservation of candidates) {
     const msUntilStart = reservation.requestedStartTime.getTime() - now.getTime();
-    const confirmationSentAt = reservation.notifications?.confirmationSentAt;
+    const confirmationSentAt = reservation.confirmationSentAt;
     const recentlyConfirmed =
       confirmationSentAt &&
       now.getTime() - new Date(confirmationSentAt).getTime() < CONFIRMATION_COOLDOWN_MS;
@@ -38,8 +40,8 @@ async function runCheck() {
       continue;
     }
 
-    const finalAlreadySent = Boolean(reservation.notifications?.reminderFinalSentAt);
-    const threeDayAlreadySent = Boolean(reservation.notifications?.reminder3DaySentAt);
+    const finalAlreadySent = Boolean(reservation.reminderFinalSentAt);
+    const threeDayAlreadySent = Boolean(reservation.reminder3DaySentAt);
 
     const needsFinalReminder = !finalAlreadySent && msUntilStart <= FINAL_REMINDER_WINDOW_MS;
     // Strictly the 24h-72h band — once we're inside the final window (or past
