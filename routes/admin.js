@@ -16,11 +16,16 @@ const adminVehicleController = wrapControllerAsync(require("../controllers/admin
 const adminDriverController = wrapControllerAsync(require("../controllers/admin/driver"));
 const adminReportController = wrapControllerAsync(require("../controllers/admin/report"));
 const adminMileageLogController = wrapControllerAsync(require("../controllers/admin/mileageLog"));
+const adminTripController = wrapControllerAsync(require("../controllers/admin/trip"));
 
 validateIdParams(router, ["id", "issueId", "vehicleId"]);
 
 router.get("/", requireAdmin, (req, res) => res.redirect("/admin/dashboard"));
 router.get("/dashboard", requireAdmin, adminDashboardController.index);
+
+// Log a trip that happened without a booking.
+router.get("/trips/new", requireAdmin, adminTripController.newForm);
+router.post("/trips", requireAdmin, adminTripController.create);
 
 router.get("/vehicles", requireAdmin, adminVehicleController.index);
 router.get("/vehicles/more", requireAdmin, adminVehicleController.more);

@@ -1,8 +1,15 @@
 <% layout('layouts/boilerplate') %>
 
 <section class="admin-page">
-  <h1>Admin Dashboard</h1>
-  <p class="vehicles-page__lead">A quick look at what's going on across the fleet right now.</p>
+  <div class="vehicles-page__header">
+    <div>
+      <h1>Admin Dashboard</h1>
+      <p class="vehicles-page__lead">A quick look at what's going on across the fleet right now.</p>
+    </div>
+    <div class="admin-page__header-actions">
+      <a class="action-btn action-btn--approve" href="/admin/trips/new">+ Log a trip</a>
+    </div>
+  </div>
 
   <div class="stat-grid">
     <a class="stat-tile stat-tile--pending" href="/admin/reservations?status=Pending">

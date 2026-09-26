@@ -27,6 +27,10 @@ Reservation.init(
     reviewedById: { type: DataTypes.INTEGER.UNSIGNED },
     reviewedAt: { type: DataTypes.DATE },
 
+    // Logged by an admin after the fact (no booking, no KeyCafe access) —
+    // see controllers/admin/trip.js. reviewedBy is the admin who logged it.
+    isManualEntry: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+
     // KeyCafe access (was keyCafeAccess.*)
     keyCafeBookingCode: { type: DataTypes.STRING(64) },
     keyCafeAccessId: { type: DataTypes.STRING(64) },

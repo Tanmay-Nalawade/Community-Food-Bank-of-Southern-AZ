@@ -52,7 +52,7 @@ config/
 controllers/                 Route handler logic
   account.js, reservation.js, user.js, vehicle.js, webhook.js   Staff-facing / shared
   admin/                      Fleet-manager (Admin role) features
-    dashboard.js, driver.js, issue.js, mileageLog.js, report.js, reservation.js, vehicle.js
+    dashboard.js, driver.js, issue.js, mileageLog.js, report.js, reservation.js, trip.js, vehicle.js
   it/                         IT Admin features
     activity.js, apiStatus.js, user.js
 jobs/                        Background schedulers, started once from app.js

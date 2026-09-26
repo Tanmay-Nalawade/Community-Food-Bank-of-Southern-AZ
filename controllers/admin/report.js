@@ -73,6 +73,7 @@ function shapeTripRow(reservation) {
     endMileage: end ?? null,
     distanceTravelled: start != null && end != null ? end - start : null,
     foodRelated: reservation.tripFoodRelated === "Yes",
+    manualEntry: reservation.isManualEntry,
     mileageLogUrl: reservation.vehicle
       ? `/admin/vehicles/${reservation.vehicle.id}/mileage-log?year=${date.getFullYear()}&month=${date.getMonth() + 1}`
       : null,

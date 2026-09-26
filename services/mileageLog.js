@@ -66,6 +66,7 @@ async function buildMonthlyLog(vehicleId, year, month) {
       // Simplified to a plain boolean for reporting — "Other" doesn't
       // confirm the trip was actually for food, so only "Yes" counts.
       foodRelated: reservation.tripFoodRelated === "Yes",
+      manualEntry: reservation.isManualEntry,
       preTripInspectionPassed: reservation.preTripInspectionPassed ?? null,
       fuelLevelEndPercent: reservation.fuelLevelEndPercent ?? null,
       droppedOffFood: Boolean(reservation.droppedOffFood),

@@ -34,7 +34,7 @@
                     <span style="color:#777;">(<%= row.vehicle.licensePlate %>)</span>
                   <% } else { %>—<% } %>
                 </td>
-                <td style="border-bottom:1px solid #f0f0f0; color:#333;"><%= row.driverName || "—" %></td>
+                <td style="border-bottom:1px solid #f0f0f0; color:#333;"><%= row.driverName || "—" %><% if (row.manualEntry) { %> <span style="color:#777;">(logged manually)</span><% } %></td>
                 <td style="border-bottom:1px solid #f0f0f0; color:#333;"><%= row.startMileage != null ? row.startMileage.toLocaleString() : "—" %></td>
                 <td style="border-bottom:1px solid #f0f0f0; color:#333;"><%= row.endMileage != null ? row.endMileage.toLocaleString() : "—" %></td>
                 <td style="border-bottom:1px solid #f0f0f0; color:#333;"><%= row.distanceTravelled != null ? row.distanceTravelled.toLocaleString() : "—" %></td>

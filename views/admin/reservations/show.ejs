@@ -91,6 +91,20 @@
     );
   }
 
+  // A manually logged trip never went through booking/KeyCafe, so its
+  // lifecycle is just "logged" + the mileage it was logged with.
+  if (r.isManualEntry) {
+    steps.length = 0;
+    steps.push(
+      {
+        title: `Logged manually by ${reviewer || "an admin"}`,
+        done: true,
+        detail: r.createdAt ? `Recorded ${when(r.createdAt)} — no booking or KeyCafe access` : "",
+      },
+      { title: "Mileage reported", done: log.endMileage != null, mileage: hasMileage, detail: hasMileage ? "" : "Not reported" },
+    );
+  }
+
   const nextIndex = steps.findIndex((s) => !s.done);
 %>
 

@@ -25,6 +25,48 @@ async function fillStartMileage(reservation) {
   return reservation;
 }
 
+// Start reading for a trip logged after the fact (a manual entry), which
+// may be backdated before other recorded trips. In order of preference:
+// 1. the end reading of the vehicle's last trip before `when`;
+// 2. otherwise the start reading of its first trip after `when` — that's
+//    what the odometer read at that point (afterEndMileageSaved then moves
+//    that trip's start up to this one's end, keeping the chain intact);
+// 3. otherwise the vehicle's current odometer (no trips recorded yet).
+async function startReadingBefore(vehicleId, when, { transaction } = {}) {
+  const previous = await Reservation.findOne({
+    attributes: ["id", "endMileage"],
+    where: {
+      vehicleId,
+      status: { [Op.in]: TRIP_STATUSES },
+      endMileage: { [Op.ne]: null },
+      requestedStartTime: { [Op.lt]: when },
+    },
+    order: [["requestedStartTime", "DESC"]],
+    transaction,
+  });
+  if (previous) {
+    return previous.endMileage;
+  }
+
+  const following = await Reservation.findOne({
+    attributes: ["id", "startMileage"],
+    where: {
+      vehicleId,
+      status: { [Op.in]: TRIP_STATUSES },
+      startMileage: { [Op.ne]: null },
+      requestedStartTime: { [Op.gte]: when },
+    },
+    order: [["requestedStartTime", "ASC"]],
+    transaction,
+  });
+  if (following) {
+    return following.startMileage;
+  }
+
+  const vehicle = await Vehicle.findByPk(vehicleId, { attributes: ["id", "currentMileage"], transaction });
+  return vehicle ? vehicle.currentMileage : null;
+}
+
 // Sets reservation.endMileage (in memory — callers save, then call
 // afterEndMileageSaved). Throws OdometerError with a driver-facing message
 // if the reading is below the trip's start.
@@ -76,4 +118,10 @@ async function afterEndMileageSaved(reservation) {
   }
 }
 
-module.exports = { OdometerError, fillStartMileage, applyEndMileage, afterEndMileageSaved };
+module.exports = {
+  OdometerError,
+  fillStartMileage,
+  startReadingBefore,
+  applyEndMileage,
+  afterEndMileageSaved,
+};
