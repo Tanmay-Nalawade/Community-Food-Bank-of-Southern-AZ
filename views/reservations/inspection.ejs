@@ -17,16 +17,29 @@
     </p>
 
     <form class="auth-form" action="/reservations/<%= reservation.id %>/inspection" method="POST">
-      <div class="auth-form__group">
-        <label class="auth-form__label" for="endMileage">Ending odometer (mi)</label>
-        <input
-          class="auth-form__input"
-          type="number"
-          id="endMileage"
-          name="endMileage"
-          min="0"
-          required
-        />
+      <div class="auth-form__row">
+        <div class="auth-form__group">
+          <label class="auth-form__label" for="startReading">Starting odometer (mi)</label>
+          <input
+            class="auth-form__input"
+            type="text"
+            id="startReading"
+            value="<%= startReading != null ? startReading.toLocaleString() : '—' %>"
+            readonly
+            disabled
+          />
+        </div>
+        <div class="auth-form__group">
+          <label class="auth-form__label" for="endMileage">Ending odometer (mi)</label>
+          <input
+            class="auth-form__input"
+            type="number"
+            id="endMileage"
+            name="endMileage"
+            min="<%= startReading ?? 0 %>"
+            required
+          />
+        </div>
       </div>
 
       <% groups.forEach((group) => { %>

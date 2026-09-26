@@ -5,7 +5,6 @@ const session = require("express-session");
 const MySQLStore = require("express-mysql-session")(session);
 const flash = require("connect-flash");
 const helmet = require("helmet");
-const { Op } = require("sequelize");
 const engine = require("ejs-mate");
 
 const userRoutes = require("./routes/user");
@@ -117,11 +116,11 @@ app.use((req, res, next) => {
 });
 app.use(computeEffectiveRole);
 
-// Global, unmissable prompts for a compulsory odometer reading — start
-// (nagged from 30 min before the booking, through pickup, until filled) and
-// end (a safety net for a trip completed via KeyCafe's own hardware without
-// ever visiting the "Return Vehicle" page). See
-// views/layouts/boilerplate.ejs for the dialog this feeds.
+// Global, unmissable prompt for a compulsory END odometer reading — a
+// safety net for a trip completed via KeyCafe's own hardware without ever
+// visiting the "Return Vehicle" page. There's no start prompt: a trip's
+// start reading is filled in automatically from the vehicle's odometer
+// (services/odometer.js). See views/layouts/boilerplate.ejs for the dialog.
 app.use(async (req, res, next) => {
   res.locals.mandatoryOdometerPrompt = null;
   if (!res.locals.currentUser) {
@@ -129,36 +128,14 @@ app.use(async (req, res, next) => {
   }
 
   try {
-    const soon = new Date(Date.now() + 30 * 60 * 1000);
-
-    const vehicleSummary = {
-      association: "vehicle",
-      attributes: ["id", "make", "model", "year", "licensePlate"],
-    };
-
-    const needsStart = await Reservation.findOne({
-      where: {
-        userId: res.locals.currentUser.id,
-        status: { [Op.in]: ["Reserved", "Active"] },
-        startMileage: null,
-        requestedStartTime: { [Op.lte]: soon },
-      },
-      include: [vehicleSummary],
-      order: [["requestedStartTime", "ASC"]],
+    const needsEnd = await Reservation.findOne({
+      where: { userId: res.locals.currentUser.id, status: "Completed", endMileage: null },
+      include: [{ association: "vehicle", attributes: ["id", "make", "model", "year", "licensePlate"] }],
+      order: [["tripEndedAt", "DESC"]],
     });
 
-    if (needsStart) {
-      res.locals.mandatoryOdometerPrompt = { type: "start", reservation: needsStart };
-    } else {
-      const needsEnd = await Reservation.findOne({
-        where: { userId: res.locals.currentUser.id, status: "Completed", endMileage: null },
-        include: [vehicleSummary],
-        order: [["tripEndedAt", "DESC"]],
-      });
-
-      if (needsEnd) {
-        res.locals.mandatoryOdometerPrompt = { type: "end", reservation: needsEnd };
-      }
+    if (needsEnd) {
+      res.locals.mandatoryOdometerPrompt = { type: "end", reservation: needsEnd };
     }
   } catch (error) {
     console.error("Failed to check mandatory odometer prompt:", error);

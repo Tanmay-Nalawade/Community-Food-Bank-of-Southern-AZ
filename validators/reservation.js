@@ -47,10 +47,6 @@ const bookingWindowSchema = Joi.object({
 });
 
 const mileageSchema = Joi.object({
-  startMileage: Joi.number().integer().min(0).empty("").optional().messages({
-    "number.base": "Start mileage must be a number.",
-    "number.min": "Start mileage can't be negative.",
-  }),
   endMileage: Joi.number().integer().min(0).empty("").optional().messages({
     "number.base": "End mileage must be a number.",
     "number.min": "End mileage can't be negative.",
@@ -66,20 +62,7 @@ const mileageSchema = Joi.object({
   otherDuty: Joi.string().valid("on").empty("").optional(),
   otherDutyNote: Joi.string().trim().max(500).empty("").optional(),
   washed: Joi.string().valid("on").empty("").optional(),
-})
-  .custom((value, helpers) => {
-    if (
-      value.startMileage !== undefined &&
-      value.endMileage !== undefined &&
-      value.endMileage < value.startMileage
-    ) {
-      return helpers.error("mileage.endBeforeStart");
-    }
-    return value;
-  })
-  .messages({
-    "mileage.endBeforeStart": "End mileage can't be less than start mileage.",
-  });
+});
 
 const issueSchema = Joi.object({
   description: Joi.string().trim().min(1).max(2000).required().messages({

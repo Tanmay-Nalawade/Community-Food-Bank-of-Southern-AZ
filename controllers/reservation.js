@@ -13,6 +13,11 @@ const {
   revokeReservationAccess,
 } = require("../services/keycafe/reservationAccess");
 const { sendBookingConfirmation } = require("../services/email/reservationNotifications");
+const {
+  OdometerError,
+  applyEndMileage,
+  afterEndMileageSaved,
+} = require("../services/odometer");
 const { fetchPage, PAGE_SIZE } = require("../utils/pagination");
 const {
   VEHICLE_INSPECTION_GROUPS,
@@ -21,16 +26,25 @@ const {
 
 const CANCELABLE_STATUSES = ["Pending", "Reserved"];
 const REPORTABLE_STATUSES = ["Active", "Completed"];
-// Mileage specifically also allows "Reserved" — the mandatory Start
-// Odometer prompt (app.js) can fire up to 30 minutes before pickup, before
-// the trip has actually gone Active, so this needs to be its own broader
-// list rather than reusing REPORTABLE_STATUSES (which Report Issue and
-// Return Vehicle correctly keep restricted to Active/Completed).
+// Mileage also allows "Reserved" so a driver can still report a trip when
+// KeyCafe never sent the pickup event that flips it to Active (KeyCafe not
+// configured, or the webhook missed) — Report Issue and Return Vehicle stay
+// restricted to trips that have actually started.
 const MILEAGE_REPORTABLE_STATUSES = ["Reserved", "Active", "Completed"];
 const CURRENT_STATUSES = ["Reserved", "Active"];
 const UPCOMING_STATUSES = ["Pending", "Reserved", "Active"];
 
 const VEHICLE_SUMMARY = { association: "vehicle", attributes: ["id", "make", "model", "year", "licensePlate"] };
+const VEHICLE_WITH_ODOMETER = {
+  association: "vehicle",
+  attributes: [...VEHICLE_SUMMARY.attributes, "currentMileage"],
+};
+
+// The start reading shown on the mileage/return forms: the trip's own once
+// it has begun, otherwise what it will be — the vehicle's current odometer.
+function startReadingFor(reservation) {
+  return reservation.startMileage ?? reservation.vehicle?.currentMileage ?? null;
+}
 
 // Thrown inside a withVehicleLock() transaction to roll it back when the
 // locked re-check finds someone else got the slot first.
@@ -466,7 +480,7 @@ exports.cancelRequest = async (req, res) => {
 };
 
 exports.mileageForm = async (req, res) => {
-  const reservation = await findOwnReservation(req, res, { include: [VEHICLE_SUMMARY] });
+  const reservation = await findOwnReservation(req, res, { include: [VEHICLE_WITH_ODOMETER] });
 
   if (!reservation) {
     return renderError(res, 404, "Reservation not found.");
@@ -480,6 +494,7 @@ exports.mileageForm = async (req, res) => {
   res.render("reservations/mileage", {
     title: "Report Mileage",
     reservation,
+    startReading: startReadingFor(reservation),
     activeNav: "dashboard",
   });
 };
@@ -496,13 +511,21 @@ exports.submitMileage = async (req, res) => {
     return res.redirect("/reservations/mine");
   }
 
-  const { startMileage, endMileage, fuelLevelEndPercent, otherDutyNote } = req.body;
+  // The start reading is never taken from the form — it comes from the
+  // vehicle's odometer (services/odometer.js).
+  const { endMileage, fuelLevelEndPercent, otherDutyNote } = req.body;
+  const hasEndMileage = endMileage !== "" && endMileage !== undefined;
 
-  if (startMileage !== "" && startMileage !== undefined) {
-    reservation.startMileage = Number(startMileage);
-  }
-  if (endMileage !== "" && endMileage !== undefined) {
-    reservation.endMileage = Number(endMileage);
+  if (hasEndMileage) {
+    try {
+      await applyEndMileage(reservation, Number(endMileage));
+    } catch (error) {
+      if (error instanceof OdometerError) {
+        req.flash("error", error.message);
+        return res.redirect(`/reservations/${reservation.id}/mileage`);
+      }
+      throw error;
+    }
   }
   if (fuelLevelEndPercent !== "" && fuelLevelEndPercent !== undefined) {
     reservation.fuelLevelEndPercent = Number(fuelLevelEndPercent);
@@ -516,6 +539,9 @@ exports.submitMileage = async (req, res) => {
   reservation.washed = req.body.washed === "on";
 
   await reservation.save();
+  if (hasEndMileage) {
+    await afterEndMileageSaved(reservation);
+  }
 
   req.flash("success", "Mileage reported. Thanks!");
   res.redirect("/reservations/mine");
@@ -578,7 +604,7 @@ exports.submitIssue = async (req, res) => {
 // checkpoint: fill out the inspection or skip it, either way land on a
 // confirmation screen reminding them of their existing drop-off code.
 exports.inspectionForm = async (req, res) => {
-  const reservation = await findOwnReservation(req, res, { include: [VEHICLE_SUMMARY] });
+  const reservation = await findOwnReservation(req, res, { include: [VEHICLE_WITH_ODOMETER] });
 
   if (!reservation) {
     return renderError(res, 404, "Reservation not found.");
@@ -592,6 +618,7 @@ exports.inspectionForm = async (req, res) => {
   res.render("reservations/inspection", {
     title: "Return Vehicle",
     reservation,
+    startReading: startReadingFor(reservation),
     groups: VEHICLE_INSPECTION_GROUPS,
     activeNav: "dashboard",
   });
@@ -609,19 +636,15 @@ exports.submitInspection = async (req, res) => {
     return res.redirect("/reservations/mine");
   }
 
-  // Ordering/data-integrity backstop — the global mandatory-odometer dialog
-  // should already have forced this before the driver could reach this
-  // page, but a direct POST could otherwise skip straight to an end reading
-  // with no start reading to compare it against.
-  if (reservation.startMileage == null) {
-    req.flash(
-      "error",
-      "Start odometer is missing for this trip — it needs to be added before you can log the end odometer.",
-    );
-    return res.redirect(`/reservations/${reservation.id}/inspection`);
+  try {
+    await applyEndMileage(reservation, Number(req.body.endMileage));
+  } catch (error) {
+    if (error instanceof OdometerError) {
+      req.flash("error", error.message);
+      return res.redirect(`/reservations/${reservation.id}/inspection`);
+    }
+    throw error;
   }
-
-  reservation.endMileage = Number(req.body.endMileage);
 
   const skipped = req.body.action === "skip";
 
@@ -653,6 +676,7 @@ exports.submitInspection = async (req, res) => {
   }
 
   await reservation.save();
+  await afterEndMileageSaved(reservation);
 
   res.render("reservations/return-confirmation", {
     title: "Vehicle Returned",

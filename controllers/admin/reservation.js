@@ -12,6 +12,7 @@ const {
   revokeReservationAccess,
 } = require("../../services/keycafe/reservationAccess");
 const { fetchPage, PAGE_SIZE } = require("../../utils/pagination");
+const { fillStartMileage } = require("../../services/odometer");
 
 const HOLDING_STATUSES = ["Reserved", "Active"];
 
@@ -299,6 +300,9 @@ exports.updateReservation = async (req, res) => {
   reservation.adminNotes = req.body.adminNotes || "";
   reservation.reviewedById = res.locals.currentUser.id;
   reservation.reviewedAt = new Date();
+  if (nextStatus === "Active") {
+    await fillStartMileage(reservation);
+  }
 
   try {
     await withVehicleLock(newVehicle.id, async ({ transaction }) => {

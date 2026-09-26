@@ -30,7 +30,7 @@ Open **Dashboard** in the top menu to see:
 For **My Account → Booking History**, see everything you've booked in the last year.
 
 After a trip, use the buttons on your dashboard to:
-- **Report Mileage** — start/end mileage, fuel level, whether you picked up/dropped off food
+- **Report Mileage** — end mileage, fuel level, whether you picked up/dropped off food. You never enter a start reading: it's filled in automatically from the vehicle's odometer (the previous trip's end reading)
 - **Report Issue** — flag a problem with the vehicle for Transportation
 - **Return Vehicle** — a quick optional inspection checklist when you're done (you can skip it)
 
@@ -44,7 +44,7 @@ If you're an Admin or IT Admin, the same menu lets you **View as Staff** to see 
 
 - **Dashboard** — a quick overview of what needs attention
 - **Reservations** — approve, deny, edit, or cancel bookings; see full booking history
-- **Vehicles** — add a vehicle (a KeyCafe key is created for it automatically — nothing to set up in KeyCafe yourself), edit details, or view a vehicle's own reservation and mileage history
+- **Vehicles** — add a vehicle (you'll be asked for its current odometer reading, which the first trip starts from; a KeyCafe key is created for it automatically — nothing to set up in KeyCafe yourself), edit details, or view a vehicle's own reservation and mileage history
 - **Issues** — see everything reported by drivers, mark reviewed or dismiss
 - **Reports** — usage and mileage summaries. To email the **Trip log** (every trip in a date range), pick the From/To dates at the bottom of the Trip log section, enter the recipient's address and click **Send** — reports are not sent automatically
 - **Drivers** (in the My Account menu) — a list of staff and their booking activity

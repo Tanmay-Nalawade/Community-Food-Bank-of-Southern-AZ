@@ -23,53 +23,26 @@
     <% if (typeof mandatoryOdometerPrompt !== 'undefined' && mandatoryOdometerPrompt) { %>
       <% const mop = mandatoryOdometerPrompt; %>
       <dialog id="mandatoryOdometerDialog" class="tight-gap-dialog" data-autoshow data-no-cancel>
-        <% if (mop.type === "start") { %>
-          <h2 class="tight-gap-dialog__title">Before you go &mdash; Start Odometer</h2>
-          <p class="tight-gap-dialog__body">
-            Enter the starting odometer reading for the
-            <%= mop.reservation.vehicle.year ? mop.reservation.vehicle.year + " " : "" %><%= mop.reservation.vehicle.make %>
-            <%= mop.reservation.vehicle.model %> to continue.
-          </p>
-          <form class="auth-form" action="/reservations/<%= mop.reservation.id %>/mileage" method="POST">
-            <div class="auth-form__group">
-              <label class="auth-form__label" for="mandatoryStartMileage">Start odometer (mi)</label>
-              <input
-                class="auth-form__input"
-                type="number"
-                id="mandatoryStartMileage"
-                name="startMileage"
-                min="0"
-                required
-                autofocus
-              />
-            </div>
-            <button class="auth-form__submit" type="submit">Save and continue</button>
-          </form>
-          <form action="/reservations/<%= mop.reservation.id %>/cancel" method="POST">
-            <button class="tight-gap-dialog__cancel" type="submit">Cancel this booking instead</button>
-          </form>
-        <% } else { %>
-          <h2 class="tight-gap-dialog__title">One more thing &mdash; End Odometer</h2>
-          <p class="tight-gap-dialog__body">
-            The <%= mop.reservation.vehicle.make %> <%= mop.reservation.vehicle.model %>
-            was returned, but the ending odometer reading is still missing.
-          </p>
-          <form class="auth-form" action="/reservations/<%= mop.reservation.id %>/mileage" method="POST">
-            <div class="auth-form__group">
-              <label class="auth-form__label" for="mandatoryEndMileage">End odometer (mi)</label>
-              <input
-                class="auth-form__input"
-                type="number"
-                id="mandatoryEndMileage"
-                name="endMileage"
-                min="0"
-                required
-                autofocus
-              />
-            </div>
-            <button class="auth-form__submit" type="submit">Save and continue</button>
-          </form>
-        <% } %>
+        <h2 class="tight-gap-dialog__title">One more thing &mdash; End Odometer</h2>
+        <p class="tight-gap-dialog__body">
+          The <%= mop.reservation.vehicle.make %> <%= mop.reservation.vehicle.model %>
+          was returned, but the ending odometer reading is still missing.
+        </p>
+        <form class="auth-form" action="/reservations/<%= mop.reservation.id %>/mileage" method="POST">
+          <div class="auth-form__group">
+            <label class="auth-form__label" for="mandatoryEndMileage">End odometer (mi)</label>
+            <input
+              class="auth-form__input"
+              type="number"
+              id="mandatoryEndMileage"
+              name="endMileage"
+              min="<%= mop.reservation.startMileage ?? 0 %>"
+              required
+              autofocus
+            />
+          </div>
+          <button class="auth-form__submit" type="submit">Save and continue</button>
+        </form>
         <form action="/logout" method="POST">
           <button class="tight-gap-dialog__cancel" type="submit">Log out</button>
         </form>

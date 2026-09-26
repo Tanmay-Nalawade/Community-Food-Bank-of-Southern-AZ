@@ -77,7 +77,8 @@ services/                     Integrations and business logic reused across cont
     index.js                  Low-level sendEmail()
     reservationNotifications.js   Booking confirmation + reminder emails
     tripLogNotifications.js       Trip Log email, sent on demand from the Reports page
-  mileageLog.js                Builds "vehicle X's log for month Y" (shared by the page + job)
+  mileageLog.js                Builds "vehicle X's log for month Y"; also the trip date-range filter
+  odometer.js                  Start reading = vehicle odometer; end readings advance it
 utils/                        Small framework-agnostic helpers
 validators/                   Joi request-body schemas, one file per resource
   user.js, vehicle.js, reservation.js   General schemas

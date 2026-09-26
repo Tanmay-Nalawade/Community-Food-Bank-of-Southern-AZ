@@ -1,4 +1,5 @@
 const { Reservation, Vehicle, AccessLog } = require("../models");
+const { fillStartMileage } = require("../services/odometer");
 
 const HANDLED_EVENT_TYPES = ["PICKUP", "DROPOFF"];
 
@@ -24,6 +25,7 @@ exports.handleKeyCafeEvent = async (req, res) => {
     reservation.keyPickedUpAt = occurredAt;
     reservation.tripStartedAt = occurredAt;
     reservation.status = "Active";
+    await fillStartMileage(reservation);
     await reservation.save();
     await Vehicle.update({ status: "In Use" }, { where: { id: reservation.vehicleId } });
     await AccessLog.create({

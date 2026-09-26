@@ -77,7 +77,7 @@ exports.postAddVehicle = async (req, res) => {
     year: year ? Number(year) : null,
     licensePlate,
     photoUrl: (photoUrl || "").trim(),
-    currentMileage: Number(currentMileage) || 0,
+    currentMileage: Number(currentMileage),
   });
 
   try {

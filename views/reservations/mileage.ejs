@@ -14,14 +14,14 @@
     <form class="auth-form" action="/reservations/<%= reservation.id %>/mileage" method="POST">
       <div class="auth-form__row">
         <div class="auth-form__group">
-          <label class="auth-form__label" for="startMileage">Start mileage</label>
+          <label class="auth-form__label" for="startReading">Start mileage</label>
           <input
             class="auth-form__input"
-            type="number"
-            id="startMileage"
-            name="startMileage"
-            min="0"
-            value="<%= reservation.startMileage ?? '' %>"
+            type="text"
+            id="startReading"
+            value="<%= startReading != null ? startReading.toLocaleString() : '—' %>"
+            readonly
+            disabled
           />
         </div>
         <div class="auth-form__group">
@@ -31,14 +31,16 @@
             type="number"
             id="endMileage"
             name="endMileage"
-            min="0"
+            min="<%= startReading ?? 0 %>"
             value="<%= reservation.endMileage ?? '' %>"
           />
         </div>
       </div>
 
       <p class="vehicle-detail__empty">
-        Enter whichever you know right now — you can come back and fill in the other later.
+        The start reading is filled in automatically from the vehicle's odometer (the previous
+        trip's end reading). Enter the end reading when you're done — you can come back and
+        fill it in later.
       </p>
 
       <div class="auth-form__row">

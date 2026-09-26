@@ -107,7 +107,7 @@ async function seed() {
       year: 2019,
       licensePlate: "CFB-1004",
       keyCafeKeyId: "KC-ODY-01",
-      currentMileage: 67100,
+      currentMileage: 67050,
       status: "In Use",
       nextMaintenanceDueMileage: 70000,
       nextMaintenanceDueDate: dayOffset(45),
