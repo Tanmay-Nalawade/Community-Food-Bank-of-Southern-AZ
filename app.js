@@ -2,7 +2,7 @@ const path = require("path");
 const express = require("express");
 const methodOverride = require("method-override");
 const session = require("express-session");
-const MySQLStore = require("express-mysql-session")(session);
+const SequelizeStore = require("connect-session-sequelize")(session.Store);
 const flash = require("connect-flash");
 const helmet = require("helmet");
 const engine = require("ejs-mate");
@@ -17,7 +17,7 @@ const itRoutes = require("./routes/it");
 const reminderScheduler = require("./jobs/reminderScheduler");
 const passport = require("./config/passport");
 const { computeEffectiveRole } = require("./middleware/auth");
-const { Reservation } = require("./models");
+const { Reservation, sequelize } = require("./models");
 const { connect } = require("./config/db");
 const migrator = require("./config/migrator");
 
@@ -87,15 +87,12 @@ app.use(
     secret: process.env.SESSION_SECRET || "cfb-motor-pool-dev-secret",
     resave: false,
     saveUninitialized: false,
-    store: new MySQLStore({
-      host: process.env.DB_HOST,
-      port: Number(process.env.DB_PORT) || 3306,
-      user: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME,
-      // The `sessions` table is created by the initial-schema migration.
-      createDatabaseTable: false,
-      clearExpired: true,
+    // Sessions live in the database's `sessions` table (models/session.js,
+    // created by the initial-schema migration — the store's own sync() is
+    // never called).
+    store: new SequelizeStore({
+      db: sequelize,
+      table: "Session",
       checkExpirationInterval: 15 * 60 * 1000,
       expiration: 14 * 24 * 60 * 60 * 1000,
     }),
