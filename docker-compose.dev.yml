@@ -1,7 +1,13 @@
-# Auto-loaded by `docker compose up` for local development.
-# Mounts your code and runs nodemon so edits restart the server.
+# Local development on top of docker-compose.yml: mounts your code and runs
+# nodemon so edits restart the server. Not loaded automatically — add
+#   COMPOSE_FILE=docker-compose.yml:docker-compose.dev.yml
+# to your local .env, or pass both files with -f. A plain `docker compose up`
+# (as on the production server) uses docker-compose.yml alone.
 services:
   app:
+    build:
+      args:
+        INSTALL_DEV: "true"
     volumes:
       - .:/app
       - /app/node_modules

@@ -13,6 +13,9 @@ database runs in a container defined in `docker-compose.yml`.
 1. Copy `.env.example` to `.env` and fill in the `DB_*` values (any passwords you like — the
    container is created with them the first time it starts) plus whatever else you have
    (KeyCafe/SMTP/etc. all have safe mock fallbacks when unset — see the comments in that file).
+   Also uncomment `COMPOSE_FILE=docker-compose.yml:docker-compose.dev.yml` so compose adds the
+   development overrides (code mounted, nodemon restarts on edits). Without it, compose runs the
+   production setup — which is what the server uses (see [DEPLOYMENT.md](DEPLOYMENT.md)).
 2. `docker compose up --build` — starts MySQL, applies any pending schema migrations, and runs the
    app with nodemon at http://localhost:8080.
 3. `docker compose exec app npm run seed` to load demo accounts/vehicles/bookings (prints the login

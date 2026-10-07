@@ -31,10 +31,12 @@ services:
       - .env
     environment:
       PORT: ${PORT:-8080}
-      # Inside the compose network the DB is reached by service name, not
-      # the localhost address .env uses for running the app on the host.
-      DB_HOST: mysql
-      DB_PORT: 3306
+      # Inside the compose network the bundled DB is reached by service name,
+      # not the localhost address .env uses for running the app on the host.
+      # To use an existing MySQL server instead, set DOCKER_DB_HOST /
+      # DOCKER_DB_PORT in .env and start only the app (see DEPLOYMENT.md).
+      DB_HOST: ${DOCKER_DB_HOST:-mysql}
+      DB_PORT: ${DOCKER_DB_PORT:-3306}
     # Apply any pending schema migrations, then start the server.
     command: sh -c "node scripts/migrate.js && node app.js"
     depends_on:
