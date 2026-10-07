@@ -88,13 +88,15 @@ async function fetchUtilization() {
       "vehicleId",
       [fn("COUNT", col("id")), "bookingCount"],
       [
-        literal("SUM(TIMESTAMPDIFF(SECOND, requested_start_time, requested_end_time)) / 3600"),
+        literal("SUM(DATEDIFF_BIG(SECOND, requested_start_time, requested_end_time)) / 3600.0"),
         "totalHours",
       ],
       [fn("MAX", col("requested_start_time")), "lastBookedAt"],
     ],
     where: { status: { [Op.in]: ["Reserved", "Active", "Completed"] } },
-    group: ["vehicleId"],
+    // The column name, not the attribute name: SQL Server doesn't accept a
+    // SELECT alias in GROUP BY.
+    group: ["vehicle_id"],
     raw: true,
   });
 

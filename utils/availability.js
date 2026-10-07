@@ -1,4 +1,4 @@
-const { Op } = require("sequelize");
+const { Op, TableHints } = require("sequelize");
 const { sequelize, Reservation, Vehicle } = require("../models");
 
 const FLEET_UNAVAILABLE = ["Maintenance", "Out of Service"];
@@ -47,8 +47,8 @@ async function hasOverlappingReservation(vehicleId, booking, { excludeReservatio
   return Boolean(found);
 }
 
-// Runs `work` inside a transaction holding a row lock on the vehicle
-// (SELECT ... FOR UPDATE). Every code path that puts a reservation onto a
+// Runs `work` inside a transaction holding an update lock on the vehicle's
+// row (SELECT ... WITH (UPDLOCK), held until the transaction ends). Every code path that puts a reservation onto a
 // vehicle's calendar checks for overlaps inside this lock, so two
 // concurrent requests for the same vehicle are serialized — the second one
 // waits, then sees the first one's committed row. `work` receives
@@ -56,7 +56,7 @@ async function hasOverlappingReservation(vehicleId, booking, { excludeReservatio
 function withVehicleLock(vehicleId, work) {
   return sequelize.transaction(async (transaction) => {
     const vehicle = await Vehicle.findByPk(vehicleId, {
-      lock: transaction.LOCK.UPDATE,
+      tableHint: TableHints.UPDLOCK,
       transaction,
     });
     return work({ vehicle, transaction });
@@ -71,7 +71,9 @@ async function getBookedVehicleIds(start, end) {
       requestedStartTime: { [Op.lt]: end },
       requestedEndTime: { [Op.gt]: start },
     },
-    group: ["vehicleId"],
+    // The column name, not the attribute name: SQL Server doesn't accept a
+    // SELECT alias in GROUP BY.
+    group: ["vehicle_id"],
     raw: true,
   });
   return rows.map((row) => row.vehicleId);
