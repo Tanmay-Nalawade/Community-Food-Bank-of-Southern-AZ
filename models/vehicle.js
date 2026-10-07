@@ -5,10 +5,10 @@ class Vehicle extends Model {}
 
 Vehicle.init(
   {
-    id: { type: DataTypes.INTEGER.UNSIGNED, autoIncrement: true, primaryKey: true },
+    id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
     make: { type: DataTypes.STRING(100), allowNull: false },
     model: { type: DataTypes.STRING(100), allowNull: false },
-    year: { type: DataTypes.SMALLINT.UNSIGNED },
+    year: { type: DataTypes.SMALLINT },
     // uppercase+trim so "abc-1234" and "ABC-1234" collide as the same plate
     // instead of slipping past the unique index as two "different" vehicles.
     licensePlate: {
@@ -31,9 +31,9 @@ Vehicle.init(
 
     photoUrl: { type: DataTypes.STRING(2048), allowNull: false, defaultValue: "" },
 
-    currentMileage: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false, defaultValue: 0 },
+    currentMileage: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
 
-    nextMaintenanceDueMileage: { type: DataTypes.INTEGER.UNSIGNED },
+    nextMaintenanceDueMileage: { type: DataTypes.INTEGER },
     nextMaintenanceDueDate: { type: DataTypes.DATE },
 
     status: {

@@ -37,14 +37,17 @@ async function seed() {
     throw new Error("Database schema is out of date — run `npm run db:migrate` first.");
   }
 
-  // TRUNCATE (not DELETE) so auto-increment ids restart at 1. Foreign key
-  // checks are suspended just for this, since TRUNCATE refuses to run on a
-  // table another table references.
-  await sequelize.query("SET FOREIGN_KEY_CHECKS = 0");
+  // Emptied children before parents (SQL Server won't TRUNCATE a table
+  // another table references), then ids are reset to start at 1 again.
   for (const table of TABLES) {
-    await sequelize.query(`TRUNCATE TABLE \`${table}\``);
+    await sequelize.query(`DELETE FROM [${table}]`);
+    // RESEED 0 makes the next id 1 — but only on a table that has handed out
+    // ids before; on a never-used one it would make the first id 0.
+    await sequelize.query(
+      `IF EXISTS (SELECT 1 FROM sys.identity_columns WHERE object_id = OBJECT_ID('${table}') AND last_value IS NOT NULL) ` +
+        `DBCC CHECKIDENT ('${table}', RESEED, 0) WITH NO_INFOMSGS`,
+    );
   }
-  await sequelize.query("SET FOREIGN_KEY_CHECKS = 1");
 
   // emailVerified: true — these are fake @cfb.example addresses that can't
   // receive a real verification link, so seeded/demo accounts are exempted

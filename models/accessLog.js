@@ -5,11 +5,11 @@ class AccessLog extends Model {}
 
 AccessLog.init(
   {
-    id: { type: DataTypes.INTEGER.UNSIGNED, autoIncrement: true, primaryKey: true },
+    id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
     // Nullable so the audit row survives an admin deleting the reservation.
-    reservationId: { type: DataTypes.INTEGER.UNSIGNED },
-    vehicleId: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false },
-    userId: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false },
+    reservationId: { type: DataTypes.INTEGER },
+    vehicleId: { type: DataTypes.INTEGER, allowNull: false },
+    userId: { type: DataTypes.INTEGER, allowNull: false },
     action: {
       type: DataTypes.ENUM("Granted", "Revoked", "PickedUp", "Returned"),
       allowNull: false,

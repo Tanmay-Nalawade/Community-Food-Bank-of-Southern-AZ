@@ -5,8 +5,8 @@ class ActivityLog extends Model {}
 
 ActivityLog.init(
   {
-    id: { type: DataTypes.INTEGER.UNSIGNED, autoIncrement: true, primaryKey: true },
-    userId: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false },
+    id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
+    userId: { type: DataTypes.INTEGER, allowNull: false },
     action: { type: DataTypes.ENUM("Login", "Logout", "RoleSwitch"), allowNull: false },
     detail: { type: DataTypes.STRING(500), allowNull: false, defaultValue: "" },
     ip: { type: DataTypes.STRING(45) },

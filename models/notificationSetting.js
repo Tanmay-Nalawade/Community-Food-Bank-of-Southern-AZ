@@ -11,10 +11,10 @@ class NotificationSetting extends Model {
 
 NotificationSetting.init(
   {
-    id: { type: DataTypes.INTEGER.UNSIGNED, autoIncrement: true, primaryKey: true },
+    id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
     type: { type: DataTypes.STRING(64), allowNull: false, unique: true },
     recipients: { type: DataTypes.TEXT, allowNull: false, defaultValue: "" },
-    updatedById: { type: DataTypes.INTEGER.UNSIGNED },
+    updatedById: { type: DataTypes.INTEGER },
   },
   {
     sequelize,

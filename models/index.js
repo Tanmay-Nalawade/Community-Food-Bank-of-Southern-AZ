@@ -10,6 +10,7 @@ const AccessLog = require("./accessLog");
 const ActivityLog = require("./activityLog");
 const TripLogSend = require("./tripLogSend");
 const NotificationSetting = require("./notificationSetting");
+const Session = require("./session");
 
 Reservation.belongsTo(User, { as: "user", foreignKey: "userId" });
 Reservation.belongsTo(Vehicle, { as: "vehicle", foreignKey: "vehicleId" });
@@ -42,4 +43,5 @@ module.exports = {
   ActivityLog,
   TripLogSend,
   NotificationSetting,
+  Session,
 };

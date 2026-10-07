@@ -6,14 +6,14 @@ class VehicleIssue extends Model {}
 
 VehicleIssue.init(
   {
-    id: { type: DataTypes.INTEGER.UNSIGNED, autoIncrement: true, primaryKey: true },
-    vehicleId: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false },
+    id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
+    vehicleId: { type: DataTypes.INTEGER, allowNull: false },
     description: { type: DataTypes.TEXT, allowNull: false },
     reportedAt: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
-    reportedById: { type: DataTypes.INTEGER.UNSIGNED },
-    reservationId: { type: DataTypes.INTEGER.UNSIGNED },
+    reportedById: { type: DataTypes.INTEGER },
+    reservationId: { type: DataTypes.INTEGER },
     reviewed: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
-    reviewedById: { type: DataTypes.INTEGER.UNSIGNED },
+    reviewedById: { type: DataTypes.INTEGER },
     reviewedAt: { type: DataTypes.DATE },
   },
   {
