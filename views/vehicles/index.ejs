@@ -44,7 +44,7 @@
       <% vehicles.forEach((vehicle) => { %>
         <%- include('../partials/vehicle-card', {
           vehicle,
-          href: `/vehicles/${vehicle._id}?${queryString}`,
+          href: `/vehicles/${vehicle.id}?${queryString}`,
           statusSlug: 'available',
           statusLabel: 'Available',
         }) %>

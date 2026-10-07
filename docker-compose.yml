@@ -1,4 +1,28 @@
 services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    # Bound to localhost only, so the DB is reachable from this machine
+    # (e.g. running `npm run dev` outside Docker, or a GUI client) but not
+    # from the rest of the network.
+    ports:
+      - "127.0.0.1:${DB_PORT:-3306}:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
   app:
     build: .
     ports:
@@ -7,5 +31,18 @@ services:
       - .env
     environment:
       PORT: ${PORT:-8080}
-      MONGO_DB_URL: ${MONGO_DB_URL}
+      # Inside the compose network the bundled DB is reached by service name,
+      # not the localhost address .env uses for running the app on the host.
+      # To use an existing MySQL server instead, set DOCKER_DB_HOST /
+      # DOCKER_DB_PORT in .env and start only the app (see DEPLOYMENT.md).
+      DB_HOST: ${DOCKER_DB_HOST:-mysql}
+      DB_PORT: ${DOCKER_DB_PORT:-3306}
+    # Apply any pending schema migrations, then start the server.
+    command: sh -c "node scripts/migrate.js && node app.js"
+    depends_on:
+      mysql:
+        condition: service_healthy
     restart: unless-stopped
+
+volumes:
+  mysql-data:

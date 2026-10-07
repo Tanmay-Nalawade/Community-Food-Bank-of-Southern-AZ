@@ -5,13 +5,13 @@
 
   <h1>Edit Booking Request</h1>
   <p class="reservations-page__lead">
-    <%= reservation.vehicleId.year ? reservation.vehicleId.year + " " : "" %>
-    <%= reservation.vehicleId.make %> <%= reservation.vehicleId.model %>
-    (<%= reservation.vehicleId.licensePlate %>)
+    <%= reservation.vehicle.year ? reservation.vehicle.year + " " : "" %>
+    <%= reservation.vehicle.make %> <%= reservation.vehicle.model %>
+    (<%= reservation.vehicle.licensePlate %>)
   </p>
 
   <div class="auth-card auth-card--wide admin-edit-card">
-    <form class="auth-form" action="/reservations/<%= reservation._id %>?_method=PUT" method="POST">
+    <form class="auth-form" id="vehicleBookingForm" action="/reservations/<%= reservation.id %>?_method=PUT" method="POST">
       <div class="auth-form__group">
         <label class="auth-form__label" for="date">Date</label>
         <input
@@ -19,7 +19,7 @@
           type="date"
           id="date"
           name="date"
-          value="<%= new Date(reservation.requestedStartTime).toISOString().split('T')[0] %>"
+          value="<%= formValues.date %>"
           required
         />
       </div>
@@ -32,7 +32,7 @@
             type="time"
             id="startTime"
             name="startTime"
-            value="<%= new Date(reservation.requestedStartTime).toTimeString().slice(0, 5) %>"
+            value="<%= formValues.startTime %>"
             required
           />
         </div>
@@ -43,7 +43,7 @@
             type="time"
             id="endTime"
             name="endTime"
-            value="<%= new Date(reservation.requestedEndTime).toTimeString().slice(0, 5) %>"
+            value="<%= formValues.endTime %>"
             required
           />
         </div>
@@ -56,10 +56,52 @@
           id="staffNotes"
           name="staffNotes"
           rows="3"
-        ><%= reservation.staffNotes || "" %></textarea>
+        ><%= formValues.staffNotes %></textarea>
+      </div>
+
+      <div class="auth-form__group">
+        <span class="auth-form__label">Is this trip food related?</span>
+        <div class="auth-form__radio-row">
+          <label class="auth-form__radio">
+            <input type="radio" name="tripFoodRelated" value="Yes" <%= formValues.tripFoodRelated === "Yes" ? "checked" : "" %> /> Yes
+          </label>
+          <label class="auth-form__radio">
+            <input type="radio" name="tripFoodRelated" value="No" <%= formValues.tripFoodRelated === "No" ? "checked" : "" %> /> No
+          </label>
+          <label class="auth-form__radio">
+            <input type="radio" name="tripFoodRelated" value="Other" <%= formValues.tripFoodRelated === "Other" ? "checked" : "" %> /> Other
+          </label>
+        </div>
+        <p class="auth-form__field-error"></p>
+      </div>
+
+      <div class="auth-form__group js-trip-food-other" <%= formValues.tripFoodRelated === "Other" ? "" : "hidden" %>>
+        <label class="auth-form__label" for="tripFoodRelatedDetail">Please describe the purpose of this trip</label>
+        <textarea
+          class="auth-form__input booking-request-card__textarea"
+          id="tripFoodRelatedDetail"
+          name="tripFoodRelatedDetail"
+          rows="2"
+        ><%= formValues.tripFoodRelatedDetail %></textarea>
+        <p class="auth-form__field-error"></p>
       </div>
 
       <button class="auth-form__submit" type="submit">Save changes</button>
     </form>
+
+    <% if (gapWarning) { %>
+      <dialog id="tightGapDialog" class="tight-gap-dialog" data-autoshow>
+        <h2 class="tight-gap-dialog__title">Heads up</h2>
+        <p class="tight-gap-dialog__body">
+          The previous booking for this vehicle ends at
+          <strong><%= gapWarning.previousEndLabel %></strong>.
+          Do you still want to go ahead with this booking?
+        </p>
+        <div class="tight-gap-dialog__actions">
+          <button type="button" class="tight-gap-dialog__cancel" data-close-dialog="tightGapDialog">Cancel</button>
+          <button type="submit" form="vehicleBookingForm" name="confirmTightGap" value="true" class="auth-form__submit">Yes, book anyway</button>
+        </div>
+      </dialog>
+    <% } %>
   </div>
 </section>

@@ -1,0 +1,38 @@
+<%
+  // Cells shared by the reservations list and booking history tables so the
+  // two stay identical.
+  const _start = new Date(reservation.requestedStartTime);
+  const _end = new Date(reservation.requestedEndTime);
+  const _time = (d) => d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  const _day = (d) => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const _sameDay = _start.toDateString() === _end.toDateString();
+%>
+<td data-label="When">
+  <div class="admin-when">
+    <div class="booking-card__date admin-when__date" aria-hidden="true">
+      <span class="booking-card__date-weekday"><%= _start.toLocaleDateString("en-US", { weekday: "short" }) %></span>
+      <span class="booking-card__date-day"><%= _start.getDate() %></span>
+      <span class="booking-card__date-month"><%= _start.toLocaleDateString("en-US", { month: "short" }) %></span>
+    </div>
+    <div class="admin-when__text">
+      <% if (_sameDay) { %>
+        <strong><%= _time(_start) %> to <%= _time(_end) %></strong>
+        <span class="admin-table__subtext"><%= _start.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) %></span>
+      <% } else { %>
+        <strong><%= _day(_start) %>, <%= _time(_start) %></strong>
+        <span class="admin-table__subtext">to <%= _day(_end) %>, <%= _time(_end) %></span>
+      <% } %>
+    </div>
+  </div>
+</td>
+<td data-label="Driver">
+  <a class="admin-table__primary-link" href="/admin/drivers/<%= reservation.user.id %>"><%= reservation.user.firstName %> <%= reservation.user.lastName %></a>
+  <span class="admin-table__subtext admin-table__subtext--block admin-table__email"><%= reservation.user.email %></span>
+</td>
+<td class="admin-table__vehicle" data-label="Vehicle">
+  <%= reservation.vehicle.year ? reservation.vehicle.year + " " : "" %><%= reservation.vehicle.make %> <%= reservation.vehicle.model %>
+  <span class="admin-table__subtext admin-table__subtext--block"><%= reservation.vehicle.licensePlate %></span>
+</td>
+<td data-label="Status">
+  <%- include('../../partials/status-pill', { value: reservation.status }) %>
+</td>

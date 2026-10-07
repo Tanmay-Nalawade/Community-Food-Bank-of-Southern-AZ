@@ -1,6 +1,6 @@
 const path = require("path");
 const ejs = require("ejs");
-const Reservation = require("../../models/reservation");
+const { Reservation } = require("../../models");
 const { sendEmail } = require("./index");
 const { formatBookingLabel } = require("../../utils/availability");
 
@@ -42,17 +42,14 @@ async function sendBookingConfirmation(reservation, user, vehicle) {
       html,
     });
 
-    await Reservation.findByIdAndUpdate(reservation._id, {
-      $set: { "notifications.confirmationSentAt": new Date() },
-    });
+    await Reservation.update({ confirmationSentAt: new Date() }, { where: { id: reservation.id } });
   } catch (error) {
     console.error("Failed to send booking confirmation email:", error);
   }
 }
 
 async function sendReminder(reservation, type) {
-  const user = reservation.userId;
-  const vehicle = reservation.vehicleId;
+  const { user, vehicle } = reservation;
 
   if (!user?.email || !vehicle) {
     return;
@@ -63,7 +60,7 @@ async function sendReminder(reservation, type) {
       firstName: user.firstName,
       vehicleName: vehicleLabel(vehicle),
       bookingLabel: bookingLabelFor(reservation),
-      bookingCode: reservation.keyCafeAccess?.bookingCode || null,
+      bookingCode: reservation.keyCafeBookingCode || null,
       isFinal: type === "final",
       dashboardUrl: `${APP_BASE_URL}/reservations/mine`,
     });
@@ -76,9 +73,7 @@ async function sendReminder(reservation, type) {
     await sendEmail({ to: user.email, subject, html });
 
     const field = type === "final" ? "reminderFinalSentAt" : "reminder3DaySentAt";
-    await Reservation.findByIdAndUpdate(reservation._id, {
-      $set: { [`notifications.${field}`]: new Date() },
-    });
+    await Reservation.update({ [field]: new Date() }, { where: { id: reservation.id } });
   } catch (error) {
     console.error(`Failed to send ${type} reminder email:`, error);
   }

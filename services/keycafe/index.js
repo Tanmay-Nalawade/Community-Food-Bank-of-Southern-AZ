@@ -135,6 +135,11 @@ async function findKeyByName(name) {
   return Array.isArray(keys) ? keys.find((key) => key.name === name) || null : null;
 }
 
+async function listKeys() {
+  const keys = await request("GET", "/key");
+  return Array.isArray(keys) ? keys : [];
+}
+
 async function testConnection() {
   if (!isConfigured()) {
     return { ok: false, detail: "KEYCAFE_EMAIL and KEYCAFE_TOKEN are not set." };
@@ -157,5 +162,6 @@ module.exports = {
   createKey,
   updateKey,
   findKeyByName,
+  listKeys,
   testConnection,
 };

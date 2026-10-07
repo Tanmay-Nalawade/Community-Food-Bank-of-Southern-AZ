@@ -1,31 +1,32 @@
-const User = require("../../models/user");
-const Reservation = require("../../models/reservation");
+const { User, Reservation } = require("../../models");
 const { renderError } = require("../../utils/httpError");
 const { fetchPage, PAGE_SIZE } = require("../../utils/pagination");
+const { queryString, containsAny } = require("../../utils/query");
 
-function escapeRegex(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
+const BY_NAME = [["firstName", "ASC"], ["lastName", "ASC"]];
 
 function buildDriverFilter(query) {
-  const q = (query.q || "").trim();
-  const filter = {};
+  const q = queryString(query.q);
+  return q ? containsAny(["firstName", "lastName", "email"], q) : {};
+}
 
-  if (q) {
-    const regex = new RegExp(escapeRegex(q), "i");
-    filter.$or = [{ firstName: regex }, { lastName: regex }, { email: regex }];
-  }
-
-  return filter;
+function fetchDriverReservations(userId) {
+  return (skip, limit) =>
+    Reservation.findAll({
+      where: { userId },
+      include: [{ association: "vehicle", attributes: ["id", "make", "model", "year", "licensePlate"] }],
+      order: [["requestedStartTime", "DESC"], ["id", "DESC"]],
+      offset: skip,
+      limit,
+    });
 }
 
 exports.index = async (req, res) => {
-  const q = (req.query.q || "").trim();
-  const filter = buildDriverFilter(req.query);
+  const q = queryString(req.query.q);
+  const where = buildDriverFilter(req.query);
 
   const { items: drivers, hasMore, nextSkip } = await fetchPage(
-    (skip, limit) =>
-      User.find(filter).sort({ firstName: 1, lastName: 1 }).skip(skip).limit(limit),
+    (skip, limit) => User.findAll({ where, order: BY_NAME, offset: skip, limit }),
     0,
   );
 
@@ -42,11 +43,11 @@ exports.index = async (req, res) => {
 };
 
 exports.more = async (req, res) => {
-  const filter = buildDriverFilter(req.query);
+  const where = buildDriverFilter(req.query);
   const skip = Math.max(0, Number(req.query.skip) || 0);
 
   const { items: drivers, hasMore } = await fetchPage(
-    (s, limit) => User.find(filter).sort({ firstName: 1, lastName: 1 }).skip(s).limit(limit),
+    (s, limit) => User.findAll({ where, order: BY_NAME, offset: s, limit }),
     skip,
   );
 
@@ -55,20 +56,16 @@ exports.more = async (req, res) => {
 };
 
 exports.show = async (req, res) => {
-  const driver = await User.findById(req.params.id);
+  const driver = await User.findByPk(req.params.id);
 
   if (!driver) {
     return renderError(res, 404, "Driver not found.");
   }
 
-  const fetchReservations = (skip, limit) =>
-    Reservation.find({ userId: driver._id })
-      .populate("vehicleId", "make model year licensePlate")
-      .sort({ requestedStartTime: -1 })
-      .skip(skip)
-      .limit(limit);
-
-  const { items: reservations, hasMore, nextSkip } = await fetchPage(fetchReservations, 0);
+  const { items: reservations, hasMore, nextSkip } = await fetchPage(
+    fetchDriverReservations(driver.id),
+    0,
+  );
 
   res.render("admin/drivers/show", {
     title: `${driver.firstName} ${driver.lastName}`,
@@ -82,7 +79,7 @@ exports.show = async (req, res) => {
 };
 
 exports.moreReservations = async (req, res) => {
-  const driver = await User.findById(req.params.id);
+  const driver = await User.findByPk(req.params.id);
 
   if (!driver) {
     return renderError(res, 404, "Driver not found.");
@@ -90,14 +87,10 @@ exports.moreReservations = async (req, res) => {
 
   const skip = Math.max(0, Number(req.query.skip) || 0);
 
-  const fetchReservations = (s, limit) =>
-    Reservation.find({ userId: driver._id })
-      .populate("vehicleId", "make model year licensePlate")
-      .sort({ requestedStartTime: -1 })
-      .skip(s)
-      .limit(limit);
-
-  const { items: reservations, hasMore } = await fetchPage(fetchReservations, skip);
+  const { items: reservations, hasMore } = await fetchPage(
+    fetchDriverReservations(driver.id),
+    skip,
+  );
 
   res.set("X-Has-More", hasMore ? "1" : "0");
   res.render("admin/drivers/_reservation-rows", { reservations });

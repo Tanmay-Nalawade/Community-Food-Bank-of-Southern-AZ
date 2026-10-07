@@ -1,56 +1,57 @@
-const Reservation = require("../../models/reservation");
-const Vehicle = require("../../models/vehicle");
+const { Op } = require("sequelize");
+const { Reservation, Vehicle, VehicleIssue } = require("../../models");
 
 const OUT_OF_SERVICE_STATUSES = ["Maintenance", "Out of Service"];
 
 exports.index = async (req, res) => {
   const now = new Date();
 
-  const [pendingCount, ongoingCount, upcomingCount, vehicles, pendingReservations] =
-    await Promise.all([
-      Reservation.countDocuments({ status: "Pending" }),
-      Reservation.countDocuments({ status: "Active" }),
-      Reservation.countDocuments({ status: "Reserved", requestedStartTime: { $gt: now } }),
-      Vehicle.find({}, "make model year status activeIssues").populate(
-        "activeIssues.reportedBy",
-        "firstName lastName",
-      ),
-      Reservation.find({ status: "Pending" })
-        .populate("userId", "firstName lastName")
-        .populate("vehicleId", "make model year")
-        .sort({ createdAt: -1 })
-        .limit(10),
-    ]);
-
-  const unresolvedIssues = [];
-  vehicles.forEach((vehicle) => {
-    vehicle.activeIssues.forEach((issue) => {
-      if (!issue.reviewed) {
-        unresolvedIssues.push({ vehicle, issue });
-      }
-    });
-  });
-
-  const vehiclesNeedingAttention = vehicles.filter((vehicle) =>
-    OUT_OF_SERVICE_STATUSES.includes(vehicle.status),
-  ).length;
+  const [
+    pendingCount,
+    ongoingCount,
+    upcomingCount,
+    vehiclesNeedingAttention,
+    unresolvedIssues,
+    pendingReservations,
+  ] = await Promise.all([
+    Reservation.count({ where: { status: "Pending" } }),
+    Reservation.count({ where: { status: "Active" } }),
+    Reservation.count({ where: { status: "Reserved", requestedStartTime: { [Op.gt]: now } } }),
+    Vehicle.count({ where: { status: { [Op.in]: OUT_OF_SERVICE_STATUSES } } }),
+    VehicleIssue.findAll({
+      where: { reviewed: false },
+      include: [
+        { association: "vehicle", attributes: ["id", "make", "model", "year", "status"] },
+        { association: "reportedBy", attributes: ["id", "firstName", "lastName"] },
+      ],
+    }),
+    Reservation.findAll({
+      where: { status: "Pending" },
+      include: [
+        { association: "user", attributes: ["id", "firstName", "lastName"] },
+        { association: "vehicle", attributes: ["id", "make", "model", "year"] },
+      ],
+      order: [["createdAt", "DESC"], ["id", "DESC"]],
+      limit: 10,
+    }),
+  ]);
 
   const notifications = [
     ...pendingReservations
-      .filter((reservation) => reservation.userId && reservation.vehicleId)
+      .filter((reservation) => reservation.user && reservation.vehicle)
       .map((reservation) => ({
         type: "booking",
-        message: `${reservation.userId.firstName} ${reservation.userId.lastName} requested the ${
-          reservation.vehicleId.year ? reservation.vehicleId.year + " " : ""
-        }${reservation.vehicleId.make} ${reservation.vehicleId.model}`,
-        link: `/admin/reservations/${reservation._id}`,
+        message: `${reservation.user.firstName} ${reservation.user.lastName} requested the ${
+          reservation.vehicle.year ? reservation.vehicle.year + " " : ""
+        }${reservation.vehicle.make} ${reservation.vehicle.model}`,
+        link: `/admin/reservations/${reservation.id}`,
         at: reservation.createdAt,
       })),
-    ...unresolvedIssues.map(({ vehicle, issue }) => ({
+    ...unresolvedIssues.map((issue) => ({
       type: "issue",
       message: `${
         issue.reportedBy ? `${issue.reportedBy.firstName} ${issue.reportedBy.lastName}` : "Someone"
-      } reported an issue with the ${vehicle.make} ${vehicle.model}: "${issue.description}"`,
+      } reported an issue with the ${issue.vehicle.make} ${issue.vehicle.model}: "${issue.description}"`,
       link: "/admin/issues",
       at: issue.reportedAt,
     })),

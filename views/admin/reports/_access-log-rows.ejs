@@ -1,17 +1,17 @@
 <% accessLogs.forEach((log) => { %>
   <tr>
-    <td data-label="When"><%= new Date(log.createdAt).toLocaleString() %></td>
+    <td data-label="When"><%= fmt.dateTime(log.createdAt) %></td>
     <td data-label="Action"><%= log.action %></td>
     <td data-label="Driver">
-      <% if (log.userId) { %>
-        <%= log.userId.firstName %> <%= log.userId.lastName %>
+      <% if (log.user) { %>
+        <%= log.user.firstName %> <%= log.user.lastName %>
       <% } else { %>
         —
       <% } %>
     </td>
     <td data-label="Vehicle">
-      <% if (log.vehicleId) { %>
-        <%= log.vehicleId.make %> <%= log.vehicleId.model %>
+      <% if (log.vehicle) { %>
+        <%= log.vehicle.make %> <%= log.vehicle.model %>
       <% } else { %>
         —
       <% } %>

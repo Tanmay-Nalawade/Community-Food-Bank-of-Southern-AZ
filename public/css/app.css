@@ -1,3 +1,8 @@
+/* Loaded on every page — base reset, layout shell, and the classes actually
+   shared across admin, IT, and staff-facing views (several look "admin-" or
+   "vehicles-page-" scoped by name but are reused as generic primitives —
+   verified by grep, not by naming convention, before moving anything out of
+   here; see public/css/admin.css and public/css/staff.css for the rest). */
 *,
 *::before,
 *::after {
@@ -146,7 +151,10 @@ textarea {
   margin: 0 0 0.5rem;
 }
 
-.page-content p {
+/* :where() keeps this at element-level specificity, so any paragraph with
+   its own class (intros, hints, error messages) can set its own color and
+   spacing without having to out-rank this reset. */
+:where(.page-content) p {
   font-family: var(--font-sans);
   color: var(--cfb-ink);
   margin: 0;
@@ -154,23 +162,6 @@ textarea {
 
 .vehicles-page__lead {
   margin-bottom: 0.35rem;
-}
-
-.vehicles-page__change-date {
-  display: inline-block;
-  margin-top: 0.5rem;
-  font-family: var(--font-sans);
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--cfb-maroon);
-  text-decoration: none;
-}
-
-.vehicles-page__change-date:hover,
-.vehicles-page__change-date:focus {
-  color: var(--cfb-maroon-hover);
-  text-decoration: underline;
-  text-underline-offset: 3px;
 }
 
 .vehicles-page__header {
@@ -182,25 +173,28 @@ textarea {
   margin-bottom: 1.5rem;
 }
 
-.admin-page__header-actions {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-
+/* Page-header primary action (e.g. Add vehicle). Same metrics as
+   .action-btn--primary. */
 .vehicles-page__add-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.6rem;
+  box-sizing: border-box;
   font-family: var(--font-display);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 600;
+  line-height: 1;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: #ffffff;
   background: var(--cfb-maroon);
-  border: 1px solid var(--cfb-maroon);
+  border: 2px solid var(--cfb-maroon);
   border-radius: 2px;
-  padding: 0.65rem 1.25rem;
+  padding: 0 1.15rem;
   text-decoration: none;
   white-space: nowrap;
+  cursor: pointer;
   transition: background 0.15s ease, border-color 0.15s ease;
 }
 
@@ -216,94 +210,6 @@ textarea {
   font-style: italic;
 }
 
-.vehicle-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.25rem;
-}
-
-.vehicle-card {
-  border: 1px solid var(--cfb-line);
-  border-radius: 2px;
-  padding: 1.25rem;
-  background: #fff;
-}
-
-.vehicle-card--link {
-  display: block;
-  text-decoration: none;
-  color: inherit;
-  transition: border-color 0.12s ease;
-}
-
-.vehicle-card--link:hover,
-.vehicle-card--link:focus {
-  border-color: var(--cfb-maroon);
-}
-
-.vehicle-card__photo {
-  display: block;
-  width: calc(100% + 2.5rem);
-  height: 160px;
-  margin: -1.25rem -1.25rem 1rem;
-  object-fit: cover;
-  border-radius: 2px 2px 0 0;
-  background: var(--cfb-line);
-}
-
-.vehicle-card__photo--empty {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--cfb-grey);
-  font-size: 0.85rem;
-  font-style: italic;
-}
-
-.vehicle-card__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-}
-
-.vehicle-card__title {
-  font-family: var(--font-display);
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: var(--cfb-ink);
-  margin: 0;
-  line-height: 1.25;
-}
-
-.vehicle-card__details {
-  margin: 0;
-  display: grid;
-  gap: 0.75rem;
-}
-
-.vehicle-card__details div {
-  display: grid;
-  gap: 0.15rem;
-}
-
-.vehicle-card__details dt {
-  font-family: var(--font-display);
-  font-size: 0.75rem;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--cfb-grey);
-  margin: 0;
-}
-
-.vehicle-card__details dd {
-  margin: 0;
-  font-size: 0.95rem;
-  color: var(--cfb-ink);
-}
-
 .vehicle-detail__back {
   display: inline-block;
   font-family: var(--font-sans);
@@ -311,12 +217,6 @@ textarea {
   color: var(--cfb-maroon);
   text-decoration: none;
   margin-bottom: 1.25rem;
-}
-
-.vehicle-detail__booking-window {
-  font-family: var(--font-sans);
-  color: var(--cfb-ink);
-  margin: 0 0 1.25rem;
 }
 
 .vehicle-detail__back:hover,
@@ -335,6 +235,7 @@ textarea {
 
 .vehicle-detail__main {
   min-width: 0;
+  container-type: inline-size;
 }
 
 .vehicle-detail__sidebar {
@@ -352,73 +253,16 @@ textarea {
   }
 }
 
-.vehicle-detail__header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
-  margin-bottom: 1.25rem;
-}
-
-.vehicle-detail__header h1 {
-  font-size: clamp(1.5rem, 1.2rem + 1.5vw, 2rem);
-}
-
-.vehicle-detail__overview {
-  display: flex;
-  align-items: flex-start;
-  gap: 1.75rem;
-  margin-bottom: 1.5rem;
-}
-
-.vehicle-detail__overview-body {
-  flex: 1;
-  min-width: 0;
-}
-
-.vehicle-detail__photo {
-  display: block;
-  flex: 0 0 340px;
-  width: 340px;
-  height: 340px;
-  object-fit: cover;
-  border-radius: 2px;
-  background: var(--cfb-line);
-}
-
-.vehicle-detail__photo--empty {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--cfb-grey);
-  font-style: italic;
-  background: var(--cfb-paper);
-  border: 1px dashed var(--cfb-line);
-}
-
-@media (max-width: 720px) {
-  .vehicle-detail__overview {
-    flex-direction: column;
-  }
-
-  .vehicle-detail__photo {
-    width: 100%;
-    height: 260px;
-    flex: none;
-  }
-}
-
 .vehicle-detail__plate {
-  font-family: var(--font-sans);
-  color: var(--cfb-grey);
-  margin: 0.35rem 0 0;
-}
-
-.vehicle-detail__grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 1.25rem;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: var(--cfb-ink);
+  padding: 0.2rem 0.6rem;
+  border: 1px solid var(--cfb-ink);
+  border-radius: 2px;
+  background: #ffffff;
 }
 
 .vehicle-detail__card {
@@ -477,17 +321,6 @@ textarea {
   margin: 0;
 }
 
-.vehicle-detail__warning {
-  color: #c62828;
-  font-weight: 700;
-  margin: 0;
-}
-
-.vehicle-detail__lead-in {
-  color: var(--cfb-ink);
-  margin: 0 0 1rem;
-}
-
 .vehicle-detail__issues {
   margin: 0;
   padding-left: 1.25rem;
@@ -537,161 +370,93 @@ textarea {
   font-size: 0.95rem;
 }
 
-.booking-request-card {
-  border-top: 3px solid var(--cfb-maroon);
-}
-
-.booking-request-card .auth-form__row {
-  grid-template-columns: 1fr;
-}
-
 .booking-request-card__textarea {
   min-height: 96px;
   resize: vertical;
 }
 
-.admin-table-wrap {
-  overflow-x: auto;
-  background: #fff;
-  border: 1px solid var(--cfb-line);
-  border-radius: 2px;
-}
-
-.admin-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-family: var(--font-sans);
-}
-
-.admin-table th,
-.admin-table td {
-  padding: 1rem;
-  text-align: left;
-  border-bottom: 1px solid var(--cfb-line);
-  vertical-align: top;
-}
-
-.admin-table th {
-  font-family: var(--font-display);
-  font-size: 0.8rem;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--cfb-maroon);
-  background: var(--cfb-paper);
-}
-
-.admin-table__subtext {
-  color: var(--cfb-grey);
-  font-size: 0.85rem;
-}
-
-.admin-table__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-@media (max-width: 720px) {
-  .admin-table-wrap {
-    overflow-x: visible;
-    border: none;
-    background: none;
-  }
-
-  .admin-table:not(.mileage-log-header-table) {
-    display: block;
-    border-collapse: separate;
-  }
-
-  .admin-table:not(.mileage-log-header-table) thead {
-    display: none;
-  }
-
-  .admin-table:not(.mileage-log-header-table) tbody,
-  .admin-table:not(.mileage-log-header-table) tr {
-    display: block;
-    width: 100%;
-  }
-
-  .admin-table:not(.mileage-log-header-table) tr {
-    background: #fff;
-    border: 1px solid var(--cfb-line);
-    border-radius: 2px;
-    padding: 0 1rem;
-    margin-bottom: 1rem;
-  }
-
-  .admin-table:not(.mileage-log-header-table) tbody tr:last-child {
-    margin-bottom: 0;
-  }
-
-  .admin-table:not(.mileage-log-header-table) td {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    text-align: right;
-    gap: 1rem;
-    padding: 0.65rem 0;
-    overflow-wrap: anywhere;
-    min-width: 0;
-  }
-
-  .admin-table:not(.mileage-log-header-table) td:not(:last-child) {
-    border-bottom: 1px solid var(--cfb-line);
-  }
-
-  .admin-table:not(.mileage-log-header-table) td::before {
-    content: attr(data-label);
-    flex-shrink: 0;
-    font-family: var(--font-display);
-    font-size: 0.75rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--cfb-maroon);
-    text-align: left;
-  }
-
-  .admin-table:not(.mileage-log-header-table) td.admin-table__actions {
-    justify-content: flex-start;
-    text-align: left;
-  }
-
-  .admin-table:not(.mileage-log-header-table) td.admin-table__actions::before {
-    flex-basis: 100%;
-    margin-bottom: 0.25rem;
-  }
-}
-
+/* Legacy small button used across older admin/staff views. It renders
+   exactly like .action-btn--sm so every page shares one button system:
+   --edit = maroon outline, --approve = filled green, --deny = red outline,
+   --delete = quiet red text. */
 .admin-table__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.1rem;
+  box-sizing: border-box;
   font-family: var(--font-display);
   font-size: 0.8rem;
   font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  border-radius: 2px;
-  padding: 0.45rem 0.75rem;
   text-decoration: none;
-  border: none;
+  white-space: nowrap;
+  padding: 0 0.8rem;
+  border: 2px solid transparent;
+  border-radius: 2px;
+  background: #ffffff;
   cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.admin-table__btn:focus-visible {
+  outline: 3px solid var(--cfb-orange);
+  outline-offset: 2px;
 }
 
 .admin-table__btn--approve {
   background: #2e7d32;
-  color: #fff;
+  border-color: #2e7d32;
+  color: #ffffff;
 }
 
-.admin-table__btn--deny,
-.admin-table__btn--delete {
+.admin-table__btn--approve:hover {
+  background: #1b5e20;
+  border-color: #1b5e20;
+}
+
+.admin-table__btn--deny {
+  border-color: #c62828;
+  color: #c62828;
+}
+
+.admin-table__btn--deny:hover {
   background: #c62828;
-  color: #fff;
+  color: #ffffff;
+}
+
+.admin-table__btn--delete {
+  background: none;
+  color: #c62828;
+  padding: 0 0.5rem;
+}
+
+.admin-table__btn--delete:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .admin-table__btn--edit {
+  border-color: var(--cfb-maroon);
+  color: var(--cfb-maroon);
+}
+
+.admin-table__btn--edit:hover {
   background: var(--cfb-maroon);
-  color: #fff;
-  display: inline-block;
+  color: #ffffff;
+}
+
+.admin-table__btn--primary {
+  background: var(--cfb-maroon);
+  border-color: var(--cfb-maroon);
+  color: #ffffff;
+}
+
+.admin-table__btn--primary:hover {
+  background: var(--cfb-maroon-hover);
+  border-color: var(--cfb-maroon-hover);
 }
 
 .status-pill {
@@ -782,18 +547,23 @@ textarea {
 }
 
 .admin-filters__submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  box-sizing: border-box;
   font-family: var(--font-display);
   font-size: 0.9rem;
   font-weight: 600;
+  line-height: 1;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: #ffffff;
   background: var(--cfb-maroon);
-  border: 1px solid var(--cfb-maroon);
+  border: 2px solid var(--cfb-maroon);
   border-radius: 2px;
-  padding: 0.65rem 1.25rem;
+  padding: 0 1.15rem;
   cursor: pointer;
-  height: fit-content;
 }
 
 .admin-filters__submit:hover,
@@ -802,13 +572,20 @@ textarea {
   border-color: var(--cfb-maroon-hover);
 }
 
+/* Matches the filter button's height and type so the two read as a pair. */
 .admin-filters__clear {
-  font-family: var(--font-sans);
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0 0.5rem;
+  font-family: var(--font-display);
   font-size: 0.9rem;
-  font-weight: 700;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   color: var(--cfb-maroon);
   text-decoration: none;
-  align-self: center;
+  align-self: end;
 }
 
 .admin-filters__clear:hover,
@@ -817,26 +594,24 @@ textarea {
   text-underline-offset: 3px;
 }
 
-.admin-history-card {
-  margin-top: 1.5rem;
+.admin-filters .admin-filters__submit {
+  height: auto;
+  min-height: 2.75rem;
+}
+
+@media (max-width: 720px) {
+  .admin-filters__field {
+    flex: 1 1 100%;
+  }
+
+  .admin-filters .admin-filters__submit {
+    flex: 1 1 auto;
+  }
 }
 
 .admin-hint {
   font-size: 0.85rem;
   margin-top: 0.75rem;
-}
-
-.admin-issue {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.admin-issue-form {
-  margin-top: 1.25rem;
-  padding-top: 1.25rem;
-  border-top: 1px solid var(--cfb-line);
 }
 
 .admin-edit-card {
@@ -848,7 +623,7 @@ textarea {
   margin: 0;
 }
 
-.reservations-page__lead,
+.page-content .reservations-page__lead,
 .admin-page .vehicles-page__lead {
   margin-bottom: 2rem;
 }
@@ -858,17 +633,29 @@ textarea {
 }
 
 .dashboard-empty {
-  border: 1px dashed var(--cfb-line);
-  border-radius: 2px;
-  background: var(--cfb-paper);
-  padding: 1.75rem 1.5rem;
-  text-align: center;
+  border-top: 1px solid var(--cfb-line);
+  padding-top: 1rem;
 }
 
-.dashboard-empty p {
+.page-content .dashboard-empty,
+.page-content .dashboard-empty p {
   margin: 0;
   color: var(--cfb-grey);
   font-style: normal;
+}
+
+.dashboard-section__link {
+  margin-left: auto;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--cfb-maroon);
+  text-underline-offset: 3px;
+}
+
+.dashboard-section__link:hover,
+.dashboard-section__link:focus {
+  color: var(--cfb-maroon-hover);
 }
 
 .dashboard-empty a {
@@ -908,139 +695,33 @@ textarea {
   padding: 0.1rem 0.6rem;
 }
 
-.booking-list {
-  display: grid;
-  gap: 1rem;
-}
-
-.booking-card {
-  --ticket-bg: #ffffff;
-  background: #ffffff;
-  border: 1px solid var(--cfb-line);
-  border-radius: 2px;
-  padding: 1.25rem 1.5rem;
-}
-
-.booking-card--muted {
-  --ticket-bg: var(--cfb-paper);
-  background: var(--cfb-paper);
-  box-shadow: none;
-}
-
-.booking-card--muted .booking-card__vehicle {
-  color: var(--cfb-grey);
-}
-
-.booking-card__layout {
+/* Tear-off calendar leaf: the trip date is what staff scan the list for.
+   Shared between the staff booking-card list and the admin reservation
+   table/detail page ("admin-when"/"booking-detail" both reuse this). */
+.booking-card__date {
   display: flex;
-  align-items: flex-start;
-  gap: 1.25rem;
-}
-
-.booking-card__photo {
-  flex-shrink: 0;
-  width: 260px;
-  height: 175px;
-  object-fit: cover;
-  border-radius: 2px;
-  background: var(--cfb-line);
-}
-
-.booking-card__photo--empty {
-  display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  color: var(--cfb-grey);
-  font-size: 0.85rem;
-  font-style: italic;
-  background: var(--cfb-paper);
-  border: 1px dashed var(--cfb-line);
-}
-
-.booking-card__body {
-  flex: 1;
-  min-width: 0;
-}
-
-@media (max-width: 720px) {
-  .booking-card__layout {
-    flex-direction: column;
-  }
-
-  .booking-card__photo {
-    width: 100%;
-    height: 200px;
-  }
-}
-
-.booking-card__top {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.booking-card__vehicle {
+  text-align: center;
   font-family: var(--font-display);
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: var(--cfb-ink);
-  margin: 0;
-}
-
-.booking-card__window {
-  font-family: var(--font-sans);
-  font-size: 0.9rem;
-  color: var(--cfb-grey);
-  margin: 0.3rem 0 0;
-}
-
-.booking-card__access {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-top: 1.1rem;
-  padding: 0.9rem 1.1rem 0.9rem 1.4rem;
-  background: var(--cfb-paper);
-  border: 1px solid var(--cfb-line);
-  border-left: 5px solid var(--cfb-orange);
+  line-height: 1;
+  color: #ffffff;
+  background: var(--cfb-maroon);
   border-radius: 2px;
+  padding: 0.55rem 0.25rem 0.6rem;
 }
 
-/* A KeyCafe code is a physical claim check — the notches read as a stub torn from a perforated edge. */
-.booking-card__access::before,
-.booking-card__access::after {
-  content: "";
-  position: absolute;
-  left: -8px;
-  width: 15px;
-  height: 15px;
-  border-radius: 50%;
-  background: var(--ticket-bg, #ffffff);
-  border: 1px solid var(--cfb-line);
-}
-
-.booking-card__access::before {
-  top: -8px;
-}
-
-.booking-card__access::after {
-  bottom: -8px;
-}
-
-.booking-card__access-label {
-  display: block;
-  font-family: var(--font-display);
-  font-size: 0.75rem;
+.booking-card__date-weekday,
+.booking-card__date-month {
+  font-size: 0.8rem;
   font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--cfb-mauve);
-  margin-bottom: 0.35rem;
+  letter-spacing: 0.06em;
+}
+
+.booking-card__date-day {
+  font-size: 2rem;
+  font-weight: 600;
+  margin: 0.2rem 0;
 }
 
 .booking-code {
@@ -1054,208 +735,6 @@ textarea {
   border: 1px solid var(--cfb-line);
   border-radius: 3px;
   padding: 0.2rem 0.6rem;
-}
-
-.booking-card__access-hint {
-  font-family: var(--font-sans);
-  font-size: 0.8rem;
-  color: var(--cfb-grey);
-  margin: 0.4rem 0 0;
-}
-
-.booking-card__access-link {
-  flex-shrink: 0;
-  font-family: var(--font-sans);
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: var(--cfb-maroon);
-  text-decoration: none;
-  padding-left: 1.1rem;
-  border-left: 1px dashed var(--cfb-line);
-}
-
-.booking-card__access-link:hover,
-.booking-card__access-link:focus {
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-.booking-card__pending {
-  font-family: var(--font-sans);
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--cfb-orange-dark);
-  background: #fff8e1;
-  border-radius: 2px;
-  display: inline-block;
-  margin: 1.1rem 0 0;
-  padding: 0.4rem 0.75rem;
-}
-
-.booking-card__notes {
-  font-family: var(--font-sans);
-  font-size: 0.9rem;
-  font-style: italic;
-  color: var(--cfb-grey);
-  margin: 1rem 0 0;
-}
-
-.booking-card__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.6rem;
-  margin-top: 1.1rem;
-  padding-top: 1.1rem;
-  border-top: 1px solid var(--cfb-line);
-}
-
-.booking-card__actions form {
-  margin: 0;
-}
-
-.stat-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 1.25rem;
-  margin-bottom: 2.5rem;
-}
-
-.stat-tile {
-  --stat-accent: var(--cfb-mauve);
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  background: #fff;
-  border: 1px solid var(--cfb-line);
-  border-left: 4px solid var(--stat-accent);
-  border-radius: 2px;
-  padding: 1.25rem 1.5rem;
-  text-decoration: none;
-  transition: border-color 0.12s ease;
-}
-
-.stat-tile:hover,
-.stat-tile:focus {
-  border-color: var(--stat-accent);
-}
-
-.stat-tile--pending {
-  --stat-accent: var(--cfb-orange);
-}
-
-.stat-tile--ongoing {
-  --stat-accent: #1565c0;
-}
-
-.stat-tile--upcoming {
-  --stat-accent: var(--cfb-maroon);
-}
-
-.stat-tile--alert {
-  --stat-accent: #c62828;
-}
-
-.stat-tile__value {
-  font-family: var(--font-display);
-  font-size: clamp(2rem, 1.5rem + 2.5vw, 2.75rem);
-  font-weight: 600;
-  color: var(--cfb-ink);
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-
-.stat-tile__label {
-  font-family: var(--font-display);
-  font-size: 0.8rem;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--cfb-grey);
-}
-
-.notification-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 0.75rem;
-}
-
-.notification-item {
-  background: #fff;
-  border: 1px solid var(--cfb-line);
-  border-left: 4px solid var(--cfb-mauve);
-  border-radius: 2px;
-}
-
-.notification-item--booking {
-  border-left-color: #1565c0;
-}
-
-.notification-item--issue {
-  border-left-color: #c62828;
-}
-
-.notification-item__link {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 0.5rem 1rem;
-  padding: 0.9rem 1.1rem;
-  text-decoration: none;
-  color: inherit;
-}
-
-.notification-item__link:hover,
-.notification-item__link:focus {
-  background: var(--cfb-paper);
-}
-
-.notification-item__message {
-  font-family: var(--font-sans);
-  font-size: 0.95rem;
-  color: var(--cfb-ink);
-}
-
-.notification-item__time {
-  flex-shrink: 0;
-  font-family: var(--font-sans);
-  font-size: 0.8rem;
-  color: var(--cfb-grey);
-  white-space: nowrap;
-}
-
-.mileage-log-page__header-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
-  margin-bottom: 1rem;
-}
-
-.mileage-log-header-table {
-  margin-bottom: 1.25rem;
-}
-
-.mileage-log-header-table th {
-  width: 260px;
-  white-space: nowrap;
-}
-
-@media (max-width: 640px) {
-  .mileage-log-header-table th {
-    width: auto;
-    white-space: normal;
-  }
-}
-
-.mileage-log-page__month-nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-bottom: 1.25rem;
 }
 
 @media print {
@@ -1284,7 +763,7 @@ textarea {
 }
 
 .load-more-btn {
-  display: block;
+  display: flex;
   margin: 1.25rem auto 0;
 }
 
@@ -1293,61 +772,117 @@ textarea {
   cursor: default;
 }
 
-.inspection-group {
-  margin-bottom: 1.5rem;
-  padding-bottom: 1.5rem;
-  border-bottom: 1px solid var(--cfb-line);
+/* Text for screen readers only (e.g. a table header with no visible label). */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
-.inspection-group__title {
-  font-family: var(--font-display);
-  font-size: 0.85rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--cfb-maroon);
-  margin: 0 0 0.75rem;
+.vehicles-page__add-btn:focus-visible,
+.admin-filters__submit:focus-visible {
+  outline: 3px solid var(--cfb-orange);
+  outline-offset: 2px;
 }
 
-.inspection-group__items {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 0.6rem 1rem;
+/* ---- Shared text treatments ---------------------------------------- */
+
+/* Page intros: one grey, readable-width style everywhere. */
+.page-content .vehicles-page__lead,
+.page-content .reservations-page__lead {
+  color: var(--cfb-grey);
+  line-height: 1.5;
+  max-width: 68ch;
 }
 
-.inspection-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-family: var(--font-sans);
-  font-size: 0.9rem;
+/* The "Showing vehicles available for <date>" line keeps its bold date dark. */
+.page-content .vehicles-page__lead strong {
   color: var(--cfb-ink);
 }
 
-.inspection-actions {
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-  flex-wrap: wrap;
-  margin-top: 1.5rem;
+/* Empty states and inline hints: plain grey, not italic. */
+.page-content .vehicles-page__empty,
+.page-content .vehicle-detail__empty,
+.page-content .admin-hint {
+  color: var(--cfb-grey);
+  font-style: normal;
+  line-height: 1.5;
 }
 
-/* De-emphasized on purpose — this is the "skip it" escape hatch, not the
-   primary action, so it must not visually compete with Submit. */
-.inspection-skip {
-  font-family: var(--font-sans);
-  font-size: 0.9rem;
+/* Bare links inside content (no class of their own) use the brand maroon
+   instead of the browser's default blue. */
+.page-content a:not([class]) {
+  color: var(--cfb-maroon);
   font-weight: 600;
-  color: var(--cfb-grey);
-  background: none;
-  border: none;
-  padding: 0.5rem 0.25rem;
-  cursor: pointer;
-  text-decoration: underline;
   text-underline-offset: 3px;
 }
 
-.inspection-skip:hover,
-.inspection-skip:focus {
+.page-content a:not([class]):hover,
+.page-content a:not([class]):focus {
+  color: var(--cfb-maroon-hover);
+}
+
+/* Moved here from staff.css: this dialog style now also backs the global
+   mandatory-odometer prompt (views/layouts/boilerplate.ejs), which can
+   render on any page — admin/IT included — not just staff-facing ones. */
+.tight-gap-dialog {
+  max-width: 420px;
+  width: calc(100% - 2rem);
+  border: 1px solid var(--cfb-line);
+  border-radius: 2px;
+  padding: 1.75rem;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+}
+
+.tight-gap-dialog::backdrop {
+  background: rgba(20, 12, 16, 0.55);
+}
+
+.tight-gap-dialog__title {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 600;
   color: var(--cfb-ink);
+  margin: 0 0 0.6rem;
+}
+
+.tight-gap-dialog__body {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  color: var(--cfb-ink);
+  margin: 0 0 1.5rem;
+  line-height: 1.5;
+}
+
+.tight-gap-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.tight-gap-dialog__cancel {
+  min-height: 2.6rem;
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--cfb-maroon);
+  background: #ffffff;
+  border: 2px solid var(--cfb-maroon);
+  border-radius: 2px;
+  padding: 0 1.15rem;
+  cursor: pointer;
+}
+
+.tight-gap-dialog__cancel:hover,
+.tight-gap-dialog__cancel:focus {
+  border-color: var(--cfb-maroon);
+  color: var(--cfb-maroon);
 }

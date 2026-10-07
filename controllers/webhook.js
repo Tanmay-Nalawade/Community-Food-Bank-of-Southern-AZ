@@ -1,6 +1,5 @@
-const Reservation = require("../models/reservation");
-const Vehicle = require("../models/vehicle");
-const AccessLog = require("../models/accessLog");
+const { Reservation, Vehicle, AccessLog } = require("../models");
+const { fillStartMileage } = require("../services/odometer");
 
 const HANDLED_EVENT_TYPES = ["PICKUP", "DROPOFF"];
 
@@ -12,7 +11,7 @@ exports.handleKeyCafeEvent = async (req, res) => {
   }
 
   const reservation = await Reservation.findOne({
-    "keyCafeAccess.accessId": String(access.id),
+    where: { keyCafeAccessId: String(access.id) },
   });
 
   if (!reservation) {
@@ -23,32 +22,33 @@ exports.handleKeyCafeEvent = async (req, res) => {
   const occurredAt = req.body.dateCreated ? new Date(req.body.dateCreated) : new Date();
 
   if (type === "PICKUP" && reservation.status === "Reserved") {
-    reservation.keyCafeAccess.keyPickedUpAt = occurredAt;
-    reservation.tripLog.tripStartedAt = occurredAt;
+    reservation.keyPickedUpAt = occurredAt;
+    reservation.tripStartedAt = occurredAt;
     reservation.status = "Active";
+    await fillStartMileage(reservation);
     await reservation.save();
-    await Vehicle.findByIdAndUpdate(reservation.vehicleId, { status: "In Use" });
+    await Vehicle.update({ status: "In Use" }, { where: { id: reservation.vehicleId } });
     await AccessLog.create({
-      reservationId: reservation._id,
+      reservationId: reservation.id,
       vehicleId: reservation.vehicleId,
       userId: reservation.userId,
       action: "PickedUp",
       accessId: String(access.id),
-      bookingCode: reservation.keyCafeAccess.bookingCode,
+      bookingCode: reservation.keyCafeBookingCode,
     });
   } else if (type === "DROPOFF" && reservation.status === "Active") {
-    reservation.keyCafeAccess.keyReturnedAt = occurredAt;
-    reservation.tripLog.tripEndedAt = occurredAt;
+    reservation.keyReturnedAt = occurredAt;
+    reservation.tripEndedAt = occurredAt;
     reservation.status = "Completed";
     await reservation.save();
-    await Vehicle.findByIdAndUpdate(reservation.vehicleId, { status: "Available" });
+    await Vehicle.update({ status: "Available" }, { where: { id: reservation.vehicleId } });
     await AccessLog.create({
-      reservationId: reservation._id,
+      reservationId: reservation.id,
       vehicleId: reservation.vehicleId,
       userId: reservation.userId,
       action: "Returned",
       accessId: String(access.id),
-      bookingCode: reservation.keyCafeAccess.bookingCode,
+      bookingCode: reservation.keyCafeBookingCode,
     });
   }
 

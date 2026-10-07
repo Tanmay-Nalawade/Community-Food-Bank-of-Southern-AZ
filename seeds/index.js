@@ -1,13 +1,21 @@
 require("dotenv").config();
-const { promisify } = require("util");
-const mongoose = require("mongoose");
-
-const User = require("../models/user");
-const Vehicle = require("../models/vehicle");
-const Reservation = require("../models/reservation");
+const { connect } = require("../config/db");
+const migrator = require("../config/migrator");
+const { sequelize, User, Vehicle, VehicleIssue, Reservation } = require("../models");
 
 const SEED_PASSWORD = "password123";
-const registerUser = promisify(User.register.bind(User));
+// Every table this seed owns, children before parents.
+const TABLES = [
+  "sessions",
+  "vehicle_issues",
+  "access_logs",
+  "activity_logs",
+  "trip_log_sends",
+  "notification_settings",
+  "reservations",
+  "vehicles",
+  "users",
+];
 
 function setTime(date, hours, minutes = 0) {
   const result = new Date(date);
@@ -23,43 +31,48 @@ function dayOffset(offset) {
 }
 
 async function seed() {
-  if (!process.env.MONGO_DB_URL) {
-    throw new Error("MONGO_DB_URL is not set in .env");
+  await connect();
+
+  if ((await migrator.pending()).length) {
+    throw new Error("Database schema is out of date — run `npm run db:migrate` first.");
   }
 
-  await mongoose.connect(process.env.MONGO_DB_URL);
-
-  await Promise.all([
-    Reservation.deleteMany({}),
-    Vehicle.deleteMany({}),
-    User.deleteMany({}),
-  ]);
+  // TRUNCATE (not DELETE) so auto-increment ids restart at 1. Foreign key
+  // checks are suspended just for this, since TRUNCATE refuses to run on a
+  // table another table references.
+  await sequelize.query("SET FOREIGN_KEY_CHECKS = 0");
+  for (const table of TABLES) {
+    await sequelize.query(`TRUNCATE TABLE \`${table}\``);
+  }
+  await sequelize.query("SET FOREIGN_KEY_CHECKS = 1");
 
   // emailVerified: true — these are fake @cfb.example addresses that can't
   // receive a real verification link, so seeded/demo accounts are exempted
   // from the verification gate added for real registrations.
   const users = await Promise.all([
-    registerUser(
-      new User({ firstName: "Jordan", lastName: "Lee", email: "jordan.lee@cfb.example", role: "Staff", emailVerified: true }),
+    User.register(
+      { firstName: "Jordan", lastName: "Lee", email: "jordan.lee@cfb.example", role: "Staff", emailVerified: true },
       SEED_PASSWORD,
     ),
-    registerUser(
-      new User({ firstName: "Maria", lastName: "Garcia", email: "maria.garcia@cfb.example", role: "Staff", emailVerified: true }),
+    User.register(
+      { firstName: "Maria", lastName: "Garcia", email: "maria.garcia@cfb.example", role: "Staff", emailVerified: true },
       SEED_PASSWORD,
     ),
-    registerUser(
-      new User({ firstName: "Alex", lastName: "Rivera", email: "alex.rivera@cfb.example", role: "Admin", emailVerified: true }),
+    User.register(
+      { firstName: "Alex", lastName: "Rivera", email: "alex.rivera@cfb.example", role: "Admin", emailVerified: true },
       SEED_PASSWORD,
     ),
-    registerUser(
-      new User({ firstName: "Sam", lastName: "Okafor", email: "sam.okafor@cfb.example", role: "IT Admin", emailVerified: true }),
+    User.register(
+      { firstName: "Sam", lastName: "Okafor", email: "sam.okafor@cfb.example", role: "IT Admin", emailVerified: true },
       SEED_PASSWORD,
     ),
   ]);
 
   const [jordan, maria] = users;
 
-  const vehicles = await Vehicle.insertMany([
+  // Created one at a time (not bulkCreate) so ids are assigned in this
+  // listed order, which the destructuring below relies on.
+  const vehicleRows = [
     {
       make: "Ford",
       model: "Transit",
@@ -95,7 +108,7 @@ async function seed() {
       year: 2019,
       licensePlate: "CFB-1004",
       keyCafeKeyId: "KC-ODY-01",
-      currentMileage: 67100,
+      currentMileage: 67050,
       status: "In Use",
       nextMaintenanceDueMileage: 70000,
       nextMaintenanceDueDate: dayOffset(45),
@@ -108,12 +121,7 @@ async function seed() {
       keyCafeKeyId: "KC-NV200-01",
       currentMileage: 89200,
       status: "Maintenance",
-      activeIssues: [
-        {
-          reportedAt: new Date(),
-          description: "Brake inspection pending",
-        },
-      ],
+      issues: ["Brake inspection pending"],
     },
     {
       make: "RAM",
@@ -123,12 +131,7 @@ async function seed() {
       keyCafeKeyId: "KC-PRO-01",
       currentMileage: 15600,
       status: "Out of Service",
-      activeIssues: [
-        {
-          reportedAt: new Date(),
-          description: "Awaiting body shop repair",
-        },
-      ],
+      issues: ["Awaiting body shop repair"],
     },
     {
       make: "Ford",
@@ -140,7 +143,16 @@ async function seed() {
       currentMileage: 22100,
       status: "Available",
     },
-  ]);
+  ];
+
+  const vehicles = [];
+  for (const { issues = [], ...fields } of vehicleRows) {
+    const vehicle = await Vehicle.create(fields);
+    for (const description of issues) {
+      await VehicleIssue.create({ vehicleId: vehicle.id, description, reportedAt: new Date() });
+    }
+    vehicles.push(vehicle);
+  }
 
   const [transit, camry, silverado, odyssey, , , escape] = vehicles;
 
@@ -148,74 +160,64 @@ async function seed() {
   const tomorrow = dayOffset(1);
   const inThreeDays = dayOffset(3);
 
-  await Reservation.insertMany([
+  await Reservation.bulkCreate([
     {
-      userId: jordan._id,
-      vehicleId: silverado._id,
+      userId: jordan.id,
+      vehicleId: silverado.id,
       requestedStartTime: setTime(tomorrow, 9, 0),
       requestedEndTime: setTime(tomorrow, 17, 0),
       status: "Reserved",
-      keyCafeAccess: {
-        bookingCode: "73910482",
-        accessId: "mock-seed-silverado",
-      },
+      keyCafeBookingCode: "73910482",
+      keyCafeAccessId: "mock-seed-silverado",
     },
     {
-      userId: maria._id,
-      vehicleId: odyssey._id,
+      userId: maria.id,
+      vehicleId: odyssey.id,
       requestedStartTime: setTime(today, 8, 0),
       requestedEndTime: setTime(today, 18, 0),
       status: "Active",
-      keyCafeAccess: {
-        bookingCode: "48291356",
-        accessId: "mock-seed-odyssey",
-        keyPickedUpAt: setTime(today, 8, 15),
-      },
-      tripLog: {
-        tripStartedAt: setTime(today, 8, 20),
-        startMileage: 67050,
-        preTripInspectionPassed: true,
-        pickedUpFood: true,
-      },
+      keyCafeBookingCode: "48291356",
+      keyCafeAccessId: "mock-seed-odyssey",
+      keyPickedUpAt: setTime(today, 8, 15),
+      tripStartedAt: setTime(today, 8, 20),
+      startMileage: 67050,
+      preTripInspectionPassed: true,
+      pickedUpFood: true,
     },
     {
-      userId: jordan._id,
-      vehicleId: escape._id,
+      userId: jordan.id,
+      vehicleId: escape.id,
       requestedStartTime: setTime(inThreeDays, 10, 0),
       requestedEndTime: setTime(inThreeDays, 15, 0),
       status: "Reserved",
-      keyCafeAccess: {
-        bookingCode: "91827364",
-        accessId: "mock-seed-escape",
-      },
+      keyCafeBookingCode: "91827364",
+      keyCafeAccessId: "mock-seed-escape",
     },
     {
-      userId: maria._id,
-      vehicleId: transit._id,
+      userId: maria.id,
+      vehicleId: transit.id,
       requestedStartTime: setTime(dayOffset(-2), 9, 0),
       requestedEndTime: setTime(dayOffset(-2), 12, 0),
       status: "Completed",
-      tripLog: {
-        tripStartedAt: setTime(dayOffset(-2), 9, 5),
-        tripEndedAt: setTime(dayOffset(-2), 11, 45),
-        startMileage: 28380,
-        endMileage: 28450,
-        preTripInspectionPassed: true,
-        fuelLevelEndPercent: 75,
-        droppedOffFood: true,
-        washed: true,
-      },
+      tripStartedAt: setTime(dayOffset(-2), 9, 5),
+      tripEndedAt: setTime(dayOffset(-2), 11, 45),
+      startMileage: 28380,
+      endMileage: 28450,
+      preTripInspectionPassed: true,
+      fuelLevelEndPercent: 75,
+      droppedOffFood: true,
+      washed: true,
     },
     {
-      userId: jordan._id,
-      vehicleId: camry._id,
+      userId: jordan.id,
+      vehicleId: camry.id,
       requestedStartTime: setTime(dayOffset(-1), 13, 0),
       requestedEndTime: setTime(dayOffset(-1), 16, 0),
       status: "Cancelled",
     },
     {
-      userId: maria._id,
-      vehicleId: camry._id,
+      userId: maria.id,
+      vehicleId: camry.id,
       requestedStartTime: setTime(dayOffset(2), 10, 0),
       requestedEndTime: setTime(dayOffset(2), 14, 0),
       status: "Pending",
@@ -237,7 +239,7 @@ async function seed() {
   console.log("- Ford Escape: booked 3 days from now 10am-3pm only");
   console.log("- Toyota Camry: pending request in 2 days for admin review");
 
-  await mongoose.disconnect();
+  await sequelize.close();
 }
 
 seed().catch((err) => {

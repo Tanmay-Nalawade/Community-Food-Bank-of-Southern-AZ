@@ -1,11 +1,31 @@
+<%
+  const _muted = typeof muted !== "undefined" && muted;
+  const _featured = typeof featured !== "undefined" && featured;
+  const _thisYear = new Date().getFullYear();
+  const _time = (date) => date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  const _day = (date) => date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+%>
 <% reservations.forEach((reservation) => { %>
-  <article class="booking-card<%= typeof muted !== "undefined" && muted ? " booking-card--muted" : "" %>">
+  <%
+    const start = new Date(reservation.requestedStartTime);
+    const end = new Date(reservation.requestedEndTime);
+    const sameDay = start.toDateString() === end.toDateString();
+  %>
+  <article class="booking-card<%= _muted ? " booking-card--muted" : "" %><%= _featured ? " booking-card--featured" : "" %>">
     <div class="booking-card__layout">
-      <% if (reservation.vehicleId.photoUrl) { %>
+      <div class="booking-card__date" aria-hidden="true">
+        <span class="booking-card__date-weekday"><%= start.toLocaleDateString("en-US", { weekday: "short" }) %></span>
+        <span class="booking-card__date-day"><%= start.getDate() %></span>
+        <span class="booking-card__date-month">
+          <%= start.toLocaleDateString("en-US", { month: "short" }) %><%= start.getFullYear() !== _thisYear ? " " + start.getFullYear() : "" %>
+        </span>
+      </div>
+
+      <% if (reservation.vehicle.photoUrl) { %>
         <img
           class="booking-card__photo"
-          src="<%= reservation.vehicleId.photoUrl %>"
-          alt="Photo of <%= reservation.vehicleId.make %> <%= reservation.vehicleId.model %>"
+          src="<%= reservation.vehicle.photoUrl %>"
+          alt="Photo of <%= reservation.vehicle.make %> <%= reservation.vehicle.model %>"
         />
       <% } else { %>
         <div class="booking-card__photo booking-card__photo--empty">No photo</div>
@@ -15,58 +35,59 @@
         <div class="booking-card__top">
           <div>
             <h3 class="booking-card__vehicle">
-              <%= reservation.vehicleId.year ? reservation.vehicleId.year + " " : "" %><%= reservation.vehicleId.make %> <%= reservation.vehicleId.model %>
+              <%= reservation.vehicle.year ? reservation.vehicle.year + " " : "" %><%= reservation.vehicle.make %> <%= reservation.vehicle.model %>
             </h3>
             <p class="booking-card__window">
-              <%= new Date(reservation.requestedStartTime).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" }) %>
-              &ndash;
-              <%= new Date(reservation.requestedEndTime).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" }) %>
+              <% if (sameDay) { %>
+                <%= start.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" }) %>,
+                <strong><%= _time(start) %> to <%= _time(end) %></strong>
+              <% } else { %>
+                <strong><%= _day(start) %>, <%= _time(start) %></strong>
+                to
+                <strong><%= _day(end) %>, <%= _time(end) %></strong>
+              <% } %>
             </p>
           </div>
           <%- include('./status-pill', { value: reservation.status }) %>
         </div>
 
-        <% if (reservation.keyCafeAccess?.bookingCode && ["Reserved", "Active"].includes(reservation.status)) { %>
+        <% if (reservation.keyCafeBookingCode && ["Reserved", "Active"].includes(reservation.status)) { %>
           <div class="booking-card__access">
             <div>
               <span class="booking-card__access-label">KeyCafe pickup code</span>
-              <div class="booking-code"><%= reservation.keyCafeAccess.bookingCode %></div>
+              <div class="booking-code"><%= reservation.keyCafeBookingCode %></div>
               <p class="booking-card__access-hint">Use this same code to pick up and return the key.</p>
             </div>
-            <% if (reservation.keyCafeAccess.checkinLink) { %>
-              <a class="booking-card__access-link" href="<%= reservation.keyCafeAccess.checkinLink %>" target="_blank" rel="noopener noreferrer">
+            <% if (reservation.keyCafeCheckinLink) { %>
+              <a class="booking-card__access-link" href="<%= reservation.keyCafeCheckinLink %>" target="_blank" rel="noopener noreferrer">
                 Open check-in link
               </a>
             <% } %>
           </div>
         <% } else if (reservation.status === "Pending") { %>
-          <p class="booking-card__pending">Awaiting Transportation review.</p>
+          <p class="booking-card__pending">Awaiting Transportation review.<%= end > new Date() ? " Your pickup code appears here once it’s approved." : "" %></p>
         <% } %>
 
         <% if (reservation.staffNotes) { %>
           <p class="booking-card__notes">&ldquo;<%= reservation.staffNotes %>&rdquo;</p>
         <% } %>
 
-        <% if (
-          reservation.status === "Pending" ||
-          ["Pending", "Reserved"].includes(reservation.status) ||
-          ["Active", "Completed"].includes(reservation.status)
-        ) { %>
+        <% if (["Pending", "Reserved", "Active", "Completed"].includes(reservation.status)) { %>
           <div class="booking-card__actions">
-            <% if (reservation.status === "Pending") { %>
-              <a class="admin-table__btn admin-table__btn--edit" href="/reservations/<%= reservation._id %>/edit">Edit</a>
+            <% if (reservation.status === "Pending" && end > new Date()) { %>
+              <a class="admin-table__btn admin-table__btn--edit" href="/reservations/<%= reservation.id %>/edit">Edit</a>
             <% } %>
-            <% if (["Pending", "Reserved"].includes(reservation.status) && new Date(reservation.requestedEndTime) > new Date()) { %>
-              <form action="/reservations/<%= reservation._id %>/cancel" method="POST">
+            <% if (["Pending", "Reserved"].includes(reservation.status) && end > new Date()) { %>
+              <form action="/reservations/<%= reservation.id %>/cancel" method="POST">
                 <button class="admin-table__btn admin-table__btn--delete" type="submit">Cancel</button>
               </form>
             <% } %>
             <% if (["Active", "Completed"].includes(reservation.status)) { %>
-              <a class="admin-table__btn admin-table__btn--edit" href="/reservations/<%= reservation._id %>/inspection">
+              <a class="admin-table__btn <%= reservation.status === "Active" ? "admin-table__btn--primary" : "admin-table__btn--edit" %>" href="/reservations/<%= reservation.id %>/inspection">
                 <%= reservation.status === "Active" ? "Return Vehicle" : "Vehicle Inspection" %>
               </a>
-              <a class="admin-table__btn admin-table__btn--edit" href="/reservations/<%= reservation._id %>/mileage">Report Mileage</a>
-              <a class="admin-table__btn admin-table__btn--edit" href="/reservations/<%= reservation._id %>/issue">Report Issue</a>
+              <a class="admin-table__btn admin-table__btn--edit" href="/reservations/<%= reservation.id %>/mileage">Report Mileage</a>
+              <a class="admin-table__btn admin-table__btn--edit" href="/reservations/<%= reservation.id %>/issue">Report Issue</a>
             <% } %>
           </div>
         <% } %>

@@ -4,9 +4,14 @@
   <a class="vehicle-detail__back" href="/admin/drivers">&larr; Back to drivers</a>
 
   <h1><%= driver.firstName %> <%= driver.lastName %></h1>
-  <p class="vehicles-page__lead">
-    <%= driver.email %> &middot; <%= driver.role %> &middot; <%= driver.isActive ? "Active" : "Inactive" %>
-  </p>
+  <div class="admin-page__meta">
+    <span><%= driver.email %></span>
+    <%- include('../../partials/status-pill', { value: driver.role }) %>
+    <%- include('../../partials/status-pill', {
+      slug: driver.isActive ? 'active-account' : 'inactive-account',
+      label: driver.isActive ? 'Active' : 'Inactive',
+    }) %>
+  </div>
 
   <div class="vehicle-detail__card admin-history-card">
     <h2 class="vehicle-detail__section-title">Reservation history</h2>
@@ -35,7 +40,7 @@
           class="admin-table__btn admin-table__btn--edit load-more-btn"
           type="button"
           data-load-more
-          data-url="/admin/drivers/<%= driver._id %>/reservations/more"
+          data-url="/admin/drivers/<%= driver.id %>/reservations/more"
           data-target="driver-reservations-body"
           data-page-size="<%= pageSize %>"
           data-skip="<%= nextSkip %>"

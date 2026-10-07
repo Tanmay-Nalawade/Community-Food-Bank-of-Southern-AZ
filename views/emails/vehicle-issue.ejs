@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <body style="margin:0; padding:0; background:#fbf7f9; font-family: Helvetica, Arial, sans-serif;">
+    <div style="max-width:560px; margin:0 auto; padding:32px 24px;">
+      <h1 style="color:#632c4f; font-size:20px; margin:0 0 16px;">Community Food Bank Motor Pool</h1>
+      <p style="color:#333; font-size:15px; line-height:1.5; margin:0 0 12px;">
+        <strong><%= reporterName || "Someone" %></strong> reported
+        <%= descriptions.length === 1 ? "an issue" : `${descriptions.length} issues` %> with the
+        <strong><%= vehicleName %></strong> (<%= licensePlate %>)<% if (source) { %> <%= source %><% } %>:
+      </p>
+
+      <ul style="color:#333; font-size:15px; line-height:1.5; margin:0 0 20px; padding-left:20px;">
+        <% descriptions.forEach((description) => { %>
+          <li style="margin-bottom:6px;"><%= description %></li>
+        <% }) %>
+      </ul>
+
+      <p style="font-size:14px; margin:0 0 8px;">
+        <a href="<%= issuesUrl %>" style="color:#632c4f; font-weight:bold; text-decoration:none;">Review vehicle issues &rarr;</a>
+      </p>
+      <% if (reservationUrl) { %>
+        <p style="font-size:14px; margin:0 0 24px;">
+          <a href="<%= reservationUrl %>" style="color:#632c4f; text-decoration:none;">View the trip it was reported on &rarr;</a>
+        </p>
+      <% } %>
+
+      <p style="color:#999; font-size:12px; margin-top:24px;">
+        You're receiving this because an IT administrator added your address to the "Vehicle issue
+        reported" notification in the Motor Pool app.
+      </p>
+    </div>
+  </body>
+</html>

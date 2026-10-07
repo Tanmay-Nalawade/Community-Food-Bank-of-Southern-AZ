@@ -1,14 +1,12 @@
 const keycafe = require("./index");
-const AccessLog = require("../../models/accessLog");
+const { AccessLog } = require("../../models");
 
-function refId(value) {
-  return value?._id || value;
-}
-
-async function grantReservationAccess(reservation) {
-  const user = reservation.userId;
-  const vehicle = reservation.vehicleId;
-
+// Sets the reservation's keyCafe* fields in memory (callers save it) and
+// records the grant in the access log. `user` and `vehicle` are passed in
+// explicitly — the driver and the vehicle the access should be scoped to,
+// which during an admin vehicle change is the NEW vehicle, not whatever the
+// reservation row still points at.
+async function grantReservationAccess(reservation, user, vehicle) {
   if (!user?.email) {
     throw new Error("Reservation user email is required for KeyCafe access.");
   }
@@ -17,7 +15,7 @@ async function grantReservationAccess(reservation) {
     throw new Error("Vehicle KeyCafe key ID is required.");
   }
 
-  if (reservation.keyCafeAccess?.accessId) {
+  if (reservation.keyCafeAccessId) {
     return reservation;
   }
 
@@ -30,28 +28,24 @@ async function grantReservationAccess(reservation) {
     guestName,
   });
 
-  reservation.keyCafeAccess = {
-    bookingCode: String(access.bookingCode),
-    accessId: String(access.id),
-    checkinLink: access.checkinLink || "",
-    keyPickedUpAt: reservation.keyCafeAccess?.keyPickedUpAt,
-    keyReturnedAt: reservation.keyCafeAccess?.keyReturnedAt,
-  };
+  reservation.keyCafeBookingCode = String(access.bookingCode);
+  reservation.keyCafeAccessId = String(access.id);
+  reservation.keyCafeCheckinLink = access.checkinLink || "";
 
   await AccessLog.create({
-    reservationId: reservation._id,
-    vehicleId: refId(vehicle),
-    userId: refId(user),
+    reservationId: reservation.id,
+    vehicleId: vehicle.id,
+    userId: user.id,
     action: "Granted",
-    accessId: reservation.keyCafeAccess.accessId,
-    bookingCode: reservation.keyCafeAccess.bookingCode,
+    accessId: reservation.keyCafeAccessId,
+    bookingCode: reservation.keyCafeBookingCode,
   });
 
   return reservation;
 }
 
 async function revokeReservationAccess(reservation) {
-  const accessId = reservation.keyCafeAccess?.accessId;
+  const accessId = reservation.keyCafeAccessId;
 
   if (!accessId) {
     return reservation;
@@ -60,17 +54,17 @@ async function revokeReservationAccess(reservation) {
   await keycafe.cancelAccess(accessId);
 
   await AccessLog.create({
-    reservationId: reservation._id,
-    vehicleId: refId(reservation.vehicleId),
-    userId: refId(reservation.userId),
+    reservationId: reservation.id,
+    vehicleId: reservation.vehicleId,
+    userId: reservation.userId,
     action: "Revoked",
     accessId,
-    bookingCode: reservation.keyCafeAccess.bookingCode,
+    bookingCode: reservation.keyCafeBookingCode,
   });
 
-  reservation.keyCafeAccess.bookingCode = undefined;
-  reservation.keyCafeAccess.accessId = undefined;
-  reservation.keyCafeAccess.checkinLink = undefined;
+  reservation.keyCafeBookingCode = null;
+  reservation.keyCafeAccessId = null;
+  reservation.keyCafeCheckinLink = null;
 
   return reservation;
 }

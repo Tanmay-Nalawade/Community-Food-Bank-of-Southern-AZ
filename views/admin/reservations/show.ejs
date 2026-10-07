@@ -1,168 +1,294 @@
 <% layout('layouts/boilerplate') %>
 
-<section class="admin-page">
+<%
+  const r = reservation;
+  const start = new Date(r.requestedStartTime);
+  const end = new Date(r.requestedEndTime);
+  const sameDay = start.toDateString() === end.toDateString();
+  const time = (d) => new Date(d).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  const when = (d) => new Date(d).toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
+  const miles = (n) => n.toLocaleString() + " mi";
+
+  const access = {
+    bookingCode: r.keyCafeBookingCode,
+    keyPickedUpAt: r.keyPickedUpAt,
+    keyReturnedAt: r.keyReturnedAt,
+  };
+  const log = { startMileage: r.startMileage, endMileage: r.endMileage };
+  const inspection = {
+    completedAt: r.inspectionCompletedAt,
+    skipped: r.inspectionSkipped,
+    conditionSatisfactory: r.inspectionConditionSatisfactory,
+    remarks: r.inspectionRemarks,
+  };
+  const hasMileage = log.startMileage != null || log.endMileage != null;
+  const terminal = ["Cancelled", "Denied"].includes(r.status);
+
+  const reviewVerb = r.status === "Denied" ? "Denied" : r.status === "Cancelled" ? "Cancelled" : "Approved";
+  const reviewer = r.reviewedBy ? `${r.reviewedBy.firstName} ${r.reviewedBy.lastName}` : null;
+
+  // Each step of the booking's life, in the order it happens. `done` fills
+  // the marker; the first step that isn't done is marked as the next one.
+  const steps = [
+    {
+      title: "Requested",
+      done: true,
+      detail: r.createdAt ? `Booked on ${when(r.createdAt)}` : "",
+    },
+  ];
+
+  if (reviewer) {
+    steps.push({
+      title: `${reviewVerb} by ${reviewer}`,
+      done: true,
+      final: terminal,
+      detail: r.reviewedAt ? when(r.reviewedAt) : "",
+    });
+  } else if (terminal) {
+    // Staff cancelling their own booking doesn't record a reviewer.
+    steps.push({ title: r.status === "Cancelled" ? "Cancelled by the driver" : r.status, done: true, final: true });
+  } else {
+    steps.push({
+      title: r.status === "Pending" ? "Waiting for review" : "Confirmed automatically",
+      done: r.status !== "Pending",
+    });
+  }
+
+  if (!terminal) {
+    steps.push({
+      title: access.bookingCode ? "Pickup code issued" : "Pickup code",
+      done: Boolean(access.bookingCode),
+      code: access.bookingCode,
+      detail: access.bookingCode ? "" : "No KeyCafe access has been granted yet.",
+    });
+    steps.push(
+      {
+        title: "Key picked up",
+        done: Boolean(access.keyPickedUpAt),
+        detail: access.keyPickedUpAt ? when(access.keyPickedUpAt) : "Not yet",
+      },
+      {
+        title: "Vehicle inspection",
+        done: Boolean(inspection.completedAt),
+        inspection: inspection.completedAt && !inspection.skipped,
+        detail: !inspection.completedAt
+          ? "Not yet reported by the driver"
+          : inspection.skipped
+            ? `Skipped by the driver on ${when(inspection.completedAt)}`
+            : `Submitted ${when(inspection.completedAt)}`,
+      },
+      {
+        title: "Mileage reported",
+        done: log.endMileage != null,
+        mileage: hasMileage,
+        detail: hasMileage ? "" : "Not yet reported",
+      },
+      {
+        title: "Key returned",
+        done: Boolean(access.keyReturnedAt),
+        detail: access.keyReturnedAt ? when(access.keyReturnedAt) : "Not yet",
+      },
+    );
+  }
+
+  // A manually logged trip never went through booking/KeyCafe, so its
+  // lifecycle is just "logged" + the mileage it was logged with.
+  if (r.isManualEntry) {
+    steps.length = 0;
+    steps.push(
+      {
+        title: `Logged manually by ${reviewer || "an admin"}`,
+        done: true,
+        detail: r.createdAt ? `Recorded ${when(r.createdAt)} — no booking or KeyCafe access` : "",
+      },
+      { title: "Mileage reported", done: log.endMileage != null, mileage: hasMileage, detail: hasMileage ? "" : "Not reported" },
+    );
+  }
+
+  const nextIndex = steps.findIndex((s) => !s.done);
+%>
+
+<section class="admin-page booking-detail">
   <a class="vehicle-detail__back" href="/admin/reservations">&larr; Back to reservations</a>
 
-  <div class="vehicles-page__header">
-    <div>
-      <h1>Booking Details</h1>
-      <p class="vehicles-page__lead">
-        <%- include('../../partials/status-pill', { value: reservation.status }) %>
+  <header class="booking-detail__header">
+    <div class="booking-card__date booking-detail__date" aria-hidden="true">
+      <span class="booking-card__date-weekday"><%= start.toLocaleDateString("en-US", { weekday: "short" }) %></span>
+      <span class="booking-card__date-day"><%= start.getDate() %></span>
+      <span class="booking-card__date-month"><%= start.toLocaleDateString("en-US", { month: "short" }) %></span>
+    </div>
+
+    <div class="booking-detail__heading">
+      <div class="booking-detail__title-row">
+        <h1>
+          <%= r.vehicle.year ? r.vehicle.year + " " : "" %><%= r.vehicle.make %> <%= r.vehicle.model %>
+        </h1>
+        <span class="vehicle-detail__plate"><%= r.vehicle.licensePlate %></span>
+      </div>
+      <p class="booking-detail__window">
+        <% if (sameDay) { %>
+          <%= start.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" }) %>,
+          <strong><%= time(start) %> to <%= time(end) %></strong>
+        <% } else { %>
+          <strong><%= when(start) %></strong> to <strong><%= when(end) %></strong>
+        <% } %>
       </p>
-    </div>
-    <a class="vehicles-page__add-btn" href="/admin/reservations/<%= reservation._id %>/edit">Edit</a>
-  </div>
-
-  <div class="vehicle-detail__grid">
-    <div class="vehicle-detail__card">
-      <h2 class="vehicle-detail__section-title">Driver</h2>
-      <dl>
-        <div>
-          <dt>Name</dt>
-          <dd>
-            <a href="/admin/drivers/<%= reservation.userId._id %>">
-              <%= reservation.userId.firstName %> <%= reservation.userId.lastName %>
-            </a>
-          </dd>
-        </div>
-        <div>
-          <dt>Email</dt>
-          <dd><%= reservation.userId.email %></dd>
-        </div>
-      </dl>
+      <div class="booking-detail__meta">
+        <%- include('../../partials/status-pill', { value: r.status }) %>
+        <span>
+          Driver:
+          <a class="booking-detail__link" href="/admin/drivers/<%= r.user.id %>"><%= r.user.firstName %> <%= r.user.lastName %></a>
+        </span>
+      </div>
     </div>
 
-    <div class="vehicle-detail__card">
-      <h2 class="vehicle-detail__section-title">Vehicle</h2>
-      <dl>
-        <div>
-          <dt>Vehicle</dt>
-          <dd>
-            <a href="/admin/vehicles/<%= reservation.vehicleId._id %>">
-              <%= reservation.vehicleId.year ? reservation.vehicleId.year + " " : "" %><%= reservation.vehicleId.make %> <%= reservation.vehicleId.model %>
-            </a>
-          </dd>
-        </div>
-        <div>
-          <dt>License plate</dt>
-          <dd><%= reservation.vehicleId.licensePlate %></dd>
-        </div>
-      </dl>
-    </div>
-
-    <div class="vehicle-detail__card">
-      <h2 class="vehicle-detail__section-title">Booking window</h2>
-      <dl>
-        <div>
-          <dt>Requested</dt>
-          <dd>
-            <%= new Date(reservation.requestedStartTime).toLocaleString() %>
-            &ndash;
-            <%= new Date(reservation.requestedEndTime).toLocaleString() %>
-          </dd>
-        </div>
-        <div>
-          <dt>Reviewed by</dt>
-          <dd>
-            <% if (reservation.reviewedBy) { %>
-              <%= reservation.reviewedBy.firstName %> <%= reservation.reviewedBy.lastName %>
-              on <%= new Date(reservation.reviewedAt).toLocaleString() %>
-            <% } else { %>
-              &mdash;
-            <% } %>
-          </dd>
-        </div>
-      </dl>
-    </div>
-
-    <div class="vehicle-detail__card">
-      <h2 class="vehicle-detail__section-title">KeyCafe access</h2>
-      <% if (reservation.keyCafeAccess?.accessId || reservation.keyCafeAccess?.bookingCode) { %>
-        <dl>
-          <div>
-            <dt>Booking code</dt>
-            <dd><%= reservation.keyCafeAccess.bookingCode || "—" %></dd>
-          </div>
-          <div>
-            <dt>Key picked up</dt>
-            <dd><%= reservation.keyCafeAccess.keyPickedUpAt ? new Date(reservation.keyCafeAccess.keyPickedUpAt).toLocaleString() : "Not yet" %></dd>
-          </div>
-          <div>
-            <dt>Key returned</dt>
-            <dd><%= reservation.keyCafeAccess.keyReturnedAt ? new Date(reservation.keyCafeAccess.keyReturnedAt).toLocaleString() : "Not yet" %></dd>
-          </div>
-        </dl>
-      <% } else { %>
-        <p class="vehicle-detail__empty">No KeyCafe access was ever granted for this booking.</p>
-      <% } %>
-    </div>
-
-    <div class="vehicle-detail__card">
-      <h2 class="vehicle-detail__section-title">Trip &amp; mileage</h2>
-      <% if (reservation.tripLog?.startMileage != null || reservation.tripLog?.endMileage != null) { %>
-        <dl>
-          <div>
-            <dt>Start mileage</dt>
-            <dd><%= reservation.tripLog.startMileage != null ? reservation.tripLog.startMileage.toLocaleString() + " mi" : "—" %></dd>
-          </div>
-          <div>
-            <dt>End mileage</dt>
-            <dd><%= reservation.tripLog.endMileage != null ? reservation.tripLog.endMileage.toLocaleString() + " mi" : "—" %></dd>
-          </div>
-          <% if (reservation.tripLog.startMileage != null && reservation.tripLog.endMileage != null) { %>
-            <div>
-              <dt>Distance driven</dt>
-              <dd><%= (reservation.tripLog.endMileage - reservation.tripLog.startMileage).toLocaleString() %> mi</dd>
-            </div>
+    <div class="action-bar booking-detail__actions">
+      <% if (["Pending", "Reserved", "Active"].includes(r.status)) { %>
+        <div class="action-group">
+          <% if (r.status === "Pending") { %>
+            <form action="/admin/reservations/<%= r.id %>/approve" method="POST">
+              <input type="hidden" name="returnTo" value="detail" />
+              <button class="action-btn action-btn--approve" type="submit">Approve</button>
+            </form>
+            <form action="/admin/reservations/<%= r.id %>/deny" method="POST">
+              <input type="hidden" name="returnTo" value="detail" />
+              <button class="action-btn action-btn--deny" type="submit">Deny</button>
+            </form>
           <% } %>
-        </dl>
-      <% } else { %>
-        <p class="vehicle-detail__empty">No mileage has been reported for this trip yet.</p>
+          <% if (["Reserved", "Active"].includes(r.status)) { %>
+            <form action="/admin/reservations/<%= r.id %>/cancel" method="POST">
+              <input type="hidden" name="returnTo" value="detail" />
+              <button class="action-btn action-btn--deny" type="submit">Cancel booking</button>
+            </form>
+          <% } %>
+        </div>
       <% } %>
+      <div class="action-group">
+        <a class="action-btn action-btn--edit" href="/admin/reservations/<%= r.id %>/edit">Edit booking</a>
+        <form
+          class="action-group__divider"
+          action="/admin/reservations/<%= r.id %>?_method=DELETE"
+          method="POST"
+          data-confirm="Permanently delete this booking? This can't be undone."
+        >
+          <button class="action-btn action-btn--delete" type="submit">Delete</button>
+        </form>
+      </div>
+    </div>
+  </header>
+
+  <div class="vehicle-detail__layout">
+    <div class="vehicle-detail__main">
+      <% if (r.adminNotes) { %>
+        <div class="booking-detail__admin-note">
+          <h2 class="booking-detail__admin-note-title">Admin note</h2>
+          <p><%= r.adminNotes %></p>
+        </div>
+      <% } %>
+
+      <div class="vehicle-detail__card booking-detail__progress">
+        <h2 class="vehicle-detail__section-title">Trip progress</h2>
+        <ol class="booking-timeline">
+          <% steps.forEach((step, i) => { %>
+            <li class="booking-timeline__step<%= step.done ? ' booking-timeline__step--done' : '' %><%= i === nextIndex ? ' booking-timeline__step--next' : '' %><%= step.final ? ' booking-timeline__step--final' : '' %>">
+              <h3 class="booking-timeline__title"><%= step.title %></h3>
+              <% if (step.detail) { %>
+                <p class="booking-timeline__detail"><%= step.detail %></p>
+              <% } %>
+              <% if (step.code) { %>
+                <div class="booking-code"><%= step.code %></div>
+              <% } %>
+              <% if (step.inspection) { %>
+                <dl class="booking-detail__facts">
+                  <div>
+                    <dt>Condition satisfactory</dt>
+                    <dd><%= inspection.conditionSatisfactory ? "Yes" : "No" %></dd>
+                  </div>
+                  <div>
+                    <dt>Remarks</dt>
+                    <dd><%= inspection.remarks || "None" %></dd>
+                  </div>
+                </dl>
+                <p class="booking-timeline__detail booking-timeline__detail--hint">
+                  Items flagged as defective were added to
+                  <a class="booking-detail__link" href="/admin/issues">Vehicle Issues</a>.
+                </p>
+              <% } %>
+              <% if (step.mileage) { %>
+                <dl class="booking-detail__facts">
+                  <div>
+                    <dt>Start</dt>
+                    <dd><%= log.startMileage != null ? miles(log.startMileage) : "—" %></dd>
+                  </div>
+                  <div>
+                    <dt>End</dt>
+                    <dd><%= log.endMileage != null ? miles(log.endMileage) : "—" %></dd>
+                  </div>
+                  <% if (log.startMileage != null && log.endMileage != null) { %>
+                    <div>
+                      <dt>Driven</dt>
+                      <dd><%= miles(log.endMileage - log.startMileage) %></dd>
+                    </div>
+                  <% } %>
+                </dl>
+              <% } %>
+            </li>
+          <% }) %>
+        </ol>
+      </div>
     </div>
 
-    <div class="vehicle-detail__card">
-      <h2 class="vehicle-detail__section-title">Vehicle Inspection</h2>
-      <% if (!reservation.vehicleInspection?.completedAt) { %>
-        <p class="vehicle-detail__empty">Not yet reported by the driver.</p>
-      <% } else if (reservation.vehicleInspection.skipped) { %>
-        <p class="vehicle-detail__empty">
-          Skipped by the driver on <%= new Date(reservation.vehicleInspection.completedAt).toLocaleString() %>.
-        </p>
-      <% } else { %>
-        <dl>
+    <aside class="vehicle-detail__sidebar booking-detail__sidebar">
+      <div class="vehicle-detail__card">
+        <h2 class="vehicle-detail__section-title">Driver</h2>
+        <dl class="booking-detail__list">
           <div>
-            <dt>Condition satisfactory</dt>
-            <dd><%= reservation.vehicleInspection.conditionSatisfactory ? "Yes" : "No" %></dd>
+            <dt>Name</dt>
+            <dd><a class="booking-detail__link" href="/admin/drivers/<%= r.user.id %>"><%= r.user.firstName %> <%= r.user.lastName %></a></dd>
           </div>
           <div>
-            <dt>Submitted</dt>
-            <dd><%= new Date(reservation.vehicleInspection.completedAt).toLocaleString() %></dd>
-          </div>
-          <div>
-            <dt>Remarks</dt>
-            <dd><%= reservation.vehicleInspection.remarks || "—" %></dd>
+            <dt>Email</dt>
+            <dd><%= r.user.email %></dd>
           </div>
         </dl>
-        <p class="vehicle-detail__empty admin-hint">
-          Any items the driver flagged as defective were added to
-          <a href="/admin/issues">Vehicle Issues</a>.
-        </p>
-      <% } %>
-    </div>
+      </div>
 
-    <div class="vehicle-detail__card">
-      <h2 class="vehicle-detail__section-title">Notes</h2>
-      <dl>
-        <div>
-          <dt>Staff notes</dt>
-          <dd><%= reservation.staffNotes || "—" %></dd>
-        </div>
-        <div>
-          <dt>Admin notes</dt>
-          <dd><%= reservation.adminNotes || "—" %></dd>
-        </div>
-      </dl>
-    </div>
+      <div class="vehicle-detail__card">
+        <h2 class="vehicle-detail__section-title">Vehicle</h2>
+        <dl class="booking-detail__list">
+          <div>
+            <dt>Vehicle</dt>
+            <dd>
+              <a class="booking-detail__link" href="/admin/vehicles/<%= r.vehicle.id %>">
+                <%= r.vehicle.year ? r.vehicle.year + " " : "" %><%= r.vehicle.make %> <%= r.vehicle.model %>
+              </a>
+            </dd>
+          </div>
+          <div>
+            <dt>License plate</dt>
+            <dd><%= r.vehicle.licensePlate %></dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="vehicle-detail__card">
+        <h2 class="vehicle-detail__section-title">Trip purpose</h2>
+        <dl class="booking-detail__list">
+          <div>
+            <dt>Food related?</dt>
+            <dd>
+              <%= r.tripFoodRelated || "Not answered" %>
+              <% if (r.tripFoodRelated === "Other" && r.tripFoodRelatedDetail) { %>
+                <span class="booking-detail__subtext"><%= r.tripFoodRelatedDetail %></span>
+              <% } %>
+            </dd>
+          </div>
+          <div>
+            <dt>Driver&rsquo;s notes</dt>
+            <dd><%= r.staffNotes || "None" %></dd>
+          </div>
+        </dl>
+      </div>
+    </aside>
   </div>
 </section>

@@ -2,7 +2,92 @@
 
 <section class="admin-page">
   <h1>Reports</h1>
-  <p class="vehicles-page__lead">Fleet utilization and KeyCafe access history.</p>
+  <p class="vehicles-page__lead">Trip log, fleet utilization, and KeyCafe access history.</p>
+
+  <div class="vehicle-detail__card admin-history-card">
+    <h2 class="vehicle-detail__section-title">Trip log</h2>
+    <p class="vehicle-detail__empty admin-hint">
+      Every trip across the fleet, newest first. Click a vehicle to see that trip's full
+      detailed monthly mileage log (inspection, fuel level, and more). Use the form below
+      to email every trip in a date range to anyone.
+    </p>
+    <% if (!tripLog.length) { %>
+      <p class="vehicle-detail__empty">No trips recorded yet.</p>
+    <% } else { %>
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Vehicle</th>
+              <th>Driver</th>
+              <th>Start Odometer</th>
+              <th>End Odometer</th>
+              <th>Distance Travelled</th>
+              <th>Food Related</th>
+            </tr>
+          </thead>
+          <tbody id="trip-log-body">
+            <%- include('_trip-log-rows', { tripLog }) %>
+          </tbody>
+        </table>
+      </div>
+
+      <% if (tripHasMore) { %>
+        <button
+          class="admin-table__btn admin-table__btn--edit load-more-btn"
+          type="button"
+          data-load-more
+          data-url="/admin/reports/trips/more"
+          data-target="trip-log-body"
+          data-page-size="<%= pageSize %>"
+          data-skip="<%= tripNextSkip %>"
+        >
+          Load more
+        </button>
+      <% } %>
+    <% } %>
+
+    <h3 class="vehicle-detail__section-title no-print">Email the trip log</h3>
+    <form class="auth-form admin-issue-form no-print" action="/admin/reports/trips/send" method="POST">
+      <div class="auth-form__group">
+        <label class="auth-form__label" for="tripLogFrom">From</label>
+        <input class="auth-form__input" type="date" id="tripLogFrom" name="fromDate" value="<%= sendDefaults.fromDate %>" required />
+      </div>
+      <div class="auth-form__group">
+        <label class="auth-form__label" for="tripLogTo">To</label>
+        <input class="auth-form__input" type="date" id="tripLogTo" name="toDate" value="<%= sendDefaults.toDate %>" required />
+      </div>
+      <div class="auth-form__group">
+        <label class="auth-form__label" for="tripLogRecipient">Send to</label>
+        <input
+          class="auth-form__input"
+          type="email"
+          id="tripLogRecipient"
+          name="recipient"
+          value="<%= sendDefaults.recipient %>"
+          placeholder="name@communityfoodbank.org"
+          autocomplete="email"
+          maxlength="255"
+          required
+        />
+      </div>
+      <button class="auth-form__submit" type="submit">Send</button>
+    </form>
+
+    <% if (tripLogSends.length) { %>
+      <p class="vehicle-detail__empty admin-hint no-print">Recently sent:</p>
+      <ul class="admin-hint no-print">
+        <% tripLogSends.forEach((send) => { %>
+          <li>
+            <%= fmt.date(new Date(`${send.fromDate}T00:00`)) %> – <%= fmt.date(new Date(`${send.toDate}T00:00`)) %>
+            (<%= send.tripCount %> trip<%= send.tripCount === 1 ? "" : "s" %>) to <%= send.recipient %>,
+            <%= fmt.dateTime(send.sentAt) %><%= send.sentBy ? ` by ${send.sentBy.firstName} ${send.sentBy.lastName}` : "" %>
+          </li>
+        <% }) %>
+      </ul>
+    <% } %>
+  </div>
 
   <div class="vehicle-detail__card admin-history-card">
     <h2 class="vehicle-detail__section-title">Vehicle utilization</h2>
@@ -22,7 +107,7 @@
           <% vehicleReport.forEach((row) => { %>
             <tr>
               <td data-label="Vehicle">
-                <a href="/admin/vehicles/<%= row.vehicle._id %>">
+                <a href="/admin/vehicles/<%= row.vehicle.id %>">
                   <%= row.vehicle.year ? row.vehicle.year + " " : "" %><%= row.vehicle.make %> <%= row.vehicle.model %>
                 </a>
                 <br />
@@ -31,7 +116,7 @@
               <td data-label="Current mileage"><%= row.vehicle.currentMileage.toLocaleString() %> mi</td>
               <td data-label="Bookings"><%= row.bookingCount %></td>
               <td data-label="Total hours booked"><%= row.totalHours %></td>
-              <td data-label="Last booked"><%= row.lastBookedAt ? new Date(row.lastBookedAt).toLocaleDateString() : "Never" %></td>
+              <td data-label="Last booked"><%= row.lastBookedAt ? fmt.date(row.lastBookedAt) : "Never" %></td>
               <td data-label="Idle 30+ days">
                 <% if (row.idle) { %>
                   <%- include('../../partials/status-pill', { slug: 'maintenance', label: 'Idle' }) %>

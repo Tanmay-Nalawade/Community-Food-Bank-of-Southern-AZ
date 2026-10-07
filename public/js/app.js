@@ -34,7 +34,114 @@ document.addEventListener("click", (event) => {
     event.preventDefault();
     window.history.back();
   }
+
+  const dialogCloser = event.target.closest("[data-close-dialog]");
+  if (dialogCloser) {
+    const dialog = document.getElementById(dialogCloser.dataset.closeDialog);
+    if (dialog && typeof dialog.close === "function") {
+      dialog.close();
+    }
+  }
 });
+
+// The server renders a <dialog data-autoshow> only when it decided a
+// confirmation is actually needed (e.g. the tight-booking-gap warning) — so
+// any dialog marked this way opens itself as soon as the page loads.
+// .showModal() (rather than the "open" attribute) gets us the backdrop and
+// Escape-to-close for free.
+document.querySelectorAll("dialog[data-autoshow]").forEach((dialog) => {
+  if (typeof dialog.showModal === "function") {
+    dialog.showModal();
+  }
+
+  // A compulsory prompt (e.g. the mandatory odometer dialog) can't be
+  // dismissed with the Escape key — only its own buttons can close it.
+  if (dialog.hasAttribute("data-no-cancel")) {
+    dialog.addEventListener("cancel", (event) => event.preventDefault());
+  }
+});
+
+// A form marked data-confirm asks for an explicit yes before submitting —
+// for destructive actions with no undo (e.g. permanently deleting a
+// booking), so a stray/accidental click can't fire it silently. Must run
+// before the "disable submit buttons" listener below so a cancel leaves the
+// button usable.
+document.addEventListener("submit", (event) => {
+  const message = event.target.dataset && event.target.dataset.confirm;
+  if (message && !window.confirm(message)) {
+    event.preventDefault();
+  }
+});
+
+// Booking forms ask "is this trip food related?" — picking "Other" reveals
+// a required detail textarea. Neither field carries a native `required`
+// attribute on purpose: this app shows its own red message below the field
+// instead of the browser's default validation tooltip, so validation for
+// both is handled entirely here.
+(() => {
+  function setTripFoodError(group, message) {
+    const errorEl = group && group.querySelector(".auth-form__field-error");
+    if (errorEl) errorEl.textContent = message || "";
+  }
+
+  document.addEventListener("change", (event) => {
+    const radio = event.target.closest('input[name="tripFoodRelated"]');
+    if (!radio) return;
+
+    setTripFoodError(radio.closest(".auth-form__group"), "");
+
+    const detailGroup = radio.form && radio.form.querySelector(".js-trip-food-other");
+    if (!detailGroup) return;
+
+    const detailInput = detailGroup.querySelector("textarea");
+    const showDetail = radio.value === "Other";
+
+    // Hide, but don't clear, the typed text when switching away from
+    // "Other" — the server already discards this field's value whenever
+    // tripFoodRelated isn't "Other" (see createRequest/updateRequest), so
+    // nothing stale can be saved. Clearing it here used to silently lose
+    // what someone typed if they clicked another option and then came back.
+    detailGroup.hidden = !showDetail;
+    if (detailInput && !showDetail) {
+      setTripFoodError(detailGroup, "");
+    }
+  });
+
+  document.addEventListener("input", (event) => {
+    const detailInput = event.target.closest(".js-trip-food-other textarea");
+    if (detailInput && detailInput.value.trim()) {
+      setTripFoodError(detailInput.closest(".auth-form__group"), "");
+    }
+  });
+
+  document.addEventListener("submit", (event) => {
+    const form = event.target;
+    const radios = form.querySelectorAll('input[name="tripFoodRelated"]');
+    if (!radios.length) return;
+
+    let firstInvalid = null;
+    const checked = form.querySelector('input[name="tripFoodRelated"]:checked');
+
+    if (!checked) {
+      setTripFoodError(radios[0].closest(".auth-form__group"), "Please fill out this field before proceeding.");
+      firstInvalid = radios[0];
+    }
+
+    if (checked && checked.value === "Other") {
+      const detailGroup = form.querySelector(".js-trip-food-other");
+      const detailInput = detailGroup && detailGroup.querySelector("textarea");
+      if (detailInput && !detailInput.value.trim()) {
+        setTripFoodError(detailGroup, "Please fill out this field before proceeding.");
+        firstInvalid = firstInvalid || detailInput;
+      }
+    }
+
+    if (firstInvalid) {
+      event.preventDefault();
+      firstInvalid.focus();
+    }
+  });
+})();
 
 // Inline field validation for forms opted out of native browser validation
 // (novalidate) so errors render inside our own card instead of the browser's

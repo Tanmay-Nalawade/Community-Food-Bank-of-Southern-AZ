@@ -1,46 +1,170 @@
-const mongoose = require("mongoose");
-const passportLocalMongoose = require("passport-local-mongoose");
-const { Schema } = mongoose;
+const crypto = require("crypto");
+const { promisify } = require("util");
+const { DataTypes, Model, UniqueConstraintError } = require("sequelize");
+const { sequelize } = require("../config/db");
 
-const userSchema = new Schema(
+const pbkdf2 = promisify(crypto.pbkdf2);
+
+// Replaces passport-local-mongoose's hashing. Stored as one self-describing
+// string ("pbkdf2_sha256$<iterations>$<salt>$<hash>") so the work factor can
+// be raised later without a schema change — existing hashes keep verifying
+// with the iteration count and key length they were created with (the key
+// length is implied by the hash's length). Accounts imported from the old
+// MongoDB app carry passport-local-mongoose's parameters (25,000
+// iterations, 512-byte key) in this same format, and are upgraded to the
+// current parameters the next time that person logs in.
+const HASH_ALGORITHM = "pbkdf2_sha256";
+const HASH_ITERATIONS = 600000; // OWASP 2023 recommendation for PBKDF2-SHA256
+const HASH_KEYLEN = 32;
+
+// Same messages the old passport-local-mongoose errorMessages option used.
+const AUTH_ERRORS = {
+  incorrect: "Incorrect email or password.",
+  userExists: "An account with that email already exists.",
+};
+
+async function hashPassword(
+  password,
+  { iterations = HASH_ITERATIONS, keylen = HASH_KEYLEN, salt = crypto.randomBytes(16).toString("hex") } = {},
+) {
+  const derived = await pbkdf2(String(password), salt, iterations, keylen, "sha256");
+  return [HASH_ALGORITHM, iterations, salt, derived.toString("hex")].join("$");
+}
+
+function parseHash(stored) {
+  const [algorithm, iterations, salt, hash] = String(stored || "").split("$");
+  if (algorithm !== HASH_ALGORITHM || !salt || !hash || !/^[0-9a-f]+$/i.test(hash) || !(Number(iterations) > 0)) {
+    return null;
+  }
+  return { iterations: Number(iterations), salt, hash, keylen: hash.length / 2 };
+}
+
+async function verifyPassword(password, stored) {
+  const parsed = parseHash(stored);
+  if (!parsed) {
+    return false;
+  }
+  const candidate = (await hashPassword(password, parsed)).split("$")[3];
+  const a = Buffer.from(candidate, "hex");
+  const b = Buffer.from(parsed.hash, "hex");
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+
+// True for hashes made with weaker-than-current parameters (e.g. imported
+// from the MongoDB app), which get re-hashed on the next successful login.
+function needsRehash(stored) {
+  const parsed = parseHash(stored);
+  return Boolean(parsed) && (parsed.iterations < HASH_ITERATIONS || parsed.keylen !== HASH_KEYLEN);
+}
+
+class User extends Model {
+  // Creates the account with a hashed password. Throws an Error whose
+  // message is user-presentable when the email is already registered.
+  static async register(fields, password) {
+    const user = this.build(fields);
+    await user.setPassword(password);
+    try {
+      await user.save();
+    } catch (error) {
+      if (error instanceof UniqueConstraintError) {
+        throw new Error(AUTH_ERRORS.userExists);
+      }
+      throw error;
+    }
+    return user;
+  }
+
+  // Looks up by email with the password hash included and verifies it.
+  // Resolves to the user, or null for an unknown email / wrong password —
+  // deliberately indistinguishable to the caller.
+  static async authenticate(email, password) {
+    const user = await this.scope("withSecrets").findOne({
+      where: { email: String(email || "").trim().toLowerCase() },
+    });
+    if (!user || !(await verifyPassword(password, user.passwordHash))) {
+      return null;
+    }
+    if (needsRehash(user.passwordHash)) {
+      await user.setPassword(password);
+      await user.save({ fields: ["passwordHash"] });
+    }
+    return user;
+  }
+
+  async setPassword(password) {
+    this.passwordHash = await hashPassword(password);
+  }
+
+  // Needs the hash, which the default scope leaves out — reload it here
+  // rather than making every caller remember to use the secrets scope.
+  async changePassword(currentPassword, newPassword) {
+    const withHash = await User.scope("withSecrets").findByPk(this.id, {
+      attributes: ["id", "passwordHash"],
+    });
+    if (!withHash || !(await verifyPassword(currentPassword, withHash.passwordHash))) {
+      throw new Error(AUTH_ERRORS.incorrect);
+    }
+    await this.setPassword(newPassword);
+    await this.save({ fields: ["passwordHash"] });
+  }
+}
+
+User.init(
   {
-    firstName: { type: String, required: true },
-    lastName: { type: String, required: true },
-    email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+    id: { type: DataTypes.INTEGER.UNSIGNED, autoIncrement: true, primaryKey: true },
+    firstName: { type: DataTypes.STRING(100), allowNull: false },
+    lastName: { type: DataTypes.STRING(100), allowNull: false },
+    email: {
+      type: DataTypes.STRING(255),
+      allowNull: false,
+      unique: true,
+      // Without normalizing, "User@Example.com" and "user@example.com" would
+      // register (and log in) as two distinct accounts.
+      set(value) {
+        this.setDataValue("email", String(value ?? "").trim().toLowerCase());
+      },
+    },
     role: {
-      type: String,
-      enum: ["Staff", "Admin", "IT Admin"],
-      default: "Staff",
+      type: DataTypes.ENUM("Staff", "Admin", "IT Admin"),
+      allowNull: false,
+      defaultValue: "Staff",
     },
-    isActive: { type: Boolean, default: true },
+    isActive: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
+    // Wide enough for imported passport-local-mongoose hashes (~1,110 chars).
+    passwordHash: { type: DataTypes.STRING(1200), allowNull: false },
 
-    emailVerified: { type: Boolean, default: false },
-    // select: false keeps these out of normal User.find() results, same
-    // spirit as never exposing password-adjacent secrets by default —
-    // callers that need to check a token explicitly .select() it back in.
-    emailVerification: {
-      tokenHash: { type: String, select: false },
-      expiresAt: { type: Date, select: false },
+    emailVerified: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+    emailVerificationTokenHash: { type: DataTypes.CHAR(64) },
+    emailVerificationExpiresAt: { type: DataTypes.DATE },
+    passwordResetTokenHash: { type: DataTypes.CHAR(64) },
+    passwordResetExpiresAt: { type: DataTypes.DATE },
+  },
+  {
+    sequelize,
+    modelName: "User",
+    tableName: "users",
+    underscored: true,
+    // Same spirit as the old `select: false` fields: the password hash and
+    // token hashes stay out of normal queries (and anything rendered from
+    // them); callers that need to check one use User.scope("withSecrets").
+    defaultScope: {
+      attributes: {
+        exclude: [
+          "passwordHash",
+          "emailVerificationTokenHash",
+          "emailVerificationExpiresAt",
+          "passwordResetTokenHash",
+          "passwordResetExpiresAt",
+        ],
+      },
     },
-    passwordReset: {
-      tokenHash: { type: String, select: false },
-      expiresAt: { type: Date, select: false },
+    scopes: {
+      withSecrets: { attributes: { include: [] } },
     },
   },
-  { timestamps: true },
 );
 
-userSchema.plugin(passportLocalMongoose, {
-  usernameField: "email",
-  // Without this, "User@Example.com" and "user@example.com" register (and
-  // log in) as two distinct accounts, since the username lookup used for
-  // both registration's duplicate check and login is otherwise case-sensitive.
-  usernameLowerCase: true,
-  errorMessages: {
-    IncorrectPasswordError: "Incorrect email or password.",
-    IncorrectUsernameError: "Incorrect email or password.",
-    UserExistsError: "An account with that email already exists.",
-  },
-});
+User.AUTH_ERRORS = AUTH_ERRORS;
+User.needsRehash = needsRehash;
 
-module.exports = mongoose.model("User", userSchema);
+module.exports = User;

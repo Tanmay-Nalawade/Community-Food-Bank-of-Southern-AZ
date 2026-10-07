@@ -4,24 +4,24 @@
   <div class="vehicles-page__header">
     <div>
       <h1>Booking History</h1>
-      <p class="vehicles-page__lead">
-        Every booking whose window has already ended, newest first. Click a row's View link for
-        full details, including trip mileage.
+      <p class="vehicles-page__lead admin-page__lead">
+        Every booking whose time has already ended, newest first. Open one to see its trip
+        progress and mileage.
       </p>
     </div>
-    <a class="vehicles-page__add-btn" href="/admin/reservations">All Reservations</a>
+    <a class="action-btn action-btn--edit" href="/admin/reservations">All reservations</a>
   </div>
 
   <% if (!reservations.length) { %>
     <p class="vehicles-page__empty">No past bookings yet.</p>
   <% } else { %>
     <div class="admin-table-wrap">
-      <table class="admin-table">
+      <table class="admin-table admin-table--detailed">
         <thead>
           <tr>
-            <th>Staff</th>
-            <th>Vehicle</th>
             <th>When</th>
+            <th>Driver</th>
+            <th>Vehicle</th>
             <th>Status</th>
             <th>Actions</th>
           </tr>

@@ -1,31 +1,29 @@
 <% reservations.forEach((reservation) => { %>
   <tr>
     <td data-label="Vehicle">
-      <% if (reservation.vehicleId) { %>
-        <a href="/admin/vehicles/<%= reservation.vehicleId._id %>">
-          <%= reservation.vehicleId.year ? reservation.vehicleId.year + " " : "" %><%= reservation.vehicleId.make %> <%= reservation.vehicleId.model %>
+      <% if (reservation.vehicle) { %>
+        <a href="/admin/vehicles/<%= reservation.vehicle.id %>">
+          <%= reservation.vehicle.year ? reservation.vehicle.year + " " : "" %><%= reservation.vehicle.make %> <%= reservation.vehicle.model %>
         </a>
       <% } else { %>
         —
       <% } %>
     </td>
     <td data-label="When">
-      <%= new Date(reservation.requestedStartTime).toLocaleString() %>
-      &ndash;
-      <%= new Date(reservation.requestedEndTime).toLocaleString() %>
+      <%= fmt.range(reservation.requestedStartTime, reservation.requestedEndTime) %>
     </td>
     <td data-label="Status">
       <%- include('../../partials/status-pill', { value: reservation.status }) %>
     </td>
     <td data-label="Distance">
-      <% if (reservation.tripLog?.startMileage != null && reservation.tripLog?.endMileage != null) { %>
-        <%= (reservation.tripLog.endMileage - reservation.tripLog.startMileage).toLocaleString() %> mi
+      <% if (reservation.startMileage != null && reservation.endMileage != null) { %>
+        <%= (reservation.endMileage - reservation.startMileage).toLocaleString() %> mi
       <% } else { %>
         —
       <% } %>
     </td>
     <td class="admin-table__actions" data-label="Actions">
-      <a class="admin-table__btn admin-table__btn--edit" href="/admin/reservations/<%= reservation._id %>">View</a>
+      <a class="admin-table__btn admin-table__btn--edit" href="/admin/reservations/<%= reservation.id %>">View</a>
     </td>
   </tr>
 <% }) %>

@@ -2,12 +2,13 @@ const express = require("express");
 const router = express.Router();
 const { requireAdmin } = require("../middleware/auth");
 const { wrapControllerAsync } = require("../utils/asyncHandler");
-const { validateBody } = require("../middleware/validate");
+const { validateBody, validateIdParams } = require("../middleware/validate");
 const { addVehicleSchema } = require("../validators/vehicle");
 const {
   updateReservationSchema,
   adminNotesSchema,
 } = require("../validators/admin/reservation");
+const { sendTripLogSchema } = require("../validators/admin/report");
 const adminDashboardController = wrapControllerAsync(require("../controllers/admin/dashboard"));
 const adminReservationController = wrapControllerAsync(require("../controllers/admin/reservation"));
 const adminIssueController = wrapControllerAsync(require("../controllers/admin/issue"));
@@ -15,9 +16,16 @@ const adminVehicleController = wrapControllerAsync(require("../controllers/admin
 const adminDriverController = wrapControllerAsync(require("../controllers/admin/driver"));
 const adminReportController = wrapControllerAsync(require("../controllers/admin/report"));
 const adminMileageLogController = wrapControllerAsync(require("../controllers/admin/mileageLog"));
+const adminTripController = wrapControllerAsync(require("../controllers/admin/trip"));
+
+validateIdParams(router, ["id", "issueId", "vehicleId"]);
 
 router.get("/", requireAdmin, (req, res) => res.redirect("/admin/dashboard"));
 router.get("/dashboard", requireAdmin, adminDashboardController.index);
+
+// Log a trip that happened without a booking.
+router.get("/trips/new", requireAdmin, adminTripController.newForm);
+router.post("/trips", requireAdmin, adminTripController.create);
 
 router.get("/vehicles", requireAdmin, adminVehicleController.index);
 router.get("/vehicles/more", requireAdmin, adminVehicleController.more);
@@ -34,6 +42,11 @@ router.post(
   "/vehicles/:id/keycafe-key",
   requireAdmin,
   adminVehicleController.createKeyCafeKey,
+);
+router.post(
+  "/vehicles/:id/keycafe-key/reset",
+  requireAdmin,
+  adminVehicleController.resetKeyCafeKey,
 );
 router.get(
   "/vehicles/:id/reservations/more",
@@ -67,6 +80,13 @@ router.get(
 
 router.get("/reports", requireAdmin, adminReportController.index);
 router.get("/reports/more", requireAdmin, adminReportController.more);
+router.get("/reports/trips/more", requireAdmin, adminReportController.moreTrips);
+router.post(
+  "/reports/trips/send",
+  requireAdmin,
+  validateBody(sendTripLogSchema, { redirect: "/admin/reports" }),
+  adminReportController.sendTripLog,
+);
 
 router.get("/issues", requireAdmin, adminIssueController.index);
 router.get("/issues/more", requireAdmin, adminIssueController.more);
@@ -127,7 +147,12 @@ router.post(
 router.post(
   "/reservations/:id/deny",
   requireAdmin,
-  validateBody(adminNotesSchema, { redirect: "/admin/reservations" }),
+  validateBody(adminNotesSchema, {
+    redirect: (req) =>
+      req.body.returnTo === "detail"
+        ? `/admin/reservations/${req.params.id}`
+        : "/admin/reservations",
+  }),
   adminReservationController.denyReservation,
 );
 router.post(

@@ -21,13 +21,32 @@ const bookingWindowSchema = Joi.object({
     "string.pattern.base": "Please choose a valid end time.",
   }),
   staffNotes: Joi.string().trim().max(1000).empty("").optional(),
+  tripFoodRelated: Joi.string().valid("Yes", "No", "Other").required().messages({
+    "string.empty": "Please let us know if this trip is food related.",
+    "any.required": "Please let us know if this trip is food related.",
+    "any.only": "Please choose one of the options.",
+  }),
+  tripFoodRelatedDetail: Joi.string()
+    .trim()
+    .max(500)
+    .when("tripFoodRelated", {
+      is: "Other",
+      then: Joi.string().trim().max(500).required(),
+      otherwise: Joi.string().trim().max(500).empty("").optional(),
+    })
+    .messages({
+      "string.empty": "Please briefly describe the purpose of this trip.",
+      "any.required": "Please briefly describe the purpose of this trip.",
+    }),
+  // Only ever sent by the "Yes, book anyway" button on the tight-booking-gap
+  // warning dialog — stripUnknown would otherwise silently drop this before
+  // it reaches the controller, since it's not a real form field.
+  confirmTightGap: Joi.string().valid("true").empty("").optional().messages({
+    "any.only": "Invalid request.",
+  }),
 });
 
 const mileageSchema = Joi.object({
-  startMileage: Joi.number().integer().min(0).empty("").optional().messages({
-    "number.base": "Start mileage must be a number.",
-    "number.min": "Start mileage can't be negative.",
-  }),
   endMileage: Joi.number().integer().min(0).empty("").optional().messages({
     "number.base": "End mileage must be a number.",
     "number.min": "End mileage can't be negative.",
@@ -43,20 +62,7 @@ const mileageSchema = Joi.object({
   otherDuty: Joi.string().valid("on").empty("").optional(),
   otherDutyNote: Joi.string().trim().max(500).empty("").optional(),
   washed: Joi.string().valid("on").empty("").optional(),
-})
-  .custom((value, helpers) => {
-    if (
-      value.startMileage !== undefined &&
-      value.endMileage !== undefined &&
-      value.endMileage < value.startMileage
-    ) {
-      return helpers.error("mileage.endBeforeStart");
-    }
-    return value;
-  })
-  .messages({
-    "mileage.endBeforeStart": "End mileage can't be less than start mileage.",
-  });
+});
 
 const issueSchema = Joi.object({
   description: Joi.string().trim().min(1).max(2000).required().messages({
@@ -74,6 +80,13 @@ const inspectionSchema = Joi.object({
     .single()
     .empty(Joi.array().length(0))
     .optional(),
+  // Required regardless of action — skipping the defects/condition
+  // checklist is fine, but the end odometer reading is compulsory either way.
+  endMileage: Joi.number().integer().min(0).required().messages({
+    "number.base": "Please enter the ending odometer reading.",
+    "any.required": "Please enter the ending odometer reading.",
+    "number.min": "End mileage can't be negative.",
+  }),
 });
 
 module.exports = { bookingWindowSchema, mileageSchema, issueSchema, inspectionSchema };

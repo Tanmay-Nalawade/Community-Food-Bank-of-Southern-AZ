@@ -6,19 +6,17 @@
   <div class="vehicles-page__header">
     <div>
       <h1><%= vehicle.year ? vehicle.year + " " : "" %><%= vehicle.make %> <%= vehicle.model %></h1>
-      <p class="vehicles-page__lead"><%= vehicle.licensePlate %></p>
+      <span class="vehicle-detail__plate admin-page__plate"><%= vehicle.licensePlate %></span>
     </div>
     <div class="admin-page__header-actions">
-      <a class="admin-table__btn admin-table__btn--edit" href="/admin/vehicles/<%= vehicle._id %>/mileage-log">
-        View mileage log
-      </a>
+      <a class="action-btn action-btn--edit" href="/admin/vehicles/<%= vehicle.id %>/mileage-log">View mileage log</a>
     </div>
   </div>
 
   <div class="vehicle-detail__grid">
     <div class="vehicle-detail__card">
       <h2 class="vehicle-detail__section-title">Vehicle details</h2>
-      <form class="auth-form" action="/admin/vehicles/<%= vehicle._id %>?_method=PUT" method="POST">
+      <form class="auth-form" action="/admin/vehicles/<%= vehicle.id %>?_method=PUT" method="POST">
         <div class="auth-form__row">
           <div class="auth-form__group">
             <label class="auth-form__label" for="make">Make</label>
@@ -86,9 +84,18 @@
       <div class="vehicle-detail__keycafe admin-hint">
         <% if (hasRealKeyCafeKey) { %>
           <p>KeyCafe Key: <strong><%= vehicle.keyCafeKeyId %></strong> (kept in sync automatically)</p>
+          <p class="admin-hint">
+            If this key was created under the wrong KeyCafe account (e.g. after
+            rotating KEYCAFE_TOKEN), reset it here, then use "Create KeyCafe Key"
+            to link a correct one. This does not remove the old key from KeyCafe's
+            dashboard — do that there manually if needed.
+          </p>
+          <form method="POST" action="/admin/vehicles/<%= vehicle.id %>/keycafe-key/reset">
+            <button class="admin-table__btn admin-table__btn--delete" type="submit">Reset KeyCafe Key</button>
+          </form>
         <% } else { %>
           <p>KeyCafe Key: <strong><%= vehicle.keyCafeKeyId %></strong> (placeholder — not yet linked to a real KeyCafe key)</p>
-          <form method="POST" action="/admin/vehicles/<%= vehicle._id %>/keycafe-key">
+          <form method="POST" action="/admin/vehicles/<%= vehicle.id %>/keycafe-key">
             <button class="admin-table__btn admin-table__btn--edit" type="submit">Create KeyCafe Key</button>
           </form>
         <% } %>
@@ -109,11 +116,11 @@
             <li class="admin-issue">
               <div>
                 <span class="vehicle-detail__issue-date">
-                  <%= new Date(issue.reportedAt).toLocaleDateString() %>
+                  <%= fmt.date(issue.reportedAt) %>
                 </span>
                 <%= issue.description %>
               </div>
-              <form action="/admin/vehicles/<%= vehicle._id %>/issues/<%= issue._id %>/resolve" method="POST">
+              <form action="/admin/vehicles/<%= vehicle.id %>/issues/<%= issue.id %>/resolve" method="POST">
                 <button class="admin-table__btn admin-table__btn--approve" type="submit">Resolve</button>
               </form>
             </li>
@@ -121,7 +128,7 @@
         </ul>
       <% } %>
 
-      <form class="auth-form admin-issue-form" action="/admin/vehicles/<%= vehicle._id %>/issues" method="POST">
+      <form class="auth-form admin-issue-form" action="/admin/vehicles/<%= vehicle.id %>/issues" method="POST">
         <div class="auth-form__group">
           <label class="auth-form__label" for="description">Report a new issue</label>
           <textarea class="auth-form__input booking-request-card__textarea" id="description" name="description" rows="2" placeholder="Describe the issue" required></textarea>
@@ -160,7 +167,7 @@
           class="admin-table__btn admin-table__btn--edit load-more-btn"
           type="button"
           data-load-more
-          data-url="/admin/vehicles/<%= vehicle._id %>/reservations/more"
+          data-url="/admin/vehicles/<%= vehicle.id %>/reservations/more"
           data-target="vehicle-reservations-body"
           data-page-size="<%= pageSize %>"
           data-skip="<%= nextSkip %>"

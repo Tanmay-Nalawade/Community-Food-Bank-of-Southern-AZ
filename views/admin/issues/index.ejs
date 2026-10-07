@@ -2,20 +2,25 @@
 
 <section class="admin-page">
   <h1>Vehicle Issues</h1>
-  <p class="vehicles-page__lead">Issues reported by drivers, newest unreviewed first.</p>
+  <p class="vehicles-page__lead admin-page__lead">
+    Problems drivers report after a trip or flag during a vehicle inspection. New ones are
+    listed first.
+  </p>
 
   <% if (!issues.length) { %>
-    <p class="vehicles-page__empty">No issues reported.</p>
+    <div class="admin-empty">
+      <h2 class="admin-empty__title">No open issues</h2>
+      <p>When a driver reports a problem with a vehicle, it shows up here for you to review.</p>
+    </div>
   <% } else { %>
     <div class="admin-table-wrap">
-      <table class="admin-table">
+      <table class="admin-table admin-table--detailed">
         <thead>
           <tr>
-            <th>Status</th>
-            <th>Vehicle</th>
             <th>Issue</th>
-            <th>Reported by</th>
+            <th>Vehicle</th>
             <th>Reported</th>
+            <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>

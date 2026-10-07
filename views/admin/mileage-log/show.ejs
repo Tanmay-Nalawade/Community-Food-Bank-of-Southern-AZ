@@ -1,11 +1,11 @@
 <% layout('layouts/boilerplate') %>
 
 <section class="admin-page mileage-log-page">
-  <a class="vehicle-detail__back no-print" href="/admin/vehicles/<%= vehicle._id %>">&larr; Back to vehicle</a>
+  <a class="vehicle-detail__back no-print" href="/admin/vehicles/<%= vehicle.id %>">&larr; Back to vehicle</a>
 
   <div class="mileage-log-page__header-row">
     <h1>Monthly Vehicle Mileage Log</h1>
-    <button class="admin-table__btn admin-table__btn--edit no-print" type="button" onclick="window.print()">
+    <button class="action-btn action-btn--edit no-print" type="button" onclick="window.print()">
       Print
     </button>
   </div>
@@ -34,7 +34,7 @@
           <tr>
             <th>Next Maintenance Due Date</th>
             <td>
-              <%= vehicle.nextMaintenanceDueDate ? new Date(vehicle.nextMaintenanceDueDate).toLocaleDateString() : "—" %>
+              <%= vehicle.nextMaintenanceDueDate ? fmt.date(vehicle.nextMaintenanceDueDate) : "—" %>
             </td>
           </tr>
         </tbody>
@@ -58,10 +58,11 @@
           <thead>
             <tr>
               <th>Date</th>
-              <th>Driver Initials</th>
+              <th>Driver</th>
               <th>Start Odometer</th>
               <th>End Odometer</th>
               <th>Distance Travelled</th>
+              <th>Food Related</th>
               <th>Pre-Trip Inspection</th>
               <th>Fuel Level (End) %</th>
               <th>Drop off Food</th>
@@ -73,11 +74,12 @@
           <tbody>
             <% log.rows.forEach((row) => { %>
               <tr>
-                <td data-label="Date"><%= new Date(row.date).toLocaleDateString() %></td>
-                <td data-label="Driver Initials"><%= row.driverInitials %></td>
+                <td data-label="Date"><%= fmt.date(row.date) %></td>
+                <td data-label="Driver"><%= row.driverName %><% if (row.manualEntry) { %> <span class="admin-table__subtext">(logged manually)</span><% } %></td>
                 <td data-label="Start Odometer"><%= row.startMileage != null ? row.startMileage.toLocaleString() : "—" %></td>
                 <td data-label="End Odometer"><%= row.endMileage != null ? row.endMileage.toLocaleString() : "—" %></td>
                 <td data-label="Distance Travelled"><%= row.distanceTravelled != null ? row.distanceTravelled.toLocaleString() : "—" %></td>
+                <td data-label="Food Related"><%= row.foodRelated ? "Y" : "N" %></td>
                 <td data-label="Pre-Trip Inspection"><%= row.preTripInspectionPassed === null ? "—" : (row.preTripInspectionPassed ? "Y" : "N") %></td>
                 <td data-label="Fuel Level (End) %"><%= row.fuelLevelEndPercent != null ? row.fuelLevelEndPercent + "%" : "—" %></td>
                 <td data-label="Drop off Food"><%= row.droppedOffFood ? "Y" : "N" %></td>
@@ -91,8 +93,4 @@
       </div>
     <% } %>
   </div>
-
-  <p class="vehicle-detail__empty admin-hint no-print">
-    This log is also emailed automatically to Transportation on the last business day of each month.
-  </p>
 </section>

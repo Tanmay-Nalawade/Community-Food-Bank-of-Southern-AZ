@@ -28,9 +28,10 @@ const addVehicleSchema = Joi.object({
       "string.uri": "Photo URL must be a valid https:// URL.",
       "string.uriCustomScheme": "Photo URL must be a valid https:// URL.",
     }),
-  currentMileage: Joi.number().integer().min(0).empty("").default(0).messages({
-    "number.base": "Current mileage must be a number.",
-    "number.min": "Current mileage can't be negative.",
+  currentMileage: Joi.number().integer().min(0).required().messages({
+    "number.base": "Enter the vehicle's current odometer reading.",
+    "any.required": "Enter the vehicle's current odometer reading.",
+    "number.min": "The odometer reading can't be negative.",
   }),
 });
 

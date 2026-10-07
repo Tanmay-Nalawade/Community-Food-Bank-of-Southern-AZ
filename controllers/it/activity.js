@@ -1,14 +1,15 @@
-const ActivityLog = require("../../models/activityLog");
+const { ActivityLog } = require("../../models");
 
 const PAGE_SIZE = 10;
 const MAX_LOGS = 200;
 
 function fetchLogs(skip, limit) {
-  return ActivityLog.find({})
-    .populate("userId", "firstName lastName email role")
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(limit);
+  return ActivityLog.findAll({
+    include: [{ association: "user", attributes: ["id", "firstName", "lastName", "email", "role"] }],
+    order: [["createdAt", "DESC"], ["id", "DESC"]],
+    offset: skip,
+    limit,
+  });
 }
 
 exports.index = async (req, res) => {

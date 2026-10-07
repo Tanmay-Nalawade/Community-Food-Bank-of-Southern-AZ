@@ -4,9 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title><%= typeof title !== 'undefined' ? title : 'Motor Pool' %> | Community Food Bank of Southern Arizona</title>
-    <link rel="stylesheet" href="/css/navbar.css" />
-    <link rel="stylesheet" href="/css/app.css" />
-    <link rel="stylesheet" href="/css/auth.css" />
+    <link rel="stylesheet" href="<%= asset('/css/navbar.css') %>" />
+    <link rel="stylesheet" href="<%= asset('/css/app.css') %>" />
+    <link rel="stylesheet" href="<%= asset('/css/auth.css') %>" />
+    <% if (typeof isAdminSection !== 'undefined' && isAdminSection) { %>
+      <link rel="stylesheet" href="<%= asset('/css/admin.css') %>" />
+    <% } else { %>
+      <link rel="stylesheet" href="<%= asset('/css/staff.css') %>" />
+    <% } %>
   </head>
   <body class="site-shell">
     <%- include('../partials/navbar') %>
@@ -15,6 +20,34 @@
       <%- body %>
     </main>
     <%- include('../partials/footer') %>
-    <script src="/js/app.js" defer></script>
+    <% if (typeof mandatoryOdometerPrompt !== 'undefined' && mandatoryOdometerPrompt) { %>
+      <% const mop = mandatoryOdometerPrompt; %>
+      <dialog id="mandatoryOdometerDialog" class="tight-gap-dialog" data-autoshow data-no-cancel>
+        <h2 class="tight-gap-dialog__title">One more thing &mdash; End Odometer</h2>
+        <p class="tight-gap-dialog__body">
+          The <%= mop.reservation.vehicle.make %> <%= mop.reservation.vehicle.model %>
+          was returned, but the ending odometer reading is still missing.
+        </p>
+        <form class="auth-form" action="/reservations/<%= mop.reservation.id %>/mileage" method="POST">
+          <div class="auth-form__group">
+            <label class="auth-form__label" for="mandatoryEndMileage">End odometer (mi)</label>
+            <input
+              class="auth-form__input"
+              type="number"
+              id="mandatoryEndMileage"
+              name="endMileage"
+              min="<%= mop.reservation.startMileage ?? 0 %>"
+              required
+              autofocus
+            />
+          </div>
+          <button class="auth-form__submit" type="submit">Save and continue</button>
+        </form>
+        <form action="/logout" method="POST">
+          <button class="tight-gap-dialog__cancel" type="submit">Log out</button>
+        </form>
+      </dialog>
+    <% } %>
+    <script src="<%= asset('/js/app.js') %>" defer></script>
   </body>
 </html>

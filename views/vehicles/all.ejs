@@ -39,7 +39,7 @@
       <% vehicles.forEach((vehicle) => { %>
         <%- include('../partials/vehicle-card', {
           vehicle,
-          href: `/vehicles/${vehicle._id}?from=all${q ? '&q=' + encodeURIComponent(q) : ''}`,
+          href: `/vehicles/${vehicle.id}?from=all${q ? '&q=' + encodeURIComponent(q) : ''}`,
         }) %>
       <% }) %>
     </div>
