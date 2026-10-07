@@ -1,27 +1,46 @@
 services:
-  mysql:
-    image: mysql:8.4
+  # Microsoft SQL Server 2022. Only needed when the app should use a bundled
+  # database; to use an existing SQL Server instead, see DEPLOYMENT.md.
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    # Microsoft publishes this image for x86-64 only (runs emulated on ARM).
+    platform: linux/amd64
     environment:
-      MYSQL_DATABASE: ${DB_NAME}
-      MYSQL_USER: ${DB_USER}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-    command:
-      - --character-set-server=utf8mb4
-      - --collation-server=utf8mb4_unicode_ci
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: ${MSSQL_PID:-Developer}
+      MSSQL_SA_PASSWORD: ${DB_SA_PASSWORD}
     # Bound to localhost only, so the DB is reachable from this machine
     # (e.g. running `npm run dev` outside Docker, or a GUI client) but not
     # from the rest of the network.
     ports:
-      - "127.0.0.1:${DB_PORT:-3306}:3306"
+      - "127.0.0.1:${DB_PORT:-1433}:1433"
     volumes:
-      - mysql-data:/var/lib/mysql
+      - mssql-data:/var/opt/mssql
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p$$MYSQL_ROOT_PASSWORD --silent"]
-      interval: 5s
-      timeout: 5s
-      retries: 20
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -Q 'SELECT 1' -b -o /dev/null"]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+      start_period: 30s
     restart: unless-stopped
+
+  # One-shot: creates the app's database + login in the bundled SQL Server
+  # (docker/mssql-init.sql), then exits. Safe to run on every start.
+  mssql-init:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    platform: linux/amd64
+    depends_on:
+      mssql:
+        condition: service_healthy
+    environment:
+      SQLCMDPASSWORD: ${DB_SA_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - ./docker/mssql-init.sql:/mssql-init.sql:ro
+    entrypoint: ["/opt/mssql-tools18/bin/sqlcmd", "-C", "-S", "mssql", "-U", "sa", "-b", "-i", "/mssql-init.sql"]
+    restart: "no"
 
   app:
     build: .
@@ -33,16 +52,18 @@ services:
       PORT: ${PORT:-8080}
       # Inside the compose network the bundled DB is reached by service name,
       # not the localhost address .env uses for running the app on the host.
-      # To use an existing MySQL server instead, set DOCKER_DB_HOST /
+      # To use an existing SQL Server instead, set DOCKER_DB_HOST /
       # DOCKER_DB_PORT in .env and start only the app (see DEPLOYMENT.md).
-      DB_HOST: ${DOCKER_DB_HOST:-mysql}
-      DB_PORT: ${DOCKER_DB_PORT:-3306}
+      DB_HOST: ${DOCKER_DB_HOST:-mssql}
+      DB_PORT: ${DOCKER_DB_PORT:-1433}
+      # The bundled container uses a self-signed certificate.
+      DB_TRUST_SERVER_CERTIFICATE: ${DB_TRUST_SERVER_CERTIFICATE:-true}
     # Apply any pending schema migrations, then start the server.
     command: sh -c "node scripts/migrate.js && node app.js"
     depends_on:
-      mysql:
-        condition: service_healthy
+      mssql-init:
+        condition: service_completed_successfully
     restart: unless-stopped
 
 volumes:
-  mysql-data:
+  mssql-data:
