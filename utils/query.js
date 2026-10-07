@@ -8,13 +8,15 @@ function queryString(value) {
   return typeof value === "string" ? value.trim() : "";
 }
 
+// SQL Server LIKE has no default escape character; a literal %, _ or [ is
+// matched by wrapping it in brackets.
 function escapeLike(value) {
-  return value.replace(/[\\%_]/g, "\\$&");
+  return value.replace(/[[%_]/g, (char) => `[${char}]`);
 }
 
 // Case-insensitive "contains" across several columns — the SQL equivalent of
 // the old `{ $or: [{ field: /q/i }, ...] }`. Case-insensitivity comes from
-// the tables' utf8mb4_unicode_ci collation.
+// SQL Server's default case-insensitive (CI) collation.
 function containsAny(fields, q) {
   const pattern = `%${escapeLike(q)}%`;
   return { [Op.or]: fields.map((field) => ({ [field]: { [Op.like]: pattern } })) };
