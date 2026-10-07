@@ -9,9 +9,9 @@ class Reservation extends Model {}
 
 Reservation.init(
   {
-    id: { type: DataTypes.INTEGER.UNSIGNED, autoIncrement: true, primaryKey: true },
-    userId: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false },
-    vehicleId: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false },
+    id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
+    userId: { type: DataTypes.INTEGER, allowNull: false },
+    vehicleId: { type: DataTypes.INTEGER, allowNull: false },
 
     requestedStartTime: { type: DataTypes.DATE, allowNull: false },
     requestedEndTime: { type: DataTypes.DATE, allowNull: false },
@@ -24,7 +24,7 @@ Reservation.init(
     tripFoodRelated: { type: DataTypes.ENUM("Yes", "No", "Other") },
     tripFoodRelatedDetail: { type: DataTypes.TEXT, allowNull: false, defaultValue: "" },
 
-    reviewedById: { type: DataTypes.INTEGER.UNSIGNED },
+    reviewedById: { type: DataTypes.INTEGER },
     reviewedAt: { type: DataTypes.DATE },
 
     // Logged by an admin after the fact (no booking, no KeyCafe access) —
@@ -41,11 +41,11 @@ Reservation.init(
     // Trip log (was tripLog.*)
     tripStartedAt: { type: DataTypes.DATE },
     tripEndedAt: { type: DataTypes.DATE },
-    startMileage: { type: DataTypes.INTEGER.UNSIGNED },
-    endMileage: { type: DataTypes.INTEGER.UNSIGNED },
+    startMileage: { type: DataTypes.INTEGER },
+    endMileage: { type: DataTypes.INTEGER },
     preTripInspectionPassed: { type: DataTypes.BOOLEAN },
     fuelLevelEndPercent: {
-      type: DataTypes.TINYINT.UNSIGNED,
+      type: DataTypes.TINYINT,
       validate: { min: 0, max: 100 },
     },
     droppedOffFood: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
@@ -70,9 +70,8 @@ Reservation.init(
     modelName: "Reservation",
     tableName: "reservations",
     underscored: true,
-    // The unique "no identical open duplicate" backstop is enforced in the
-    // database via the generated open_slot column — see the initial-schema
-    // migration. It isn't mapped here since it's computed by MySQL.
+    // The unique "no identical open duplicate" backstop is a filtered unique
+    // index in the database — see the initial-schema migration.
   },
 );
 

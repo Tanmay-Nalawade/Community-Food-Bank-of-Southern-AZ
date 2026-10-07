@@ -1,5 +1,5 @@
 const { Op, UniqueConstraintError } = require("sequelize");
-const { Reservation, Vehicle, User } = require("../../models");
+const { sequelize, Reservation, Vehicle, User, AccessLog, VehicleIssue } = require("../../models");
 const { renderError } = require("../../utils/httpError");
 const { queryString, containsAny } = require("../../utils/query");
 const {
@@ -476,9 +476,14 @@ exports.deleteReservation = async (req, res) => {
       revokeFailed = true;
     }
     await freeVehicleIfHeldBy(reservation.vehicleId);
-    // access_logs / vehicle_issues rows pointing at it are kept, with their
-    // reservation_id set to NULL by the foreign key.
-    await reservation.destroy();
+    // Its access-log and vehicle-issue rows are kept for the record, just
+    // unlinked — the foreign keys don't cascade (see the schema migration).
+    await sequelize.transaction(async (transaction) => {
+      const unlink = { where: { reservationId: reservation.id }, transaction };
+      await AccessLog.update({ reservationId: null }, unlink);
+      await VehicleIssue.update({ reservationId: null }, unlink);
+      await reservation.destroy({ transaction });
+    });
   }
 
   if (revokeFailed) {
