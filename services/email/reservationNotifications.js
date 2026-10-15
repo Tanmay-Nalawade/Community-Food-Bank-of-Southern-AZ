@@ -32,6 +32,7 @@ async function sendBookingConfirmation(reservation, user, vehicle) {
       firstName: user.firstName,
       vehicleName: vehicleLabel(vehicle),
       bookingLabel: bookingLabelFor(reservation),
+      bookingCode: reservation.keyCafeBookingCode || null,
       status: reservation.status,
       dashboardUrl: `${APP_BASE_URL}/reservations/mine`,
     });

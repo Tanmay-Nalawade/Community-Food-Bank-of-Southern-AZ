@@ -7,7 +7,7 @@
 
       <% if (status === "Reserved") { %>
         <p style="color:#333; font-size:15px; line-height:1.5; margin:0 0 12px;">
-          Your vehicle booking is confirmed.
+          Your vehicle booking is confirmed. Use the pickup code below to get the key from KeyCafe.
         </p>
       <% } else { %>
         <p style="color:#333; font-size:15px; line-height:1.5; margin:0 0 12px;">
@@ -24,6 +24,12 @@
           <td style="color:#666; font-size:13px;">When</td>
           <td style="color:#333; font-size:14px;"><%= bookingLabel %></td>
         </tr>
+        <% if (bookingCode) { %>
+          <tr>
+            <td style="color:#666; font-size:13px;">Pickup code</td>
+            <td style="color:#333; font-size:14px; font-family: ui-monospace, monospace;"><%= bookingCode %></td>
+          </tr>
+        <% } %>
       </table>
 
       <p style="font-size:14px; margin:0 0 24px;">

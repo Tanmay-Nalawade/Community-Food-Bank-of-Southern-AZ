@@ -13,6 +13,7 @@ const {
 } = require("../../services/keycafe/reservationAccess");
 const { fetchPage, PAGE_SIZE } = require("../../utils/pagination");
 const { fillStartMileage } = require("../../services/odometer");
+const { sendBookingConfirmation } = require("../../services/email/reservationNotifications");
 
 const HOLDING_STATUSES = ["Reserved", "Active"];
 
@@ -331,6 +332,11 @@ exports.updateReservation = async (req, res) => {
     return res.redirect(`/admin/reservations/${reservation.id}/edit`);
   }
 
+  // A new KeyCafe access means a new pickup code — send it to the driver.
+  if (grantedHere) {
+    await sendBookingConfirmation(reservation, reservation.user, newVehicle);
+  }
+
   // Keep Vehicle.status in sync: release the old vehicle if this
   // reservation no longer holds it, and reflect the new vehicle's state.
   if (vehicleChanged) {
@@ -372,6 +378,7 @@ exports.approveReservation = async (req, res) => {
     await reservation.save();
 
     await Vehicle.update({ status: "Reserved" }, { where: { id: reservation.vehicleId } });
+    await sendBookingConfirmation(reservation, reservation.user, reservation.vehicle);
 
     req.flash("success", "Reservation approved and KeyCafe access granted.");
   } catch (error) {
