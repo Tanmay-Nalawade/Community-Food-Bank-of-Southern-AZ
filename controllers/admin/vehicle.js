@@ -87,7 +87,7 @@ exports.postAddVehicle = async (req, res) => {
     console.error("Failed to create KeyCafe key for new vehicle:", error);
     req.flash(
       "error",
-      "Vehicle was not added: could not create its KeyCafe key. Check API Status and try again.",
+      `Vehicle was not added: could not create its KeyCafe key (${error.message}).`,
     );
     return res.redirect("/admin/vehicles/add");
   }
@@ -261,7 +261,7 @@ exports.createKeyCafeKey = async (req, res) => {
     req.flash("success", "KeyCafe key created and linked to this vehicle.");
   } catch (error) {
     console.error("Failed to create KeyCafe key:", error);
-    req.flash("error", "Could not create a KeyCafe key. Check API Status and try again.");
+    req.flash("error", `Could not create a KeyCafe key (${error.message}).`);
   }
 
   res.redirect(`/admin/vehicles/${vehicle.id}`);

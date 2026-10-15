@@ -122,8 +122,22 @@ async function createWebhook(url, username, password) {
   return request("POST", "/webhook", { url, username, password });
 }
 
+// KeyCafe rejects a new key without an organization ("key.organization.required")
+// despite its docs saying it defaults to the first, so create new keys in the
+// organization the account's existing keys already live in.
+async function getOrganizationId() {
+  const keys = await listKeys();
+  const withOrganization = keys.find((key) => key.organization && key.organization.id);
+  if (!withOrganization) {
+    throw new Error("Could not find the KeyCafe organization: the account has no keys yet.");
+  }
+
+  return withOrganization.organization.id;
+}
+
 async function createKey(name) {
-  return request("POST", "/key", { name });
+  const organizationId = await getOrganizationId();
+  return request("POST", "/key", { name, organization: { id: organizationId } });
 }
 
 async function updateKey(keyId, name) {
