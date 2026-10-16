@@ -1,5 +1,19 @@
 const { renderError } = require("../utils/httpError");
 
+// Roles are cumulative: an Admin can do everything Staff can, and an IT Admin
+// everything an Admin (and so Staff) can. Checks compare ranks rather than
+// matching one exact role, so a higher role is never locked out of a lower
+// role's features.
+const ROLE_RANK = {
+  Staff: 1,
+  Admin: 2,
+  "IT Admin": 3,
+};
+
+function hasRole(role, minimumRole) {
+  return (ROLE_RANK[role] || 0) >= ROLE_RANK[minimumRole];
+}
+
 const ALLOWED_VIEW_AS = {
   "IT Admin": ["Admin", "Staff"],
   Admin: ["Staff"],
@@ -51,27 +65,25 @@ function requireLogin(req, res, next) {
   next();
 }
 
-// "View as" is meant to be a read-only preview of what a lower/other role
-// sees — never a way to actually perform that role's actions. GET requests
-// (page views) check the effective (possibly view-as) role, so the preview
-// works. Any state-changing request checks the REAL underlying role instead,
-// so e.g. an IT Admin previewing the Admin view can look at admin pages but
-// can't actually approve/deny/delete anything — those routes 403 unless the
-// person genuinely is an Admin. Without this split, "view as" would let a
-// role grant itself another role's real capabilities, not just its screens.
+// GET requests (page views) check the effective (possibly view-as) role, so
+// "view as" shows exactly that role's screens. State-changing requests check
+// the REAL underlying role, so "view as" can never grant a role more than it
+// genuinely has: an IT Admin viewing as Admin can approve/deny/delete like an
+// Admin (IT Admin includes Admin — see ROLE_RANK), but an Admin can never
+// perform IT Admin actions.
 function roleForCheck(req, res) {
   return req.method === "GET" ? res.locals.effectiveRole : res.locals.currentUser.role;
 }
 
 function requireAdmin(req, res, next) {
-  if (!res.locals.currentUser || roleForCheck(req, res) !== "Admin") {
+  if (!res.locals.currentUser || !hasRole(roleForCheck(req, res), "Admin")) {
     return renderError(res, 403, "Admin access required.");
   }
   next();
 }
 
 function requireITAdmin(req, res, next) {
-  if (!res.locals.currentUser || roleForCheck(req, res) !== "IT Admin") {
+  if (!res.locals.currentUser || !hasRole(roleForCheck(req, res), "IT Admin")) {
     return renderError(res, 403, "IT Administrator access required.");
   }
   next();
