@@ -8,6 +8,7 @@ This app is how staff book shared vehicles, pick up/return keys, and report on t
 2. Use your `@communityfoodbank.org` email — other email addresses aren't accepted.
 3. Check your email for a verification link and click it. You can't log in until you do.
 4. Didn't get the email? Go to **Log In**, try logging in anyway, and you'll be sent to a page where you can resend it.
+5. Wait for approval. Once your email is verified, an Admin reviews your account. You'll get an email when it's approved, and you can log in from then on.
 
 **Forgot your password?** Click **Forgot password?** on the log-in page, check your email for a reset link, and choose a new password.
 
@@ -43,6 +44,7 @@ If you're an Admin or IT Admin, the same menu lets you **View as Staff** to see 
 ## For Admins
 
 - **Dashboard** — a quick overview of what needs attention
+- **Account Requests** — reached from the **Account Requests** tile on the Dashboard. New sign-ups wait here (after verifying their email) until you **Approve** them, which lets them log in and emails them, or **Decline** them, which removes the request
 - **Reservations** — approve, deny, edit, or cancel bookings; see full booking history
 - **Vehicles** — add a vehicle (you'll be asked for its current odometer reading, which the first trip starts from; a KeyCafe key is created for it automatically — nothing to set up in KeyCafe yourself), edit details, or view a vehicle's own reservation and mileage history
 - **Issues** — see everything reported by drivers, mark reviewed or dismiss
@@ -60,6 +62,8 @@ If you're an Admin or IT Admin, the same menu lets you **View as Staff** to see 
 ## Common questions
 
 **"Please verify your email before logging in"** — check your inbox for the verification link, or go to the log-in page and try again to get a resend option.
+
+**"Account Pending Approval"** — your account hasn't been approved by an Admin yet. You'll get an email once it is.
 
 **"You need to use an email address given to you by the Food Bank"** — only `@communityfoodbank.org` addresses can register or be used on an account.
 

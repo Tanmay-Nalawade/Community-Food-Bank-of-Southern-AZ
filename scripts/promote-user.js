@@ -34,6 +34,9 @@ async function main() {
   }
 
   user.role = role;
+  // Also approves the account, so the very first IT Admin (who has nobody to
+  // approve them) can log in.
+  user.isApproved = true;
   await user.save();
 
   console.log(`${user.firstName} ${user.lastName} (${user.email}) is now: ${role}`);

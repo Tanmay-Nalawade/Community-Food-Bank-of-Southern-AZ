@@ -49,24 +49,24 @@ async function seed() {
     );
   }
 
-  // emailVerified: true — these are fake @cfb.example addresses that can't
-  // receive a real verification link, so seeded/demo accounts are exempted
-  // from the verification gate added for real registrations.
+  // emailVerified/isApproved: true — these are fake @cfb.example addresses
+  // that can't receive a real verification link, so seeded/demo accounts are
+  // exempted from the verification and approval gates real sign-ups go through.
   const users = await Promise.all([
     User.register(
-      { firstName: "Jordan", lastName: "Lee", email: "jordan.lee@cfb.example", role: "Staff", emailVerified: true },
+      { firstName: "Jordan", lastName: "Lee", email: "jordan.lee@cfb.example", role: "Staff", emailVerified: true, isApproved: true },
       SEED_PASSWORD,
     ),
     User.register(
-      { firstName: "Maria", lastName: "Garcia", email: "maria.garcia@cfb.example", role: "Staff", emailVerified: true },
+      { firstName: "Maria", lastName: "Garcia", email: "maria.garcia@cfb.example", role: "Staff", emailVerified: true, isApproved: true },
       SEED_PASSWORD,
     ),
     User.register(
-      { firstName: "Alex", lastName: "Rivera", email: "alex.rivera@cfb.example", role: "Admin", emailVerified: true },
+      { firstName: "Alex", lastName: "Rivera", email: "alex.rivera@cfb.example", role: "Admin", emailVerified: true, isApproved: true },
       SEED_PASSWORD,
     ),
     User.register(
-      { firstName: "Sam", lastName: "Okafor", email: "sam.okafor@cfb.example", role: "IT Admin", emailVerified: true },
+      { firstName: "Sam", lastName: "Okafor", email: "sam.okafor@cfb.example", role: "IT Admin", emailVerified: true, isApproved: true },
       SEED_PASSWORD,
     ),
   ]);

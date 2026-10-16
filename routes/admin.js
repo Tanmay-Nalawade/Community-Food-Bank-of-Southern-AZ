@@ -17,6 +17,7 @@ const adminDriverController = wrapControllerAsync(require("../controllers/admin/
 const adminReportController = wrapControllerAsync(require("../controllers/admin/report"));
 const adminMileageLogController = wrapControllerAsync(require("../controllers/admin/mileageLog"));
 const adminTripController = wrapControllerAsync(require("../controllers/admin/trip"));
+const adminAccountRequestController = wrapControllerAsync(require("../controllers/admin/accountRequest"));
 
 validateIdParams(router, ["id", "issueId", "vehicleId"]);
 
@@ -67,6 +68,18 @@ router.post(
   "/vehicles/:id/issues/:issueId/resolve",
   requireAdmin,
   adminVehicleController.resolveIssue,
+);
+
+router.get("/account-requests", requireAdmin, adminAccountRequestController.index);
+router.post(
+  "/account-requests/:id/approve",
+  requireAdmin,
+  adminAccountRequestController.approve,
+);
+router.post(
+  "/account-requests/:id/decline",
+  requireAdmin,
+  adminAccountRequestController.decline,
 );
 
 router.get("/drivers", requireAdmin, adminDriverController.index);

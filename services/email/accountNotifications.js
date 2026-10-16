@@ -45,4 +45,17 @@ async function sendPasswordResetEmail(user, token) {
   });
 }
 
-module.exports = { sendVerificationEmail, sendPasswordResetEmail };
+async function sendAccountApprovedEmail(user) {
+  const html = await renderEmail("account-approved", {
+    firstName: user.firstName,
+    link: `${APP_BASE_URL}/login`,
+  });
+
+  await sendEmail({
+    to: user.email,
+    subject: "Your account has been approved — Community Food Bank Motor Pool",
+    html,
+  });
+}
+
+module.exports = { sendVerificationEmail, sendPasswordResetEmail, sendAccountApprovedEmail };

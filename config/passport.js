@@ -23,7 +23,7 @@ passport.serializeUser((user, done) => {
 passport.deserializeUser(async (id, done) => {
   try {
     const user = await User.findByPk(id);
-    if (!user || !user.isActive) {
+    if (!user || !user.isActive || !user.isApproved) {
       return done(null, false);
     }
     done(null, user);

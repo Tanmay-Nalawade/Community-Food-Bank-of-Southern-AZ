@@ -1,0 +1,49 @@
+<% layout('layouts/boilerplate') %>
+
+<section class="admin-page">
+  <h1>Account Requests</h1>
+  <p class="vehicles-page__lead">
+    New sign-ups who have verified their email and are waiting for approval. Approved accounts can log in
+    right away and are emailed to let them know. Declining removes the request.
+  </p>
+
+  <% if (!accounts.length) { %>
+    <p class="vehicles-page__empty">There are no account requests waiting for approval.</p>
+  <% } else { %>
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Requested</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% accounts.forEach((account) => { %>
+            <tr class="admin-table__row--attention">
+              <td data-label="Name"><%= account.firstName %> <%= account.lastName %></td>
+              <td data-label="Email"><%= account.email %></td>
+              <td data-label="Requested">
+                <%= new Date(account.createdAt).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" }) %>
+              </td>
+              <td class="admin-table__actions" data-label="Actions">
+                <div class="action-bar action-bar--row">
+                  <div class="action-group">
+                    <form action="/admin/account-requests/<%= account.id %>/approve" method="POST">
+                      <button class="action-btn action-btn--sm action-btn--approve" type="submit">Approve</button>
+                    </form>
+                    <form action="/admin/account-requests/<%= account.id %>/decline" method="POST">
+                      <button class="action-btn action-btn--sm action-btn--deny" type="submit">Decline</button>
+                    </form>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</section>

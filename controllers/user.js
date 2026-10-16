@@ -85,6 +85,10 @@ exports.login = (req, res, next) => {
       return res.redirect(`/verify-email/pending?email=${encodeURIComponent(user.email)}`);
     }
 
+    if (!user.isApproved) {
+      return res.redirect("/account-pending");
+    }
+
     const returnTo = req.session.returnTo;
 
     // Regenerate the session on login (not just logout) so a session ID
@@ -141,7 +145,11 @@ exports.register = (req, res, next) => {
         return next(error);
       }
 
-      req.flash("success", "Account created — check your email to verify it before logging in.");
+      req.flash(
+        "success",
+        "Your account has been created. Please check your email to verify your address — " +
+          "once verified, your account will be sent to an administrator for approval.",
+      );
       res.redirect(`/verify-email/pending?email=${encodeURIComponent(user.email)}`);
     },
     (err) => {
@@ -209,6 +217,15 @@ exports.resetPasswordSubmit = async (req, res) => {
   res.redirect("/login");
 };
 
+// Shown after a new account verifies its email, and whenever it tries to log
+// in before an Admin has approved it.
+exports.accountPending = (req, res) => {
+  res.render("users/account-pending", {
+    title: "Account Pending Approval",
+    activeNav: "account",
+  });
+};
+
 exports.verifyEmailPendingForm = (req, res) => {
   res.render("users/verify-email-pending", {
     title: "Verify Your Email",
@@ -256,6 +273,10 @@ exports.verifyEmail = async (req, res, next) => {
   user.emailVerificationTokenHash = null;
   user.emailVerificationExpiresAt = null;
   await user.save();
+
+  if (!user.isApproved) {
+    return res.redirect("/account-pending");
+  }
 
   req.session.regenerate((regenerateErr) => {
     if (regenerateErr) {

@@ -16,6 +16,10 @@
       <span class="stat-tile__value"><%= stats.pending %></span>
       <span class="stat-tile__label">Pending Requests</span>
     </a>
+    <a class="stat-tile stat-tile--pending" href="/admin/account-requests">
+      <span class="stat-tile__value"><%= stats.pendingAccounts %></span>
+      <span class="stat-tile__label">Account Requests</span>
+    </a>
     <a class="stat-tile stat-tile--ongoing" href="/admin/reservations?status=Active">
       <span class="stat-tile__value"><%= stats.ongoing %></span>
       <span class="stat-tile__label">Ongoing Bookings</span>

@@ -130,6 +130,10 @@ User.init(
       defaultValue: "Staff",
     },
     isActive: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
+    // New sign-ups wait for an Admin to approve them before they can log in.
+    isApproved: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+    approvedAt: { type: DataTypes.DATE },
+    approvedById: { type: DataTypes.INTEGER },
     // Wide enough for imported passport-local-mongoose hashes (~1,110 chars).
     passwordHash: { type: DataTypes.STRING(1200), allowNull: false },
 

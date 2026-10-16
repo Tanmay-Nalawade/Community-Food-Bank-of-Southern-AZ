@@ -1,5 +1,5 @@
 const { Op } = require("sequelize");
-const { Reservation, Vehicle, VehicleIssue } = require("../../models");
+const { Reservation, Vehicle, VehicleIssue, User } = require("../../models");
 
 const OUT_OF_SERVICE_STATUSES = ["Maintenance", "Out of Service"];
 
@@ -13,6 +13,7 @@ exports.index = async (req, res) => {
     vehiclesNeedingAttention,
     unresolvedIssues,
     pendingReservations,
+    pendingAccounts,
   ] = await Promise.all([
     Reservation.count({ where: { status: "Pending" } }),
     Reservation.count({ where: { status: "Active" } }),
@@ -34,9 +35,20 @@ exports.index = async (req, res) => {
       order: [["createdAt", "DESC"], ["id", "DESC"]],
       limit: 10,
     }),
+    User.findAll({
+      where: { isApproved: false, emailVerified: true },
+      attributes: ["id", "firstName", "lastName", "createdAt"],
+      order: [["createdAt", "DESC"], ["id", "DESC"]],
+    }),
   ]);
 
   const notifications = [
+    ...pendingAccounts.map((account) => ({
+      type: "account",
+      message: `${account.firstName} ${account.lastName} signed up and is waiting for account approval`,
+      link: "/admin/account-requests",
+      at: account.createdAt,
+    })),
     ...pendingReservations
       .filter((reservation) => reservation.user && reservation.vehicle)
       .map((reservation) => ({
@@ -66,6 +78,7 @@ exports.index = async (req, res) => {
       ongoing: ongoingCount,
       upcoming: upcomingCount,
       unresolvedIssues: unresolvedIssues.length,
+      pendingAccounts: pendingAccounts.length,
       vehiclesNeedingAttention,
     },
     notifications,

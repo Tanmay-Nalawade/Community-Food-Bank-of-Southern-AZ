@@ -18,7 +18,7 @@ async function formOptions() {
     }),
     User.findAll({
       attributes: ["id", "firstName", "lastName", "email", "role"],
-      where: { isActive: true },
+      where: { isActive: true, isApproved: true },
       order: [["firstName", "ASC"], ["lastName", "ASC"]],
     }),
   ]);
@@ -82,7 +82,7 @@ exports.create = async (req, res) => {
 
   const [vehicle, driver] = await Promise.all([
     Vehicle.findByPk(values.vehicleId),
-    User.findOne({ where: { id: values.userId, isActive: true } }),
+    User.findOne({ where: { id: values.userId, isActive: true, isApproved: true } }),
   ]);
   if (!vehicle) {
     return fail("That vehicle could not be found.");

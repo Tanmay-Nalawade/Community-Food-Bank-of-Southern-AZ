@@ -41,6 +41,7 @@ router.post(
   users.resetPasswordSubmit,
 );
 
+router.get("/account-pending", users.accountPending);
 router.get("/verify-email/pending", users.verifyEmailPendingForm);
 router.post(
   "/verify-email/resend",

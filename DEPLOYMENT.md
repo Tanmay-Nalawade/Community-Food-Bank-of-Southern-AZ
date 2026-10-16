@@ -97,7 +97,8 @@ update — the app refuses to start while a migration is pending.
 
 1. Open the site and **Sign Up** with an `@communityfoodbank.org` email address.
 2. Click the link in the verification email. (No SMTP yet? It's printed in the app's log.)
-3. Make that account an IT Admin from the server:
+3. Make that account an IT Admin from the server (this also approves the account — every other new
+   sign-up waits for an Admin to approve it under **Account Requests**):
    ```
    docker compose exec app npm run promote-user -- you@communityfoodbank.org "IT Admin"
    ```
