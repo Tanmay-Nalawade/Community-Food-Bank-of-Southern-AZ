@@ -57,7 +57,7 @@ Fill in `.env` (the comments in it explain each value). At minimum:
 | `SESSION_SECRET` | a long random string, e.g. `openssl rand -hex 32` — the app refuses to start in production without it |
 | `APP_BASE_URL` | the public HTTPS address, no trailing slash — used for links in emails |
 | `TZ` / `KEYCAFE_TIMEZONE` | `America/Phoenix` |
-| `SMTP_*` | your mail server |
+| `SMTP_*` | your mail server. `SMTP_HOST` turns email on; `SMTP_USER` / `SMTP_PASSWORD` are optional. For Microsoft 365 Direct Send use `SMTP_HOST=<tenant>.mail.protection.outlook.com`, `SMTP_PORT=25`, `SMTP_SECURE=false`, no user/password, and `SMTP_FROM` set to an address in your domain |
 | `KEYCAFE_EMAIL`, `KEYCAFE_TOKEN`, `KEYCAFE_AUTH_TYPE` | from the KeyCafe account |
 | `KEYCAFE_WEBHOOK_USERNAME`, `KEYCAFE_WEBHOOK_PASSWORD` | any credentials you choose (see step 5) |
 
