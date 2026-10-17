@@ -121,6 +121,11 @@ That registers the app's webhook address with KeyCafe using the webhook username
 from `.env`, so key pick-ups and returns update bookings automatically. **API Status** in the IT
 Admin menu can then test the connection.
 
+## 6. Import the vehicles already in KeyCafe
+
+The keys already in KeyCafe can be turned into vehicles in the app, each linked to its existing
+key, with a spreadsheet and one script. See [`imports/README.md`](imports/README.md).
+
 ## Updating to a new version
 
 ```

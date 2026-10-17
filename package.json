@@ -21,6 +21,8 @@
     "seed": "node seeds/index.js",
     "register-webhook": "node scripts/register-keycafe-webhook.js",
     "promote-user": "node scripts/promote-user.js",
+    "export-keycafe-keys": "node scripts/export-keycafe-keys.js",
+    "import-keycafe-vehicles": "node scripts/import-keycafe-vehicles.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
