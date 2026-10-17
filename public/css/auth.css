@@ -276,12 +276,6 @@
   border-top: 1px solid var(--cfb-line);
 }
 
-.auth-card__footer--demo {
-  border-top: none;
-  padding-top: 0;
-  margin-bottom: 1rem;
-}
-
 .auth-card__footer a {
   color: var(--cfb-maroon);
   font-weight: 700;
