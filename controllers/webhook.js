@@ -1,23 +1,59 @@
-const { Reservation, Vehicle, AccessLog } = require("../models");
+const { Op } = require("sequelize");
+const { Reservation, Vehicle, User, AccessLog } = require("../models");
 const { fillStartMileage } = require("../services/odometer");
 
 const HANDLED_EVENT_TYPES = ["PICKUP", "DROPOFF"];
+// The reservation status each event moves a trip out of.
+const STATUS_BEFORE_EVENT = { PICKUP: "Reserved", DROPOFF: "Active" };
+
+// KeyCafe's PICKUP/DROPOFF events carry the key and the user, but not the
+// access (booking) that was used — only ACCESS_* events include `access`.
+// So match on the vehicle whose KeyCafe key fired, narrowed to the driver's
+// open reservation that we granted KeyCafe access for. vehicle.keyCafeKeyId
+// may hold either the numeric key id or the key's serial number.
+async function findReservationForEvent({ type, key, user }) {
+  const keyIds = [key?.id, key?.serialNumber].filter(Boolean).map(String);
+  if (keyIds.length === 0) {
+    return null;
+  }
+
+  const vehicle = await Vehicle.findOne({ where: { keyCafeKeyId: { [Op.in]: keyIds } } });
+  if (!vehicle) {
+    return null;
+  }
+
+  const userWhere = user?.email ? { email: String(user.email).trim().toLowerCase() } : undefined;
+
+  return Reservation.findOne({
+    where: {
+      vehicleId: vehicle.id,
+      status: STATUS_BEFORE_EVENT[type],
+      keyCafeAccessId: { [Op.ne]: null },
+    },
+    include: userWhere ? [{ model: User, as: "user", where: userWhere, attributes: [] }] : [],
+    order: [["requestedStartTime", "ASC"]],
+  });
+}
 
 exports.handleKeyCafeEvent = async (req, res) => {
-  const { type, access } = req.body || {};
+  const { type, access, key } = req.body || {};
 
-  if (!access?.id || !HANDLED_EVENT_TYPES.includes(type)) {
+  if (!HANDLED_EVENT_TYPES.includes(type)) {
     return res.status(200).send("Ignored");
   }
 
-  const reservation = await Reservation.findOne({
-    where: { keyCafeAccessId: String(access.id) },
-  });
+  const reservation = access?.id
+    ? await Reservation.findOne({ where: { keyCafeAccessId: String(access.id) } })
+    : await findReservationForEvent(req.body);
 
   if (!reservation) {
-    console.warn(`KeyCafe webhook: no reservation found for access ${access.id}`);
+    console.warn(
+      `KeyCafe webhook: no reservation found for ${type} (access ${access?.id ?? "none"}, key ${key?.id ?? "none"})`,
+    );
     return res.status(200).send("No matching reservation");
   }
+
+  const accessId = reservation.keyCafeAccessId;
 
   const occurredAt = req.body.dateCreated ? new Date(req.body.dateCreated) : new Date();
 
@@ -33,7 +69,7 @@ exports.handleKeyCafeEvent = async (req, res) => {
       vehicleId: reservation.vehicleId,
       userId: reservation.userId,
       action: "PickedUp",
-      accessId: String(access.id),
+      accessId,
       bookingCode: reservation.keyCafeBookingCode,
     });
   } else if (type === "DROPOFF" && reservation.status === "Active") {
@@ -47,7 +83,7 @@ exports.handleKeyCafeEvent = async (req, res) => {
       vehicleId: reservation.vehicleId,
       userId: reservation.userId,
       action: "Returned",
-      accessId: String(access.id),
+      accessId,
       bookingCode: reservation.keyCafeBookingCode,
     });
   }
