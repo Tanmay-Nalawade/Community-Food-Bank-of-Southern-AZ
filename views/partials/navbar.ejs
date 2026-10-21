@@ -135,6 +135,14 @@
             <% } %>
 
             <% if (viewAsRole) { %>
+              <% if (currentUser.role === "IT Admin" && viewAsRole === "Admin") { %>
+                <form class="site-navbar__logout-form site-navbar__view-switch" action="/account/view-as" method="POST">
+                  <input type="hidden" name="role" value="Staff" />
+                  <button class="site-navbar__dropdown-link" type="submit">
+                    View as Staff
+                  </button>
+                </form>
+              <% } %>
               <form class="site-navbar__logout-form site-navbar__view-switch" action="/account/view-as" method="POST">
                 <button class="site-navbar__dropdown-link" type="submit">
                   Return to <%= currentUser.role %> view
