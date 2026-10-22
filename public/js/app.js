@@ -325,7 +325,25 @@ document.addEventListener("submit", (event) => {
     return;
   }
 
-  event.target
+  // The browser collects the form's data after this listener runs and skips
+  // disabled controls — including the button that was clicked. So a button
+  // that carries a value (e.g. the inspection's name="action" Submit/Skip)
+  // would silently drop it. Copy that value into a hidden field first.
+  const form = event.target;
+  form.querySelectorAll("input[data-submitter-copy]").forEach((input) => input.remove());
+  // Only for a button inside the form: those are the ones disabled below. A
+  // button outside it (form="…") stays enabled and sends its own value.
+  const submitter = event.submitter;
+  if (submitter && submitter.name && form.contains(submitter)) {
+    const copy = document.createElement("input");
+    copy.type = "hidden";
+    copy.name = submitter.name;
+    copy.value = submitter.value;
+    copy.dataset.submitterCopy = "";
+    form.appendChild(copy);
+  }
+
+  form
     .querySelectorAll('button[type="submit"], input[type="submit"]')
     .forEach((button) => {
       button.disabled = true;
