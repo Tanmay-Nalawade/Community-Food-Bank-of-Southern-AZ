@@ -1,14 +1,7 @@
-const { Op } = require("sequelize");
-const { Reservation, Vehicle, User } = require("../../models");
-const { parseBookingWindow, withVehicleLock, formatBookingLabel } = require("../../utils/availability");
-const { startReadingBefore, afterEndMileageSaved } = require("../../services/odometer");
-const { manualTripSchema } = require("../../validators/admin/trip");
-
-// Anything that means the vehicle was (or is going to be) out at that time.
-const OCCUPYING_STATUSES = ["Pending", "Reserved", "Active", "Completed"];
-
-// Rolls the withVehicleLock transaction back with a message for the admin.
-class TripEntryError extends Error {}
+const { Vehicle, User } = require("../../models");
+const { parseBookingWindow } = require("../../utils/availability");
+const { manualTripSchema } = require("../../validators/trip");
+const { TripEntryError, recordManualTrip } = require("../../services/manualTrip");
 
 async function formOptions() {
   const [vehicles, drivers] = await Promise.all([
@@ -32,8 +25,10 @@ function todayIso() {
 }
 
 async function renderForm(res, values, status = 200) {
-  res.status(status).render("admin/trips/new", {
+  res.status(status).render("trips/new", {
     title: "Log a Trip",
+    mode: "admin",
+    formAction: "/admin/trips",
     ...(await formOptions()),
     values,
     maxDate: todayIso(),
@@ -51,10 +46,10 @@ exports.newForm = async (req, res) => {
   });
 };
 
-// Records a trip that happened without a booking (someone took a vehicle
-// without reserving it). Stored as an ordinary Completed reservation so it
-// appears in the trip log, mileage log and trip-log email, and takes its
-// place in the vehicle's odometer chain like any other trip.
+// Records a trip that happened without a booking for any driver. Stored as
+// an ordinary Completed reservation so it appears in the trip log, mileage
+// log and trip-log email, and takes its place in the vehicle's odometer
+// chain like any other trip (see services/manualTrip.js).
 exports.create = async (req, res) => {
   // Validated here rather than with the validateBody middleware so a
   // mistake re-shows the form with everything the admin typed still filled
@@ -93,57 +88,14 @@ exports.create = async (req, res) => {
 
   let reservation;
   try {
-    // Locked like a booking, so a trip can't be logged on top of a
-    // reservation that's being created for the same vehicle at that moment.
-    reservation = await withVehicleLock(vehicle.id, async ({ transaction }) => {
-      const clash = await Reservation.findOne({
-        where: {
-          vehicleId: vehicle.id,
-          status: { [Op.in]: OCCUPYING_STATUSES },
-          requestedStartTime: { [Op.lt]: booking.end },
-          requestedEndTime: { [Op.gt]: booking.start },
-        },
-        transaction,
-      });
-      if (clash) {
-        throw new TripEntryError(
-          `That vehicle already has a ${clash.isManualEntry ? "logged trip" : "booking"} overlapping this time ` +
-            `(${formatBookingLabel({ start: clash.requestedStartTime, end: clash.requestedEndTime })}).`,
-        );
-      }
-
-      const startMileage = await startReadingBefore(vehicle.id, booking.start, { transaction });
-      if (startMileage != null && values.endMileage < startMileage) {
-        throw new TripEntryError(
-          `The end odometer can't be less than this trip's start reading (${startMileage.toLocaleString()} mi — ` +
-            "the vehicle's reading after its previous trip).",
-        );
-      }
-
-      return Reservation.create(
-        {
-          userId: driver.id,
-          vehicleId: vehicle.id,
-          requestedStartTime: booking.start,
-          requestedEndTime: booking.end,
-          tripStartedAt: booking.start,
-          tripEndedAt: booking.end,
-          status: "Completed",
-          isManualEntry: true,
-          reviewedById: res.locals.currentUser.id,
-          reviewedAt: new Date(),
-          startMileage,
-          endMileage: values.endMileage,
-          fuelLevelEndPercent: values.fuelLevelEndPercent ?? null,
-          droppedOffFood: values.droppedOffFood === "on",
-          pickedUpFood: values.pickedUpFood === "on",
-          washed: values.washed === "on",
-          tripFoodRelated: values.tripFoodRelated,
-          tripFoodRelatedDetail: values.tripFoodRelated === "Other" ? values.tripFoodRelatedDetail || "" : "",
-          adminNotes: values.adminNotes || "",
-        },
-        { transaction },
-      );
+    reservation = await recordManualTrip({
+      vehicle,
+      driver,
+      booking,
+      values,
+      loggedBy: res.locals.currentUser,
+      submitted: false,
+      notes: values.adminNotes,
     });
   } catch (error) {
     if (error instanceof TripEntryError) {
@@ -151,8 +103,6 @@ exports.create = async (req, res) => {
     }
     throw error;
   }
-
-  await afterEndMileageSaved(reservation);
 
   req.flash(
     "success",

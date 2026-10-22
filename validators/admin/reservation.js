@@ -22,7 +22,7 @@ const updateReservationSchema = Joi.object({
     "any.required": "Please choose an end time.",
   }),
   status: Joi.string()
-    .valid("Pending", "Reserved", "Active", "Completed", "Cancelled", "Denied")
+    .valid("Pending", "Reserved", "Active", "Completed", "Cancelled", "Denied", "Submitted")
     .required()
     .messages({
       "any.required": "Please choose a status.",

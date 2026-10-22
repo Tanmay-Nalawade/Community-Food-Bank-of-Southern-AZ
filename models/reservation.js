@@ -1,7 +1,9 @@
 const { DataTypes, Model } = require("sequelize");
 const { sequelize } = require("../config/db");
 
-const STATUSES = ["Pending", "Reserved", "Active", "Completed", "Cancelled", "Denied"];
+// "Submitted" is a trip a staff member logged after the fact (no booking),
+// waiting for an Admin to approve it into a Completed trip.
+const STATUSES = ["Pending", "Reserved", "Active", "Completed", "Cancelled", "Denied", "Submitted"];
 // Statuses that still hold (or are asking to hold) a vehicle's time slot.
 const OPEN_STATUSES = ["Pending", "Reserved", "Active"];
 
@@ -27,9 +29,13 @@ Reservation.init(
     reviewedById: { type: DataTypes.INTEGER },
     reviewedAt: { type: DataTypes.DATE },
 
-    // Logged by an admin after the fact (no booking, no KeyCafe access) —
-    // see controllers/admin/trip.js. reviewedBy is the admin who logged it.
+    // Logged after the fact (no booking, no KeyCafe access) — by an admin
+    // (controllers/admin/trip.js), or submitted by a driver for review
+    // (controllers/trip.js). reviewedBy is the admin who logged/approved it.
     isManualEntry: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+    // Who entered a manual trip: the admin who logged it, or the driver who
+    // submitted it for review.
+    loggedById: { type: DataTypes.INTEGER },
 
     // KeyCafe access (was keyCafeAccess.*)
     keyCafeBookingCode: { type: DataTypes.STRING(64) },

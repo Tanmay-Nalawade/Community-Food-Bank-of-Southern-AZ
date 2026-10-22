@@ -15,6 +15,7 @@ const Session = require("./session");
 Reservation.belongsTo(User, { as: "user", foreignKey: "userId" });
 Reservation.belongsTo(Vehicle, { as: "vehicle", foreignKey: "vehicleId" });
 Reservation.belongsTo(User, { as: "reviewedBy", foreignKey: "reviewedById" });
+Reservation.belongsTo(User, { as: "loggedBy", foreignKey: "loggedById" });
 User.hasMany(Reservation, { as: "reservations", foreignKey: "userId" });
 Vehicle.hasMany(Reservation, { as: "reservations", foreignKey: "vehicleId" });
 

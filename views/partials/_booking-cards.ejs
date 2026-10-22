@@ -66,6 +66,8 @@
           </div>
         <% } else if (reservation.status === "Pending") { %>
           <p class="booking-card__pending">Awaiting Transportation review.<%= end > new Date() ? " Your pickup code appears here once it’s approved." : "" %></p>
+        <% } else if (reservation.status === "Submitted") { %>
+          <p class="booking-card__pending">Trip you logged — awaiting admin review before it&rsquo;s added to the trip log.</p>
         <% } %>
 
         <% if (reservation.staffNotes) { %>

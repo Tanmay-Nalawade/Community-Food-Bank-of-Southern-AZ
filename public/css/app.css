@@ -481,7 +481,8 @@ textarea {
   background: currentColor;
 }
 
-.status-pill--pending {
+.status-pill--pending,
+.status-pill--submitted {
   background: #fff8e1;
   color: #f57f17;
 }
@@ -651,6 +652,10 @@ textarea {
   font-weight: 700;
   color: var(--cfb-maroon);
   text-underline-offset: 3px;
+}
+
+.dashboard-section__link + .dashboard-section__link {
+  margin-left: 0.75rem;
 }
 
 .dashboard-section__link:hover,

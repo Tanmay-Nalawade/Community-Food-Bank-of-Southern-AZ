@@ -14,6 +14,7 @@ exports.index = async (req, res) => {
     unresolvedIssues,
     pendingReservations,
     pendingAccounts,
+    submittedTrips,
   ] = await Promise.all([
     Reservation.count({ where: { status: "Pending" } }),
     Reservation.count({ where: { status: "Active" } }),
@@ -40,6 +41,14 @@ exports.index = async (req, res) => {
       attributes: ["id", "firstName", "lastName", "createdAt"],
       order: [["createdAt", "DESC"], ["id", "DESC"]],
     }),
+    Reservation.findAll({
+      where: { status: "Submitted" },
+      include: [
+        { association: "user", attributes: ["id", "firstName", "lastName"] },
+        { association: "vehicle", attributes: ["id", "make", "model", "year"] },
+      ],
+      order: [["createdAt", "DESC"], ["id", "DESC"]],
+    }),
   ]);
 
   const notifications = [
@@ -58,6 +67,16 @@ exports.index = async (req, res) => {
         }${reservation.vehicle.make} ${reservation.vehicle.model}`,
         link: `/admin/reservations/${reservation.id}`,
         at: reservation.createdAt,
+      })),
+    ...submittedTrips
+      .filter((trip) => trip.user && trip.vehicle)
+      .map((trip) => ({
+        type: "booking",
+        message: `${trip.user.firstName} ${trip.user.lastName} logged a past trip in the ${
+          trip.vehicle.year ? trip.vehicle.year + " " : ""
+        }${trip.vehicle.make} ${trip.vehicle.model} and it needs your review`,
+        link: `/admin/reservations/${trip.id}`,
+        at: trip.createdAt,
       })),
     ...unresolvedIssues.map((issue) => ({
       type: "issue",
@@ -79,6 +98,7 @@ exports.index = async (req, res) => {
       upcoming: upcomingCount,
       unresolvedIssues: unresolvedIssues.length,
       pendingAccounts: pendingAccounts.length,
+      submittedTrips: submittedTrips.length,
       vehiclesNeedingAttention,
     },
     notifications,

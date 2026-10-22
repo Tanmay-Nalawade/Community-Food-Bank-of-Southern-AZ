@@ -5,17 +5,13 @@ const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
 const checkbox = () => Joi.string().valid("on").empty("").optional();
 
-// Admin "Log a trip" form — a trip that happened without a booking.
-const manualTripSchema = Joi.object({
+// The trip itself, shared by both "Log a trip" forms — a trip that
+// happened without a booking.
+const tripFields = {
   vehicleId: Joi.string().pattern(ID_PATTERN).required().messages({
     "string.empty": "Please choose a vehicle.",
     "any.required": "Please choose a vehicle.",
     "string.pattern.base": "Please choose a valid vehicle.",
-  }),
-  userId: Joi.string().pattern(ID_PATTERN).required().messages({
-    "string.empty": "Please choose who drove.",
-    "any.required": "Please choose who drove.",
-    "string.pattern.base": "Please choose a valid driver.",
   }),
   date: Joi.string().pattern(DATE_PATTERN).required().messages({
     "string.empty": "Please choose the date of the trip.",
@@ -62,7 +58,24 @@ const manualTripSchema = Joi.object({
   droppedOffFood: checkbox(),
   pickedUpFood: checkbox(),
   washed: checkbox(),
+};
+
+// Admin form: logs a trip for any driver; saved as Completed straight away.
+const manualTripSchema = Joi.object({
+  ...tripFields,
+  userId: Joi.string().pattern(ID_PATTERN).required().messages({
+    "string.empty": "Please choose who drove.",
+    "any.required": "Please choose who drove.",
+    "string.pattern.base": "Please choose a valid driver.",
+  }),
   adminNotes: Joi.string().trim().max(2000).empty("").optional(),
 });
 
-module.exports = { manualTripSchema };
+// Staff form: the driver is always the person submitting; saved as
+// Submitted until an admin approves it.
+const staffTripSchema = Joi.object({
+  ...tripFields,
+  staffNotes: Joi.string().trim().max(2000).empty("").optional(),
+});
+
+module.exports = { manualTripSchema, staffTripSchema };

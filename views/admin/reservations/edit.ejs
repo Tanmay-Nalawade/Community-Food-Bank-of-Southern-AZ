@@ -65,7 +65,8 @@
       <div class="auth-form__group">
         <label class="auth-form__label" for="status">Status</label>
         <select class="auth-form__input" id="status" name="status" required>
-          <% ["Pending", "Reserved", "Active", "Completed", "Cancelled", "Denied"].forEach((status) => { %>
+          <%# A driver-submitted trip is approved with the Approve button (which re-checks the odometer), not from here. %>
+          <% (reservation.status === "Submitted" ? ["Submitted", "Denied"] : ["Pending", "Reserved", "Active", "Completed", "Cancelled", "Denied"]).forEach((status) => { %>
             <option value="<%= status %>" <%= reservation.status === status ? "selected" : "" %>><%= status %></option>
           <% }) %>
         </select>

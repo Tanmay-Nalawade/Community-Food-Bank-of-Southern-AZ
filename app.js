@@ -11,6 +11,7 @@ const userRoutes = require("./routes/user");
 const vehicleRoutes = require("./routes/vehicle");
 const adminRoutes = require("./routes/admin");
 const reservationRoutes = require("./routes/reservation");
+const tripRoutes = require("./routes/trip");
 const webhookRoutes = require("./routes/webhook");
 const accountRoutes = require("./routes/account");
 const itRoutes = require("./routes/it");
@@ -193,6 +194,7 @@ app.use((req, res, next) => {
 
 app.use("/admin", adminRoutes);
 app.use("/reservations", reservationRoutes);
+app.use("/trips", tripRoutes);
 app.use("/vehicles", vehicleRoutes);
 app.use("/webhooks", webhookRoutes);
 app.use("/account", accountRoutes);

@@ -13,6 +13,7 @@ const {
 } = require("../../services/keycafe/reservationAccess");
 const { fetchPage, PAGE_SIZE } = require("../../utils/pagination");
 const { fillStartMileage } = require("../../services/odometer");
+const { TripEntryError, approveSubmittedTrip } = require("../../services/manualTrip");
 const { sendBookingConfirmation } = require("../../services/email/reservationNotifications");
 
 const HOLDING_STATUSES = ["Reserved", "Active"];
@@ -189,6 +190,7 @@ exports.showReservation = async (req, res) => {
       USER_LIST,
       "vehicle",
       { association: "reviewedBy", attributes: ["id", "firstName", "lastName"] },
+      { association: "loggedBy", attributes: ["id", "firstName", "lastName"] },
     ],
   });
 
@@ -244,6 +246,21 @@ exports.updateReservation = async (req, res) => {
   const previousVehicleId = String(reservation.vehicleId);
   const nextVehicleId = req.body.vehicleId;
   const nextStatus = req.body.status;
+
+  const wasSubmitted = reservation.status === "Submitted";
+
+  // Submitted is only ever entered by a driver logging a past trip, and it
+  // only leaves that state through Approve (which re-checks the odometer
+  // chain) or Deny — not by picking a status here.
+  if ((reservation.status === "Submitted") !== (nextStatus === "Submitted") && nextStatus !== "Denied") {
+    req.flash(
+      "error",
+      reservation.status === "Submitted"
+        ? "Use Approve on the trip's page to accept a submitted trip."
+        : "A booking can't be changed to Submitted.",
+    );
+    return res.redirect(`/admin/reservations/${reservation.id}/edit`);
+  }
   const vehicleChanged = previousVehicleId !== nextVehicleId;
   const windowChanged =
     reservation.requestedStartTime.getTime() !== booking.start.getTime() ||
@@ -343,17 +360,21 @@ exports.updateReservation = async (req, res) => {
 
   // Keep Vehicle.status in sync: release the old vehicle if this
   // reservation no longer holds it, and reflect the new vehicle's state.
-  if (vehicleChanged) {
+  // (A submitted past trip never held a vehicle, so it mustn't release one
+  // someone else may have out right now.)
+  if (vehicleChanged && !wasSubmitted) {
     await freeVehicleIfHeldBy(previousVehicleId);
   }
 
-  if (holdsVehicle) {
-    await Vehicle.update(
-      { status: nextStatus === "Active" ? "In Use" : "Reserved" },
-      { where: { id: newVehicle.id } },
-    );
-  } else if (["Denied", "Cancelled", "Completed"].includes(nextStatus)) {
-    await freeVehicleIfHeldBy(newVehicle.id);
+  if (!wasSubmitted) {
+    if (holdsVehicle) {
+      await Vehicle.update(
+        { status: nextStatus === "Active" ? "In Use" : "Reserved" },
+        { where: { id: newVehicle.id } },
+      );
+    } else if (["Denied", "Cancelled", "Completed"].includes(nextStatus)) {
+      await freeVehicleIfHeldBy(newVehicle.id);
+    }
   }
 
   if (["Denied", "Cancelled"].includes(nextStatus)) {
@@ -372,6 +393,21 @@ exports.approveReservation = async (req, res) => {
 
   if (!reservation) {
     return renderError(res, 404, "Reservation not found.");
+  }
+
+  // A trip a driver logged after the fact: no KeyCafe access to grant, it
+  // just becomes a Completed trip (and joins the odometer chain).
+  if (reservation.status === "Submitted") {
+    try {
+      await approveSubmittedTrip(reservation, res.locals.currentUser);
+      req.flash("success", "Trip approved and added to the trip log.");
+    } catch (error) {
+      if (!(error instanceof TripEntryError)) {
+        throw error;
+      }
+      req.flash("error", `Could not approve this trip: ${error.message} Edit it or deny it instead.`);
+    }
+    return redirectAfterAction(req, res, reservation.id);
   }
 
   try {
@@ -409,6 +445,18 @@ exports.denyReservation = async (req, res) => {
   const reservation = await Reservation.findByPk(req.params.id);
   if (!reservation) {
     return renderError(res, 404, "Reservation not found.");
+  }
+
+  // A submitted trip never held the vehicle or a KeyCafe access, so there's
+  // nothing to revoke or release — it's just marked as not accepted.
+  if (reservation.status === "Submitted") {
+    reservation.status = "Denied";
+    reservation.adminNotes = req.body.adminNotes || reservation.adminNotes;
+    reservation.reviewedById = res.locals.currentUser.id;
+    reservation.reviewedAt = new Date();
+    await reservation.save();
+    req.flash("success", "Submitted trip denied. It won't be added to the trip log.");
+    return redirectAfterAction(req, res, reservation.id);
   }
 
   let revokeFailed = false;

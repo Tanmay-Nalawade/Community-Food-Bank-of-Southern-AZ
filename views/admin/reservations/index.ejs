@@ -44,7 +44,7 @@
       <label class="auth-form__label" for="status">Status</label>
       <select class="auth-form__input" id="status" name="status">
         <option value="">All statuses</option>
-        <% ["Pending", "Reserved", "Active", "Completed", "Cancelled", "Denied"].forEach((option) => { %>
+        <% ["Pending", "Submitted", "Reserved", "Active", "Completed", "Cancelled", "Denied"].forEach((option) => { %>
           <option value="<%= option %>" <%= filters.status === option ? "selected" : "" %>><%= option %></option>
         <% }) %>
       </select>

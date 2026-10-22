@@ -59,7 +59,7 @@ function buildPastFilter(userId, now) {
   return {
     userId,
     [Op.or]: [
-      { status: { [Op.in]: ["Completed", "Cancelled", "Denied"] } },
+      { status: { [Op.in]: ["Completed", "Cancelled", "Denied", "Submitted"] } },
       { status: "Pending", requestedStartTime: { [Op.lte]: now } },
       { status: { [Op.in]: CURRENT_STATUSES }, requestedEndTime: { [Op.lte]: now } },
     ],

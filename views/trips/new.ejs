@@ -3,18 +3,27 @@
 <%
   const v = values || {};
   const checked = (name) => (v[name] === "on" ? "checked" : "");
+  // "admin": logs a trip for any driver, saved as completed.
+  // "staff": the signed-in driver logs their own trip, sent for admin review.
+  const isAdmin = mode === "admin";
+  const notesField = isAdmin ? "adminNotes" : "staffNotes";
 %>
 
 <section class="auth-page">
   <div class="auth-card auth-card--wide">
-    <h1 class="auth-card__title">Log a Trip</h1>
+    <h1 class="auth-card__title"><%= isAdmin ? "Log a Trip" : "Log a Past Trip" %></h1>
     <p class="auth-card__subtitle">
-      Record a trip that happened without a booking. It's saved as a completed trip, so it shows up in
-      the trip log, the vehicle's mileage log and emailed reports, and the vehicle's odometer is
-      updated from it.
+      <% if (isAdmin) { %>
+        Record a trip that happened without a booking. It's saved as a completed trip, so it shows up in
+        the trip log, the vehicle's mileage log and emailed reports, and the vehicle's odometer is
+        updated from it.
+      <% } else { %>
+        Took a vehicle without booking it? Record the trip here. An admin will review it, and once it's
+        approved it's added to the trip log and the vehicle's mileage log.
+      <% } %>
     </p>
 
-    <form class="auth-form" action="/admin/trips" method="POST">
+    <form class="auth-form" action="<%= formAction %>" method="POST">
       <div class="auth-form__group">
         <label class="auth-form__label" for="vehicleId">Vehicle</label>
         <select class="auth-form__input" id="vehicleId" name="vehicleId" required>
@@ -28,6 +37,7 @@
         </select>
       </div>
 
+      <% if (isAdmin) { %>
       <div class="auth-form__group">
         <label class="auth-form__label" for="userId">Driver</label>
         <select class="auth-form__input" id="userId" name="userId" required>
@@ -39,6 +49,7 @@
           <% }) %>
         </select>
       </div>
+      <% } %>
 
       <div class="auth-form__row">
         <div class="auth-form__group">
@@ -96,17 +107,19 @@
       </div>
 
       <div class="auth-form__group">
-        <label class="auth-form__label" for="adminNotes">Note (optional)</label>
+        <label class="auth-form__label" for="<%= notesField %>">
+          <%= isAdmin ? "Note (optional)" : "Why wasn't this trip booked? (optional)" %>
+        </label>
         <textarea
           class="auth-form__input booking-request-card__textarea"
-          id="adminNotes"
-          name="adminNotes"
+          id="<%= notesField %>"
+          name="<%= notesField %>"
           rows="2"
           placeholder="e.g. Taken for an emergency pickup without a reservation"
-        ><%= v.adminNotes || "" %></textarea>
+        ><%= v[notesField] || "" %></textarea>
       </div>
 
-      <button class="auth-form__submit" type="submit">Log trip</button>
+      <button class="auth-form__submit" type="submit"><%= isAdmin ? "Log trip" : "Submit for review" %></button>
     </form>
   </div>
 </section>

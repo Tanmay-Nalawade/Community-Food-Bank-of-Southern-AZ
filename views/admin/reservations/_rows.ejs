@@ -1,11 +1,11 @@
 <% reservations.forEach((reservation) => { %>
-  <tr class="<%= reservation.status === 'Pending' ? 'admin-table__row--attention' : '' %>">
+  <tr class="<%= ['Pending', 'Submitted'].includes(reservation.status) ? 'admin-table__row--attention' : '' %>">
     <%- include('_row-cells', { reservation }) %>
     <td class="admin-table__actions" data-label="Actions">
       <div class="action-bar action-bar--row">
-        <% if (["Pending", "Reserved", "Active"].includes(reservation.status)) { %>
+        <% if (["Pending", "Submitted", "Reserved", "Active"].includes(reservation.status)) { %>
           <div class="action-group">
-            <% if (reservation.status === "Pending") { %>
+            <% if (["Pending", "Submitted"].includes(reservation.status)) { %>
               <form action="/admin/reservations/<%= reservation.id %>/approve" method="POST">
                 <button class="action-btn action-btn--sm action-btn--approve" type="submit">Approve</button>
               </form>

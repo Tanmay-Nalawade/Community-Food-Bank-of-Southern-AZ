@@ -16,6 +16,10 @@
       <span class="stat-tile__value"><%= stats.pending %></span>
       <span class="stat-tile__label">Pending Requests</span>
     </a>
+    <a class="stat-tile stat-tile--pending" href="/admin/reservations?status=Submitted">
+      <span class="stat-tile__value"><%= stats.submittedTrips %></span>
+      <span class="stat-tile__label">Trips to Review</span>
+    </a>
     <a class="stat-tile stat-tile--pending" href="/admin/account-requests">
       <span class="stat-tile__value"><%= stats.pendingAccounts %></span>
       <span class="stat-tile__label">Account Requests</span>

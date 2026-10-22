@@ -92,17 +92,30 @@
   }
 
   // A manually logged trip never went through booking/KeyCafe, so its
-  // lifecycle is just "logged" + the mileage it was logged with.
+  // lifecycle is just "logged" (+ an admin's review, when a driver submitted
+  // it) + the mileage it was logged with.
   if (r.isManualEntry) {
+    const loggedBy = r.loggedBy ? `${r.loggedBy.firstName} ${r.loggedBy.lastName}` : reviewer || "an admin";
+    const submittedByDriver = r.loggedById != null && r.loggedById === r.userId && r.loggedById !== r.reviewedById;
     steps.length = 0;
-    steps.push(
-      {
-        title: `Logged manually by ${reviewer || "an admin"}`,
+    steps.push({
+      title: `${submittedByDriver || r.status === "Submitted" ? "Submitted" : "Logged manually"} by ${loggedBy}`,
+      done: true,
+      detail: r.createdAt ? `Recorded ${when(r.createdAt)} — no booking or KeyCafe access` : "",
+    });
+    if (r.status === "Submitted") {
+      steps.push({ title: "Waiting for admin review", done: false, detail: "Not in the trip log until it's approved" });
+    } else if (submittedByDriver && reviewer) {
+      steps.push({
+        title: `${r.status === "Denied" ? "Denied" : "Approved"} by ${reviewer}`,
         done: true,
-        detail: r.createdAt ? `Recorded ${when(r.createdAt)} — no booking or KeyCafe access` : "",
-      },
-      { title: "Mileage reported", done: log.endMileage != null, mileage: hasMileage, detail: hasMileage ? "" : "Not reported" },
-    );
+        final: r.status === "Denied",
+        detail: r.reviewedAt ? when(r.reviewedAt) : "",
+      });
+    }
+    if (r.status !== "Denied") {
+      steps.push({ title: "Mileage reported", done: log.endMileage != null, mileage: hasMileage, detail: hasMileage ? "" : "Not reported" });
+    }
   }
 
   const nextIndex = steps.findIndex((s) => !s.done);
@@ -143,9 +156,9 @@
     </div>
 
     <div class="action-bar booking-detail__actions">
-      <% if (["Pending", "Reserved", "Active"].includes(r.status)) { %>
+      <% if (["Pending", "Submitted", "Reserved", "Active"].includes(r.status)) { %>
         <div class="action-group">
-          <% if (r.status === "Pending") { %>
+          <% if (["Pending", "Submitted"].includes(r.status)) { %>
             <form action="/admin/reservations/<%= r.id %>/approve" method="POST">
               <input type="hidden" name="returnTo" value="detail" />
               <button class="action-btn action-btn--approve" type="submit">Approve</button>
