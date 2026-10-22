@@ -75,22 +75,22 @@
     background: none;
   }
 
-  .admin-table:not(.mileage-log-header-table) {
+  .admin-table:not(.mileage-log-header-table):not(.admin-table--grid) {
     display: block;
     border-collapse: separate;
   }
 
-  .admin-table:not(.mileage-log-header-table) thead {
+  .admin-table:not(.mileage-log-header-table):not(.admin-table--grid) thead {
     display: none;
   }
 
-  .admin-table:not(.mileage-log-header-table) tbody,
-  .admin-table:not(.mileage-log-header-table) tr {
+  .admin-table:not(.mileage-log-header-table):not(.admin-table--grid) tbody,
+  .admin-table:not(.mileage-log-header-table):not(.admin-table--grid) tr {
     display: block;
     width: 100%;
   }
 
-  .admin-table:not(.mileage-log-header-table) tr {
+  .admin-table:not(.mileage-log-header-table):not(.admin-table--grid) tr {
     background: #fff;
     border: 1px solid var(--cfb-line);
     border-radius: 2px;
@@ -98,11 +98,11 @@
     margin-bottom: 1rem;
   }
 
-  .admin-table:not(.mileage-log-header-table) tbody tr:last-child {
+  .admin-table:not(.mileage-log-header-table):not(.admin-table--grid) tbody tr:last-child {
     margin-bottom: 0;
   }
 
-  .admin-table:not(.mileage-log-header-table) td {
+  .admin-table:not(.mileage-log-header-table):not(.admin-table--grid) td {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
@@ -113,15 +113,15 @@
     min-width: 0;
   }
 
-  .admin-table:not(.mileage-log-header-table) td:not(:last-child) {
+  .admin-table:not(.mileage-log-header-table):not(.admin-table--grid) td:not(:last-child) {
     border-bottom: 1px solid var(--cfb-line);
   }
 
-  .admin-table:not(.mileage-log-header-table) td:last-child {
+  .admin-table:not(.mileage-log-header-table):not(.admin-table--grid) td:last-child {
     border-bottom: none;
   }
 
-  .admin-table:not(.mileage-log-header-table) td::before {
+  .admin-table:not(.mileage-log-header-table):not(.admin-table--grid) td::before {
     content: attr(data-label);
     flex-shrink: 0;
     font-family: var(--font-display);
@@ -133,19 +133,19 @@
     text-align: left;
   }
 
-  .admin-table:not(.mileage-log-header-table) td.admin-table__actions {
+  .admin-table:not(.mileage-log-header-table):not(.admin-table--grid) td.admin-table__actions {
     flex-wrap: wrap;
     gap: 0.5rem;
     justify-content: flex-start;
     text-align: left;
   }
 
-  .admin-table:not(.mileage-log-header-table) td.admin-table__actions > a,
-  .admin-table:not(.mileage-log-header-table) td.admin-table__actions > form {
+  .admin-table:not(.mileage-log-header-table):not(.admin-table--grid) td.admin-table__actions > a,
+  .admin-table:not(.mileage-log-header-table):not(.admin-table--grid) td.admin-table__actions > form {
     margin: 0;
   }
 
-  .admin-table:not(.mileage-log-header-table) td.admin-table__actions::before {
+  .admin-table:not(.mileage-log-header-table):not(.admin-table--grid) td.admin-table__actions::before {
     flex-basis: 100%;
     margin-bottom: 0.25rem;
   }
@@ -773,7 +773,7 @@
     box-shadow: none;
   }
 
-  .admin-table:not(.mileage-log-header-table) tr.admin-table__row--attention {
+  .admin-table:not(.mileage-log-header-table):not(.admin-table--grid) tr.admin-table__row--attention {
     border-left: 4px solid var(--cfb-orange);
   }
 
@@ -1214,7 +1214,7 @@
 /* Every admin table uses the same phone card: a label column with each
    cell's value (and its detail line) stacked beside it. */
 @media (max-width: 720px) {
-  .admin-table:not(.mileage-log-header-table) td:not(.admin-table__actions) {
+  .admin-table:not(.mileage-log-header-table):not(.admin-table--grid) td:not(.admin-table__actions) {
     display: grid;
     grid-template-columns: 4.75rem minmax(0, 1fr);
     align-items: start;
@@ -1222,44 +1222,44 @@
     text-align: left;
   }
 
-  .admin-table:not(.mileage-log-header-table) td:not(.admin-table__actions)::before {
+  .admin-table:not(.mileage-log-header-table):not(.admin-table--grid) td:not(.admin-table__actions)::before {
     grid-column: 1;
     grid-row: 1;
     padding-top: 0.2rem;
   }
 
-  .admin-table:not(.mileage-log-header-table) .admin-table__subtext--block {
+  .admin-table:not(.mileage-log-header-table):not(.admin-table--grid) .admin-table__subtext--block {
     margin-top: 0;
   }
 
-  .admin-table:not(.mileage-log-header-table) .admin-when__text strong {
+  .admin-table:not(.mileage-log-header-table):not(.admin-table--grid) .admin-when__text strong {
     white-space: normal;
   }
 
-  .admin-table:not(.mileage-log-header-table) td:not(.admin-table__actions) > * {
+  .admin-table:not(.mileage-log-header-table):not(.admin-table--grid) td:not(.admin-table__actions) > * {
     grid-column: 2;
   }
 
-  .admin-table:not(.mileage-log-header-table) .admin-when {
+  .admin-table:not(.mileage-log-header-table):not(.admin-table--grid) .admin-when {
     justify-content: flex-start;
   }
 
-  .admin-table:not(.mileage-log-header-table) .admin-table__subtext,
-  .admin-table:not(.mileage-log-header-table) .admin-table__vehicle .admin-table__subtext {
+  .admin-table:not(.mileage-log-header-table):not(.admin-table--grid) .admin-table__subtext,
+  .admin-table:not(.mileage-log-header-table):not(.admin-table--grid) .admin-table__vehicle .admin-table__subtext {
     white-space: normal;
     overflow-wrap: anywhere;
   }
 
-  .admin-table:not(.mileage-log-header-table) td > .status-pill {
+  .admin-table:not(.mileage-log-header-table):not(.admin-table--grid) td > .status-pill {
     justify-self: start;
   }
 
   /* Nothing to do for this row, so don't show an empty Actions label. */
-  .admin-table:not(.mileage-log-header-table) td.admin-table__actions--empty {
+  .admin-table:not(.mileage-log-header-table):not(.admin-table--grid) td.admin-table__actions--empty {
     display: none;
   }
 
-  .admin-table:not(.mileage-log-header-table) tr:has(> .admin-table__actions--empty) td:nth-last-child(2) {
+  .admin-table:not(.mileage-log-header-table):not(.admin-table--grid) tr:has(> .admin-table__actions--empty) td:nth-last-child(2) {
     border-bottom: none;
   }
 }
@@ -1280,8 +1280,59 @@
   margin-left: -0.5rem;
 }
 
-/* Fleet monthly report: one card per vehicle; keep each vehicle's table
-   together on a printed page where it fits. */
-.monthly-report__vehicle {
-  break-inside: avoid;
+/* Mileage-log tables (per-vehicle log and the fleet monthly report) always
+   stay a real grid — columns across, one trip per row — instead of turning
+   into the stacked phone cards above. That includes print: a portrait page
+   is ~720px wide, which would otherwise trigger the phone layout. Narrow
+   screens scroll the table sideways; print shrinks the text to fit. */
+@media (max-width: 720px) {
+  .admin-table-wrap--grid {
+    overflow-x: auto;
+    border: 1px solid var(--cfb-line);
+    background: #fff;
+  }
+}
+
+@media print {
+  /* One short, landscape-free report: tight cells, no card chrome. */
+  .mileage-log-page .vehicle-detail__card {
+    border: none;
+    padding: 0;
+    margin-top: 0.5rem;
+  }
+
+  .admin-table-wrap--grid {
+    overflow: visible;
+    border: none;
+  }
+
+  .admin-table.admin-table--grid {
+    table-layout: auto;
+  }
+
+  .admin-table.admin-table--grid th,
+  .admin-table.admin-table--grid td {
+    font-size: 7.5pt;
+    letter-spacing: 0;
+    padding: 3px 4px;
+  }
+
+  .admin-table.admin-table--grid td:nth-child(-n + 2) {
+    white-space: nowrap;
+  }
+
+  .admin-table.admin-table--grid .admin-table__subtext {
+    font-size: 7pt;
+  }
+
+  .mileage-log-page .mileage-log-header-table {
+    width: auto;
+    margin-bottom: 0.5rem;
+  }
+
+  .mileage-log-page .mileage-log-header-table th,
+  .mileage-log-page .mileage-log-header-table td {
+    font-size: 8pt;
+    padding: 2px 8px;
+  }
 }

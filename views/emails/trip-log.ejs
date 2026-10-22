@@ -6,53 +6,43 @@
       <p style="color:#333; font-size:15px; line-height:1.5; margin:0 0 12px;">
         Vehicle mileage report for <strong><%= rangeLabel %></strong> —
         <%= report.tripCount %> trip<%= report.tripCount === 1 ? "" : "s" %>
-        across <%= report.sections.length %> vehicle<%= report.sections.length === 1 ? "" : "s" %><% if (report.totalDistance > 0) { %>,
+        across <%= report.vehicleCount %> vehicle<%= report.vehicleCount === 1 ? "" : "s" %><% if (report.totalDistance > 0) { %>,
         <%= report.totalDistance.toLocaleString() %> miles recorded<% } %>.
       </p>
 
-      <% if (!report.sections.length) { %>
+      <% if (!report.rows.length) { %>
         <p style="color:#333; font-size:14px; margin:0 0 24px;">No trips were recorded in this period.</p>
       <% } %>
 
       <% const th = "text-align:left; color:#632c4f; border-bottom:1px solid #e0e0e0; white-space:nowrap;"; %>
       <% const td = "border-bottom:1px solid #f0f0f0; color:#333;"; %>
-      <% report.sections.forEach((section) => { const v = section.vehicle; %>
-        <h2 style="color:#632c4f; font-size:16px; margin:28px 0 4px;">
-          <%= v.year ? v.year + " " : "" %><%= v.make %> <%= v.model %>
-          <span style="color:#777; font-weight:normal;">(<%= v.licensePlate %>)</span>
-        </h2>
-        <p style="color:#777; font-size:12px; margin:0 0 8px;">
-          <%= section.rows.length %> trip<%= section.rows.length === 1 ? "" : "s" %>,
-          <%= section.totalDistance.toLocaleString() %> mi ·
-          Next maintenance: <%= v.nextMaintenanceDueMileage != null ? v.nextMaintenanceDueMileage.toLocaleString() + " mi" : "—" %>
-          / <%= v.nextMaintenanceDueDate ? fmt.date(v.nextMaintenanceDueDate) : "—" %>
-        </p>
-        <table style="width:100%; border-collapse:collapse; margin:0 0 8px; font-size:12px;" cellpadding="6" cellspacing="0">
+      <% if (report.rows.length) { %>
+        <table style="width:100%; border-collapse:collapse; margin:16px 0; font-size:12px;" cellpadding="6" cellspacing="0">
           <thead>
             <tr style="background:#fbf7f9;">
+              <th style="<%= th %>">Vehicle</th>
               <th style="<%= th %>">Date</th>
               <th style="<%= th %>">Driver</th>
               <th style="<%= th %>">Start Odometer</th>
               <th style="<%= th %>">End Odometer</th>
-              <th style="<%= th %>">Distance</th>
-              <th style="<%= th %>">Food Related</th>
-              <th style="<%= th %>">Pre-Trip Inspection</th>
-              <th style="<%= th %>">Fuel (End) %</th>
+              <th style="<%= th %>">Distance Travelled</th>
+              <th style="<%= th %>">Pre-Trip Inspection (Y/N)</th>
+              <th style="<%= th %>">Fuel Level (End) %</th>
               <th style="<%= th %>">Drop off Food</th>
               <th style="<%= th %>">Pick up Food</th>
               <th style="<%= th %>">Other</th>
-              <th style="<%= th %>">Washed</th>
+              <th style="<%= th %>">Washed (Y/N)</th>
             </tr>
           </thead>
           <tbody>
-            <% section.rows.forEach((row) => { %>
+            <% report.rows.forEach((row) => { const v = row.vehicle; %>
               <tr>
+                <td style="<%= td %>"><%= v.year ? v.year + " " : "" %><%= v.make %> <%= v.model %> <span style="color:#777;">(<%= v.licensePlate %>)</span></td>
                 <td style="<%= td %> white-space:nowrap;"><%= fmt.date(row.date) %></td>
                 <td style="<%= td %>"><%= row.driverName || "—" %><% if (row.manualEntry) { %> <span style="color:#777;">(logged manually)</span><% } %></td>
                 <td style="<%= td %>"><%= row.startMileage != null ? row.startMileage.toLocaleString() : "—" %></td>
                 <td style="<%= td %>"><%= row.endMileage != null ? row.endMileage.toLocaleString() : "—" %></td>
                 <td style="<%= td %>"><%= row.distanceTravelled != null ? row.distanceTravelled.toLocaleString() : "—" %></td>
-                <td style="<%= td %>"><%= row.foodRelated ? "Y" : "N" %></td>
                 <td style="<%= td %>"><%= row.preTripInspectionPassed === null ? "—" : (row.preTripInspectionPassed ? "Y" : "N") %></td>
                 <td style="<%= td %>"><%= row.fuelLevelEndPercent != null ? row.fuelLevelEndPercent + "%" : "—" %></td>
                 <td style="<%= td %>"><%= row.droppedOffFood ? "Y" : "N" %></td>
@@ -63,7 +53,7 @@
             <% }) %>
           </tbody>
         </table>
-      <% }) %>
+      <% } %>
 
       <p style="font-size:14px; margin:24px 0;">
         <a href="<%= reportsUrl %>" style="color:#632c4f; font-weight:bold; text-decoration:none;">Open Reports &rarr;</a>

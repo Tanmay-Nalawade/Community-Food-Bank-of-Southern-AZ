@@ -20,7 +20,7 @@
           </tr>
           <tr>
             <th>Vehicles with trips</th>
-            <td><%= report.sections.length %></td>
+            <td><%= report.vehicleCount %></td>
           </tr>
           <tr>
             <th>Trips</th>
@@ -66,28 +66,11 @@
     </form>
   </div>
 
-  <% if (!report.sections.length) { %>
-    <div class="vehicle-detail__card admin-history-card mileage-log-card">
+  <div class="vehicle-detail__card admin-history-card mileage-log-card">
+    <% if (!report.rows.length) { %>
       <p class="vehicle-detail__empty">No trips recorded for any vehicle in <%= monthLabel %>.</p>
-    </div>
-  <% } %>
-
-  <% report.sections.forEach((section) => { const vehicle = section.vehicle; %>
-    <div class="vehicle-detail__card admin-history-card mileage-log-card monthly-report__vehicle">
-      <h2 class="vehicle-detail__section-title">
-        <a href="/admin/vehicles/<%= vehicle.id %>/mileage-log?year=<%= sendDefaults.fromDate.slice(0, 4) %>&month=<%= Number(sendDefaults.fromDate.slice(5, 7)) %>">
-          <%= vehicle.year ? vehicle.year + " " : "" %><%= vehicle.make %> <%= vehicle.model %>
-        </a>
-        <span class="admin-table__subtext">(<%= vehicle.licensePlate %>)</span>
-      </h2>
-      <p class="vehicle-detail__empty admin-hint">
-        <%= section.rows.length %> trip<%= section.rows.length === 1 ? "" : "s" %>,
-        <%= section.totalDistance.toLocaleString() %> mi ·
-        Next maintenance:
-        <%= vehicle.nextMaintenanceDueMileage != null ? vehicle.nextMaintenanceDueMileage.toLocaleString() + " mi" : "—" %>
-        / <%= vehicle.nextMaintenanceDueDate ? fmt.date(vehicle.nextMaintenanceDueDate) : "—" %>
-      </p>
-      <%- include('../mileage-log/_table', { rows: section.rows }) %>
-    </div>
-  <% }) %>
+    <% } else { %>
+      <%- include('../mileage-log/_table', { rows: report.rows, withVehicle: true }) %>
+    <% } %>
+  </div>
 </section>

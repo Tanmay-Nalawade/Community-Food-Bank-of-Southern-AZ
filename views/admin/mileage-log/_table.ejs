@@ -1,30 +1,37 @@
-<div class="admin-table-wrap">
-  <table class="admin-table">
+<% const showVehicle = typeof withVehicle !== 'undefined' && withVehicle; %>
+<div class="admin-table-wrap admin-table-wrap--grid">
+  <table class="admin-table admin-table--grid">
     <thead>
       <tr>
+        <% if (showVehicle) { %><th>Vehicle</th><% } %>
         <th>Date</th>
         <th>Driver</th>
         <th>Start Odometer</th>
         <th>End Odometer</th>
         <th>Distance Travelled</th>
-        <th>Food Related</th>
-        <th>Pre-Trip Inspection</th>
+        <th>Pre-Trip Inspection (Y/N)</th>
         <th>Fuel Level (End) %</th>
         <th>Drop off Food</th>
         <th>Pick up Food</th>
         <th>Other</th>
-        <th>Washed</th>
+        <th>Washed (Y/N)</th>
       </tr>
     </thead>
     <tbody>
       <% rows.forEach((row) => { %>
         <tr>
+          <% if (showVehicle) { %>
+            <td data-label="Vehicle">
+              <%= row.vehicle.year ? row.vehicle.year + " " : "" %><%= row.vehicle.make %> <%= row.vehicle.model %>
+              <br />
+              <span class="admin-table__subtext"><%= row.vehicle.licensePlate %></span>
+            </td>
+          <% } %>
           <td data-label="Date"><%= fmt.date(row.date) %></td>
           <td data-label="Driver"><%= row.driverName %><% if (row.manualEntry) { %> <span class="admin-table__subtext">(logged manually)</span><% } %></td>
           <td data-label="Start Odometer"><%= row.startMileage != null ? row.startMileage.toLocaleString() : "—" %></td>
           <td data-label="End Odometer"><%= row.endMileage != null ? row.endMileage.toLocaleString() : "—" %></td>
           <td data-label="Distance Travelled"><%= row.distanceTravelled != null ? row.distanceTravelled.toLocaleString() : "—" %></td>
-          <td data-label="Food Related"><%= row.foodRelated ? "Y" : "N" %></td>
           <td data-label="Pre-Trip Inspection"><%= row.preTripInspectionPassed === null ? "—" : (row.preTripInspectionPassed ? "Y" : "N") %></td>
           <td data-label="Fuel Level (End) %"><%= row.fuelLevelEndPercent != null ? row.fuelLevelEndPercent + "%" : "—" %></td>
           <td data-label="Drop off Food"><%= row.droppedOffFood ? "Y" : "N" %></td>

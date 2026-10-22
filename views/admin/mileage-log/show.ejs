@@ -4,42 +4,14 @@
   <a class="vehicle-detail__back no-print" href="/admin/vehicles/<%= vehicle.id %>">&larr; Back to vehicle</a>
 
   <div class="mileage-log-page__header-row">
-    <h1>Monthly Vehicle Mileage Log</h1>
+    <h1>Monthly Vehicle Mileage Log Sheet</h1>
     <button class="action-btn action-btn--edit no-print" type="button" data-print>
       Print
     </button>
   </div>
 
   <div class="vehicle-detail__card admin-history-card mileage-log-card">
-    <div class="admin-table-wrap">
-      <table class="admin-table mileage-log-header-table">
-        <tbody>
-          <tr>
-            <th>Vehicle</th>
-            <td>
-              <%= vehicle.year ? vehicle.year + " " : "" %><%= vehicle.make %> <%= vehicle.model %>
-              (<%= vehicle.licensePlate %>)
-            </td>
-          </tr>
-          <tr>
-            <th>Month</th>
-            <td><%= log.monthLabel %></td>
-          </tr>
-          <tr>
-            <th>Next Maintenance Due Mileage</th>
-            <td>
-              <%= vehicle.nextMaintenanceDueMileage != null ? vehicle.nextMaintenanceDueMileage.toLocaleString() + " mi" : "—" %>
-            </td>
-          </tr>
-          <tr>
-            <th>Next Maintenance Due Date</th>
-            <td>
-              <%= vehicle.nextMaintenanceDueDate ? fmt.date(vehicle.nextMaintenanceDueDate) : "—" %>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <%- include('_sheet-header', { vehicle, monthLabel: log.monthLabel }) %>
 
     <div class="mileage-log-page__month-nav no-print">
       <a class="admin-table__btn admin-table__btn--edit" href="?year=<%= prev.year %>&month=<%= prev.month %>">

@@ -68,8 +68,9 @@ function monthLabel(year, month) {
   return new Date(year, month - 1, 1).toLocaleDateString("en-US", { month: "long", year: "numeric" });
 }
 
-// One detailed mileage-log row for a trip — the same columns everywhere the
-// log appears (per-vehicle page, fleet monthly report, emailed report).
+// One detailed mileage-log row for a trip — the columns of the paper
+// "Monthly Vehicle Mileage Log Sheet", used everywhere the log appears
+// (per-vehicle page, fleet monthly report, emailed report).
 function shapeLogRow(reservation) {
   const start = reservation.startMileage;
   const end = reservation.endMileage;
@@ -81,9 +82,6 @@ function shapeLogRow(reservation) {
     startMileage: start ?? null,
     endMileage: end ?? null,
     distanceTravelled: start != null && end != null ? end - start : null,
-    // Simplified to a plain boolean for reporting — "Other" doesn't
-    // confirm the trip was actually for food, so only "Yes" counts.
-    foodRelated: reservation.tripFoodRelated === "Yes",
     manualEntry: reservation.isManualEntry,
     preTripInspectionPassed: reservation.preTripInspectionPassed ?? null,
     fuelLevelEndPercent: reservation.fuelLevelEndPercent ?? null,
@@ -100,9 +98,10 @@ function sumDistance(rows) {
 }
 
 // Every vehicle's detailed mileage log for trips whose effective date falls
-// in [start, end), grouped by vehicle — the fleet-wide report shown on
-// /admin/reports/monthly and emailed from the Reports page. Only vehicles
-// with at least one trip in the range get a section.
+// in [start, end), as one flat list (each row tagged with its vehicle) —
+// the fleet-wide report shown on /admin/reports/monthly and emailed from the
+// Reports page. Sorted by vehicle, then date, so each vehicle's trips sit
+// together in the single table.
 async function buildFleetLog(start, end) {
   const reservations = await Reservation.findAll({
     where: {
@@ -111,35 +110,23 @@ async function buildFleetLog(start, end) {
     },
     include: [
       { association: "user", attributes: ["id", "firstName", "lastName"] },
-      {
-        association: "vehicle",
-        attributes: ["id", "make", "model", "year", "licensePlate", "nextMaintenanceDueMileage", "nextMaintenanceDueDate"],
-      },
+      { association: "vehicle", attributes: ["id", "make", "model", "year", "licensePlate"] },
     ],
     order: [["requestedStartTime", "ASC"], ["id", "ASC"]],
   });
 
-  const sectionsByVehicleId = new Map();
-  for (const reservation of reservations) {
-    if (!reservation.vehicle) {
-      continue;
-    }
-    if (!sectionsByVehicleId.has(reservation.vehicle.id)) {
-      sectionsByVehicleId.set(reservation.vehicle.id, { vehicle: reservation.vehicle, rows: [] });
-    }
-    sectionsByVehicleId.get(reservation.vehicle.id).rows.push(shapeLogRow(reservation));
-  }
-
-  const sections = [...sectionsByVehicleId.values()]
-    .map((section) => ({ ...section, totalDistance: sumDistance(section.rows) }))
-    .sort((a, b) =>
-      `${a.vehicle.make} ${a.vehicle.model}`.localeCompare(`${b.vehicle.make} ${b.vehicle.model}`),
-    );
+  const vehicleName = (vehicle) => `${vehicle.make} ${vehicle.model} ${vehicle.licensePlate}`;
+  const rows = reservations
+    .filter((reservation) => reservation.vehicle)
+    .map((reservation) => ({ ...shapeLogRow(reservation), vehicle: reservation.vehicle }))
+    // Array#sort is stable, so each vehicle's trips keep their date order.
+    .sort((a, b) => vehicleName(a.vehicle).localeCompare(vehicleName(b.vehicle)));
 
   return {
-    sections,
-    tripCount: sections.reduce((sum, section) => sum + section.rows.length, 0),
-    totalDistance: sections.reduce((sum, section) => sum + section.totalDistance, 0),
+    rows,
+    vehicleCount: new Set(rows.map((row) => row.vehicle.id)).size,
+    tripCount: rows.length,
+    totalDistance: sumDistance(rows),
   };
 }
 

@@ -1,0 +1,29 @@
+<div class="admin-table-wrap">
+  <table class="admin-table mileage-log-header-table">
+    <tbody>
+      <tr>
+        <th>Vehicle ID</th>
+        <td>
+          <%= vehicle.year ? vehicle.year + " " : "" %><%= vehicle.make %> <%= vehicle.model %>
+          (<%= vehicle.licensePlate %>)
+        </td>
+      </tr>
+      <tr>
+        <th>Month</th>
+        <td><%= monthLabel %></td>
+      </tr>
+      <tr>
+        <th>Next Maintenance Due Mileage</th>
+        <td>
+          <%= vehicle.nextMaintenanceDueMileage != null ? vehicle.nextMaintenanceDueMileage.toLocaleString() + " mi" : "—" %>
+        </td>
+      </tr>
+      <tr>
+        <th>Next Maintenance Due Date</th>
+        <td>
+          <%= vehicle.nextMaintenanceDueDate ? fmt.date(vehicle.nextMaintenanceDueDate) : "—" %>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
