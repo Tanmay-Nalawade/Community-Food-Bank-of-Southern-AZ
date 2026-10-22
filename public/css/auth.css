@@ -8,6 +8,7 @@
 .auth-card {
   width: 100%;
   max-width: 420px;
+  margin-inline: auto;
   background: #ffffff;
   border: 1px solid var(--cfb-line);
   border-radius: 2px;
