@@ -245,6 +245,9 @@ exports.updateReservation = async (req, res) => {
   const nextVehicleId = req.body.vehicleId;
   const nextStatus = req.body.status;
   const vehicleChanged = previousVehicleId !== nextVehicleId;
+  const windowChanged =
+    reservation.requestedStartTime.getTime() !== booking.start.getTime() ||
+    reservation.requestedEndTime.getTime() !== booking.end.getTime();
   const holdsVehicle = HOLDING_STATUSES.includes(nextStatus);
   const overlapOptions = { excludeReservationId: reservation.id };
 
@@ -271,11 +274,12 @@ exports.updateReservation = async (req, res) => {
 
   let grantedHere = false;
   try {
-    // An existing KeyCafe access is scoped to the OLD vehicle's key — if the
-    // vehicle is being changed, that access no longer matches the
-    // reservation and has to be revoked rather than left in place pointing
-    // at the wrong vehicle.
-    if (vehicleChanged && reservation.keyCafeAccessId) {
+    // An existing KeyCafe access is scoped to the OLD vehicle's key and the
+    // OLD time window — if either is being changed, that access no longer
+    // matches the reservation and has to be revoked (then re-granted below,
+    // with a new pickup code emailed to the driver) rather than left in place
+    // pointing at the wrong vehicle or time.
+    if ((vehicleChanged || windowChanged) && reservation.keyCafeAccessId) {
       await revokeReservationAccess(reservation);
     }
 
