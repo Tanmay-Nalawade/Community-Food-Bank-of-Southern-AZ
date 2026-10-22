@@ -331,3 +331,12 @@ document.addEventListener("submit", (event) => {
       button.disabled = true;
     });
 });
+
+// Print buttons: any element with data-print opens the browser's print
+// dialog. Wired up here rather than with an inline onclick, which the
+// Content-Security-Policy (script-src-attr 'none' via helmet) blocks.
+document.addEventListener("click", (event) => {
+  if (event.target.closest("[data-print]")) {
+    window.print();
+  }
+});
