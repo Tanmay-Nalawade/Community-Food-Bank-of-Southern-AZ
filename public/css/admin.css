@@ -1279,3 +1279,9 @@
 .vehicle-detail__keycafe .admin-table__btn--delete {
   margin-left: -0.5rem;
 }
+
+/* Fleet monthly report: one card per vehicle; keep each vehicle's table
+   together on a printed page where it fits. */
+.monthly-report__vehicle {
+  break-inside: avoid;
+}

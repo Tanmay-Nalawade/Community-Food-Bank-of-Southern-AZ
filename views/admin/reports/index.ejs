@@ -1,15 +1,23 @@
 <% layout('layouts/boilerplate') %>
 
 <section class="admin-page">
-  <h1>Reports</h1>
-  <p class="vehicles-page__lead">Trip log, fleet utilization, and KeyCafe access history.</p>
+  <div class="vehicles-page__header">
+    <div>
+      <h1>Reports</h1>
+      <p class="vehicles-page__lead admin-page__lead">Trip log, fleet utilization, and KeyCafe access history.</p>
+    </div>
+    <div class="admin-page__header-actions">
+      <a class="action-btn action-btn--edit" href="/admin/reports/monthly">Monthly report</a>
+    </div>
+  </div>
 
   <div class="vehicle-detail__card admin-history-card">
     <h2 class="vehicle-detail__section-title">Trip log</h2>
     <p class="vehicle-detail__empty admin-hint">
       Every trip across the fleet, newest first. Click a vehicle to see that trip's full
       detailed monthly mileage log (inspection, fuel level, and more). Use the form below
-      to email every trip in a date range to anyone.
+      to email the detailed report for every vehicle over a date range (a whole month by
+      default), or open the <a href="/admin/reports/monthly">monthly report</a> to view or print it.
     </p>
     <% if (!tripLog.length) { %>
       <p class="vehicle-detail__empty">No trips recorded yet.</p>
@@ -48,7 +56,7 @@
       <% } %>
     <% } %>
 
-    <h3 class="vehicle-detail__section-title no-print">Email the trip log</h3>
+    <h3 class="vehicle-detail__section-title no-print">Email the vehicle mileage report</h3>
     <form class="auth-form admin-issue-form no-print" action="/admin/reports/trips/send" method="POST">
       <div class="auth-form__group">
         <label class="auth-form__label" for="tripLogFrom">From</label>

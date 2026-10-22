@@ -31,6 +31,8 @@ const sendTripLogSchema = Joi.object({
       "any.required": "Choose the last day to include.",
       "string.pattern.base": "Choose a valid end date.",
     }),
+  // Which page the form was posted from, so the redirect goes back there.
+  returnTo: Joi.string().valid("monthly"),
 });
 
 module.exports = { sendTripLogSchema };

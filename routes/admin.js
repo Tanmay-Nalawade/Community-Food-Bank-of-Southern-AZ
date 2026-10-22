@@ -94,6 +94,7 @@ router.get(
 router.get("/reports", requireAdmin, adminReportController.index);
 router.get("/reports/more", requireAdmin, adminReportController.more);
 router.get("/reports/trips/more", requireAdmin, adminReportController.moreTrips);
+router.get("/reports/monthly", requireAdmin, adminReportController.monthly);
 router.post(
   "/reports/trips/send",
   requireAdmin,

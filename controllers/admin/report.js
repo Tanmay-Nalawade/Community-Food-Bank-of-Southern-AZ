@@ -1,7 +1,12 @@
 const { Op, fn, col, literal } = require("sequelize");
 const { Vehicle, Reservation, AccessLog, TripLogSend } = require("../../models");
 const { fetchPage, PAGE_SIZE } = require("../../utils/pagination");
-const { effectiveTripDate, driverFullName, tripDateInRange } = require("../../services/mileageLog");
+const {
+  effectiveTripDate,
+  driverFullName,
+  buildFleetLog,
+  monthLabel,
+} = require("../../services/mileageLog");
 const { sendTripLog } = require("../../services/email/tripLogNotifications");
 const { isConfigured: isEmailConfigured } = require("../../services/email");
 const fmt = require("../../utils/formatDate");
@@ -189,9 +194,42 @@ exports.more = async (req, res) => {
   res.render("admin/reports/_access-log-rows", { accessLogs });
 };
 
-// Emails every trip (Active/Completed booking) whose date falls in the
-// chosen range — the same rows and columns as the Trip log table above,
-// just not paginated.
+// Fleet-wide monthly report: every vehicle's detailed mileage log for one
+// calendar month, grouped by vehicle — printable, and emailable via the
+// same Send action as the Reports page (pre-filled with this month).
+exports.monthly = async (req, res) => {
+  const now = new Date();
+  const year = Number(req.query.year) || now.getFullYear();
+  const month = Number(req.query.month) || now.getMonth() + 1;
+
+  if (month < 1 || month > 12) {
+    return res.redirect("/admin/reports/monthly");
+  }
+
+  const monthStart = new Date(year, month - 1, 1);
+  const monthEnd = new Date(year, month, 1);
+  const report = await buildFleetLog(monthStart, monthEnd);
+
+  const lastSend = await TripLogSend.findOne({ order: [["sentAt", "DESC"], ["id", "DESC"]] });
+
+  res.render("admin/reports/monthly", {
+    title: `Monthly Report — ${monthLabel(year, month)}`,
+    report,
+    monthLabel: monthLabel(year, month),
+    prev: month === 1 ? { year: year - 1, month: 12 } : { year, month: month - 1 },
+    next: month === 12 ? { year: year + 1, month: 1 } : { year, month: month + 1 },
+    sendDefaults: {
+      recipient: lastSend?.recipient || "",
+      fromDate: isoDay(monthStart),
+      toDate: isoDay(new Date(year, month, 0)),
+    },
+    activeNav: "admin-reports",
+  });
+};
+
+// Emails the fleet-wide report (every vehicle's detailed mileage log,
+// grouped by vehicle — the same content as /admin/reports/monthly) for the
+// chosen range. Defaults to a calendar month on both forms that post here.
 exports.sendTripLog = async (req, res) => {
   const { recipient, fromDate, toDate } = req.body;
   const range = dayRange(fromDate, toDate);
@@ -201,43 +239,34 @@ exports.sendTripLog = async (req, res) => {
     return res.redirect("/admin/reports");
   }
 
-  const reservations = await Reservation.findAll({
-    where: {
-      status: { [Op.in]: TRIP_LOG_STATUSES },
-      ...tripDateInRange(range.start, range.end),
-    },
-    include: [
-      { association: "user", attributes: ["id", "firstName", "lastName"] },
-      { association: "vehicle", attributes: ["id", "make", "model", "year", "licensePlate"] },
-    ],
-    order: [["requestedStartTime", "DESC"], ["id", "DESC"]],
-  });
+  // Back to the page the form was on (Reports, or the monthly report).
+  const backTo =
+    req.body.returnTo === "monthly"
+      ? `/admin/reports/monthly?year=${range.start.getFullYear()}&month=${range.start.getMonth() + 1}`
+      : "/admin/reports";
 
-  const rows = reservations.map(shapeTripRow);
-  const rangeLabel =
-    fromDate === toDate
-      ? fmt.date(range.start)
-      : `${fmt.date(range.start)} – ${fmt.date(new Date(`${toDate}T00:00`))}`;
+  const report = await buildFleetLog(range.start, range.end);
+  const rangeLabel = labelForRange(fromDate, toDate, range);
   const currentUser = res.locals.currentUser;
 
   try {
-    await sendTripLog({ rows, rangeLabel, recipient, sentBy: currentUser });
+    await sendTripLog({ report, rangeLabel, recipient, sentBy: currentUser });
   } catch (error) {
     console.error("Failed to send trip log email:", error);
-    req.flash("error", `Could not send the trip log to ${recipient}. Check the email settings and try again.`);
-    return res.redirect("/admin/reports");
+    req.flash("error", `Could not send the report to ${recipient}. Check the email settings and try again.`);
+    return res.redirect(backTo);
   }
 
   await TripLogSend.create({
     recipient,
     fromDate,
     toDate,
-    tripCount: rows.length,
+    tripCount: report.tripCount,
     sentById: currentUser.id,
     sentAt: new Date(),
   });
 
-  const summary = `Trip log for ${rangeLabel} (${rows.length} trip${rows.length === 1 ? "" : "s"})`;
+  const summary = `Report for ${rangeLabel} (${report.tripCount} trip${report.tripCount === 1 ? "" : "s"})`;
   req.flash(
     "success",
     isEmailConfigured()
@@ -245,5 +274,22 @@ exports.sendTripLog = async (req, res) => {
       : `Email isn't configured (SMTP settings missing), so the ${summary.charAt(0).toLowerCase()}${summary.slice(1)} ` +
           `was only logged to the server console, not actually sent to ${recipient}.`,
   );
-  res.redirect("/admin/reports");
+  res.redirect(backTo);
 };
+
+// "October 2026" for an exact calendar month, otherwise "Oct 1, 2026 – Oct 15, 2026"
+// (or a single date when from and to are the same day).
+function labelForRange(fromDate, toDate, range) {
+  const start = range.start;
+  const lastDay = new Date(`${toDate}T00:00`);
+  const isWholeMonth =
+    start.getDate() === 1 &&
+    lastDay.getFullYear() === start.getFullYear() &&
+    lastDay.getMonth() === start.getMonth() &&
+    lastDay.getDate() === new Date(start.getFullYear(), start.getMonth() + 1, 0).getDate();
+
+  if (isWholeMonth) {
+    return monthLabel(start.getFullYear(), start.getMonth() + 1);
+  }
+  return fromDate === toDate ? fmt.date(start) : `${fmt.date(start)} – ${fmt.date(lastDay)}`;
+}

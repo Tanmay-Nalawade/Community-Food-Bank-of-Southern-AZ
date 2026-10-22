@@ -1,0 +1,93 @@
+<% layout('layouts/boilerplate') %>
+
+<section class="admin-page mileage-log-page">
+  <a class="vehicle-detail__back no-print" href="/admin/reports">&larr; Back to reports</a>
+
+  <div class="mileage-log-page__header-row">
+    <h1>Monthly Vehicle Mileage Report</h1>
+    <button class="action-btn action-btn--edit no-print" type="button" data-print>
+      Print
+    </button>
+  </div>
+
+  <div class="vehicle-detail__card admin-history-card mileage-log-card">
+    <div class="admin-table-wrap">
+      <table class="admin-table mileage-log-header-table">
+        <tbody>
+          <tr>
+            <th>Month</th>
+            <td><%= monthLabel %></td>
+          </tr>
+          <tr>
+            <th>Vehicles with trips</th>
+            <td><%= report.sections.length %></td>
+          </tr>
+          <tr>
+            <th>Trips</th>
+            <td><%= report.tripCount %></td>
+          </tr>
+          <tr>
+            <th>Distance Travelled</th>
+            <td><%= report.totalDistance.toLocaleString() %> mi</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mileage-log-page__month-nav no-print">
+      <a class="admin-table__btn admin-table__btn--edit" href="?year=<%= prev.year %>&month=<%= prev.month %>">
+        &larr; Previous month
+      </a>
+      <a class="admin-table__btn admin-table__btn--edit" href="?year=<%= next.year %>&month=<%= next.month %>">
+        Next month &rarr;
+      </a>
+    </div>
+
+    <h3 class="vehicle-detail__section-title no-print">Email this report</h3>
+    <form class="auth-form admin-issue-form no-print" action="/admin/reports/trips/send" method="POST">
+      <input type="hidden" name="fromDate" value="<%= sendDefaults.fromDate %>" />
+      <input type="hidden" name="toDate" value="<%= sendDefaults.toDate %>" />
+      <input type="hidden" name="returnTo" value="monthly" />
+      <div class="auth-form__group">
+        <label class="auth-form__label" for="monthlyRecipient">Send to</label>
+        <input
+          class="auth-form__input"
+          type="email"
+          id="monthlyRecipient"
+          name="recipient"
+          value="<%= sendDefaults.recipient %>"
+          placeholder="name@communityfoodbank.org"
+          autocomplete="email"
+          maxlength="255"
+          required
+        />
+      </div>
+      <button class="auth-form__submit" type="submit">Send <%= monthLabel %> report</button>
+    </form>
+  </div>
+
+  <% if (!report.sections.length) { %>
+    <div class="vehicle-detail__card admin-history-card mileage-log-card">
+      <p class="vehicle-detail__empty">No trips recorded for any vehicle in <%= monthLabel %>.</p>
+    </div>
+  <% } %>
+
+  <% report.sections.forEach((section) => { const vehicle = section.vehicle; %>
+    <div class="vehicle-detail__card admin-history-card mileage-log-card monthly-report__vehicle">
+      <h2 class="vehicle-detail__section-title">
+        <a href="/admin/vehicles/<%= vehicle.id %>/mileage-log?year=<%= sendDefaults.fromDate.slice(0, 4) %>&month=<%= Number(sendDefaults.fromDate.slice(5, 7)) %>">
+          <%= vehicle.year ? vehicle.year + " " : "" %><%= vehicle.make %> <%= vehicle.model %>
+        </a>
+        <span class="admin-table__subtext">(<%= vehicle.licensePlate %>)</span>
+      </h2>
+      <p class="vehicle-detail__empty admin-hint">
+        <%= section.rows.length %> trip<%= section.rows.length === 1 ? "" : "s" %>,
+        <%= section.totalDistance.toLocaleString() %> mi ·
+        Next maintenance:
+        <%= vehicle.nextMaintenanceDueMileage != null ? vehicle.nextMaintenanceDueMileage.toLocaleString() + " mi" : "—" %>
+        / <%= vehicle.nextMaintenanceDueDate ? fmt.date(vehicle.nextMaintenanceDueDate) : "—" %>
+      </p>
+      <%- include('../mileage-log/_table', { rows: section.rows }) %>
+    </div>
+  <% }) %>
+</section>
